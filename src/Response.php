@@ -12,6 +12,7 @@ class Response
     protected $status;
     protected $data;
     protected $msg;
+    protected $errorType;
 
     /**
      * @return mixed
@@ -59,5 +60,21 @@ class Response
     public function setMsg($msg): void
     {
         $this->msg = $msg;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getErrorType()
+    {
+        return $this->errorType;
+    }
+
+    /**
+     * @param mixed $errorType
+     */
+    public function setErrorType($errorType): void
+    {
+        $this->errorType = $errorType;
     }
 }
