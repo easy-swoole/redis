@@ -96,23 +96,6 @@ class Client
                 }
             case "*":
                 {
-//                    $str = $this->client->recv($timeout);
-//                    var_dump($str);
-//                    $str = $this->client->recv($timeout);
-//                    var_dump($str);
-//                    $str = $this->client->recv($timeout);
-//                    var_dump($str);
-//                    $str = $this->client->recv($timeout);
-//                    var_dump($str);
-//                    $str = $this->client->recv($timeout);
-//                    var_dump($str);
-//                    $str = $this->client->recv($timeout);
-//                    var_dump($str);
-//                    $str = $this->client->recv($timeout);
-//                    var_dump($str);
-//                    $str = $this->client->recv($timeout);
-//                    var_dump($str);
-//                    return $result;
                     $len = substr($str, 1);
                     if ($len == 0) {
                         $result->setStatus($result::STATUS_OK);
