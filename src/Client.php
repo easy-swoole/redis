@@ -9,8 +9,9 @@ class Client
     protected $client;
     protected $host;
     protected $port;
+    protected $timeout = 3.0;
 
-    function __construct(string $host, int $port)
+    function __construct(string $host, int $port, float $timeout = 3.0)
     {
         $this->client = new \Swoole\Coroutine\Client(SWOOLE_TCP);
         $this->client->set([
@@ -19,14 +20,15 @@ class Client
         ]);
         $this->host = $host;
         $this->port = $port;
+        $this->timeout = $timeout;
     }
 
-    public function connect(float $timeout = 3.0)
+    public function connect()
     {
         if ($this->client->isConnected()) {
             return true;
         }
-        return $this->client->connect($this->host, $this->port, $timeout);
+        return $this->client->connect($this->host, $this->port, $this->timeout);
     }
 
     protected function send(string $data)
@@ -34,7 +36,7 @@ class Client
         return $this->client->send($data);
     }
 
-    function recv(float $timeout = 3.0): ?Response
+    function recv(): ?Response
     {
         /*
          *
@@ -45,7 +47,7 @@ class Client
             多个批量回复，回复的第一个字节将是“*”
          */
         $result = new Response();
-        $str = $this->client->recv($timeout);
+        $str = $this->client->recv($this->timeout);
         if (empty($str)) {
             $result->setStatus($result::STATUS_TIMEOUT);
             return $result;
@@ -55,80 +57,7 @@ class Client
          */
         $str = substr($str, 0, -2);
         $op = substr($str, 0, 1);
-        switch ($op) {
-            case '+':
-                {
-                    $result->setStatus($result::STATUS_OK);
-                    $result->setData(substr($str, 1));
-                    break;
-                }
-            case '-':
-                {
-                    //查看空格位置
-                    $spaceIndex = strpos($str, ' ');
-                    //查看换行位置
-                    $lineIndex = strpos($str, PHP_EOL);
-                    if ($lineIndex === false || $lineIndex > $spaceIndex) {
-                        $result->setErrorType(substr($str, 1, $spaceIndex - 1));
-
-                    } else {
-                        $result->setErrorType(substr($str, 1, $lineIndex - 1));
-                    }
-                    $result->setStatus($result::STATUS_ERR);
-                    $result->setMsg(substr($str, 1));
-                    break;
-                }
-            case ':':
-                {
-                    $result->setStatus($result::STATUS_OK);
-                    $result->setData(substr($str, 1));
-                    break;
-                }
-            case '$':
-                {
-                    /**
-                     * 批量回复处理
-                     */
-                    $str = $this->batchHandel($str, $timeout);
-                    $result->setStatus($result::STATUS_OK);
-                    $result->setData($str);
-                    break;
-                }
-            case "*":
-                {
-                    $len = substr($str, 1);
-                    if ($len == 0) {
-                        $result->setStatus($result::STATUS_OK);
-                        $result->setData([]);
-                    } elseif ($len == -1) {
-                        $result->setStatus($result::STATUS_OK);
-                        $result->setData(null);
-                    } else {
-                        $arr = [];
-                        while ($len--) {
-                            $str = $this->client->recv($timeout);
-                            $str = substr($str, 0, -2);
-                            $op = substr($str, 0, 1);
-                            switch ($op) {
-                                case '+':
-                                case ':':
-                                    break;
-                                case '$':
-                                    if ($str == -1) {
-                                        $str = null;
-                                    }else {
-                                        $str = $this->batchHandel($str, $timeout);
-                                        break;
-                                    }
-                            }
-                            $arr[] = $str;
-                        }
-                        $result->setStatus($result::STATUS_OK);
-                        $result->setData($arr);
-                    }
-                    break;
-                }
-        }
+        $result = $this->opHandel($op, $str);
         return $result;
     }
 
@@ -143,6 +72,105 @@ class Client
         return $this->send($str);
     }
 
+    /**
+     * 字符串处理方法
+     * opHandel
+     * @param $op
+     * @param $value
+     * @return Response
+     * @author Tioncico
+     * Time: 11:52
+     */
+    protected function opHandel($op, $value)
+    {
+        $result = new Response();
+        switch ($op) {
+            case '+':
+                {
+                    $result = $this->successHandel($value);
+                    break;
+                }
+            case '-':
+                {
+                    $result = $this->errorHandel($value);
+                    break;
+                }
+            case ':':
+                {
+                    $result = $this->intHandel($value);
+                    break;
+                }
+            case '$':
+                {
+                    $result = $this->batchHandel($value);
+                    break;
+                }
+            case "*":
+                {
+                    $result = $this->multipleBatchHandel($value);
+                    break;
+                }
+        }
+        return $result;
+    }
+
+    /**
+     * 状态类型处理
+     * successHandel
+     * @param $value
+     * @return Response
+     * @author Tioncico
+     * Time: 11:52
+     */
+    protected function successHandel($value): Response
+    {
+        $result = new Response();
+        $result->setStatus($result::STATUS_OK);
+        $result->setData(substr($value, 1));
+        return $result;
+    }
+
+    /**
+     * 错误类型处理
+     * errorHandel
+     * @param $value
+     * @return Response
+     * @author Tioncico
+     * Time: 11:53
+     */
+    protected function errorHandel($value): Response
+    {
+        $result = new Response();
+        //查看空格位置
+        $spaceIndex = strpos($value, ' ');
+        //查看换行位置
+        $lineIndex = strpos($value, PHP_EOL);
+        if ($lineIndex === false || $lineIndex > $spaceIndex) {
+            $result->setErrorType(substr($value, 1, $spaceIndex - 1));
+
+        } else {
+            $result->setErrorType(substr($value, 1, $lineIndex - 1));
+        }
+        $result->setStatus($result::STATUS_ERR);
+        $result->setMsg(substr($value, 1));
+        return $result;
+    }
+
+    /**
+     * int类型处理
+     * intHandel
+     * @param $value
+     * @return Response
+     * @author Tioncico
+     * Time: 11:53
+     */
+    protected function intHandel($value): Response
+    {
+        $result = new Response();
+        $result->setStatus($result::STATUS_OK);
+        $result->setData((int)substr($value, 1));
+        return $result;
+    }
 
     /**
      * 批量回复处理
@@ -153,22 +181,51 @@ class Client
      * @author Tioncico
      * Time: 17:13
      */
-    protected function batchHandel($str, $timeout)
+    protected function batchHandel($str)
     {
+        $response = new Response();
         $strLen = substr($str, 1);
         //批量回复,继续读取字节
         $len = 0;
         $buff = '';
-        while ($len < $strLen) {
-            $strTmp = $this->client->recv($timeout);
-            $len += strlen($strTmp);
-            $buff .= $strTmp;
+        if ($strLen == 0) {
+            $this->client->recv($this->timeout);
+            $response->setData('');
+        } else {
+            while ($len < $strLen) {
+                $strTmp = $this->client->recv($this->timeout);
+                $len += strlen($strTmp);
+                $buff .= $strTmp;
+            }
+            $response->setData(substr($buff, 0, -2));
         }
-        if (empty($buff)){
-            return $buff;
-        }else{
-            return substr($buff, 0, -2);
+        $response->setStatus($response::STATUS_OK);
+        return $response;
+    }
+
+    protected function multipleBatchHandel($value)
+    {
+        $result = new Response();
+        $len = substr($value, 1);
+        if ($len == 0) {
+            $result->setStatus($result::STATUS_OK);
+            $result->setData([]);
+        } elseif ($len == -1) {
+            $result->setStatus($result::STATUS_OK);
+            $result->setData(null);
+        } else {
+            $arr = [];
+            while ($len--) {
+                $str = $this->client->recv($this->timeout);
+                $str = substr($str, 0, -2);
+                $op = substr($str, 0, 1);
+                $response = $this->opHandel($op, $str);
+                $arr[] = $response->getData();
+            }
+            $result->setStatus($result::STATUS_OK);
+            $result->setData($arr);
         }
+        return $result;
     }
 
 }
