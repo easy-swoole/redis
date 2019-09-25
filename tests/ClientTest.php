@@ -105,5 +105,31 @@ class BaseTest extends TestCase
         $this->assertEquals('a', $recv->getData()[0]);
     }
 
+    function testGeohash(){
+
+        $this->client->sendCommand(['del','geoa']);
+        $recv = $this->client->recv();
+        $this->assertEquals(1, $recv->getData());
+        $this->client->sendCommand(['geoadd',"geoa",'118.6197800000','24.88849','user1','118.6197800000','24.88859','user2','114.8197800000','25.88849','user3','118.8197800000','22.88849','user4']);
+        $recv = $this->client->recv();
+        $this->assertEquals(4, $recv->getData());
+
+        $this->client->sendCommand(['geohash','geoa','user1','user2','user3']);
+        $recv = $this->client->recv();
+        $this->assertEquals('wskme6b3cn0', $recv->getData()[0]);
+
+        $this->client->sendCommand(['georadiusbymember','geoa','user1','100','km','desc']);
+        $recv = $this->client->recv();
+        $this->assertEquals('user2', $recv->getData()[0]);
+
+
+        $this->client->sendCommand(['geopos','geoa','user1','user2']);
+        $recv = $this->client->recv();
+        $this->client->sendCommand(['georadius','geoa',$recv->getData()[0][0],$recv->getData()[0][1],'100','m','desc']);
+        $recv = $this->client->recv();
+        $this->assertEquals('user2', $recv->getData()[0]);
+
+    }
+
 
 }
