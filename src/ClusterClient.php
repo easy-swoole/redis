@@ -36,8 +36,9 @@ class ClusterClient
      * 初始化节点
      * nodeInit
      * @param $serverList
-     * @author Tioncico
-     * Time: 16:38
+     * @throws ClusterClientException
+     * @author tioncico
+     * Time: 下午9:00
      */
     protected function nodeInit($serverList)
     {
@@ -67,9 +68,9 @@ class ClusterClient
      * 获取服务端节点列表
      * getServerNodesList
      * @param Client $client
-     * @return bool
-     * @author Tioncico
-     * Time: 17:32
+     * @return array|null
+     * @author tioncico
+     * Time: 下午8:59
      */
     protected function getServerNodesList(Client $client)
     {
@@ -104,9 +105,12 @@ class ClusterClient
      * 发送命令
      * sendCommand
      * @param array $commandList
+     * @param null  $nodeId
+     * @param int   $times
      * @return mixed
-     * @author Tioncico
-     * Time: 16:38
+     * @throws ClusterClientException
+     * @author tioncico
+     * Time: 下午8:58
      */
     public function sendCommand(array $commandList, $nodeId = null,$times=0)
     {
@@ -123,9 +127,12 @@ class ClusterClient
     /**
      * 接收数据
      * recv
+     * @param null $nodeId
+     * @param int  $times
      * @return Response|null
-     * @author Tioncico
-     * Time: 16:38
+     * @throws ClusterClientException
+     * @author tioncico
+     * Time: 下午8:58
      */
     function recv($nodeId = null,$times=0): ?Response
     {
@@ -168,9 +175,10 @@ class ClusterClient
      * 获取move的节点id
      * getMoveNodeId
      * @param Response $response
-     * @return mixed
-     * @author Tioncico
-     * Time: 16:39
+     * @return int|string|null
+     * @throws ClusterClientException
+     * @author tioncico
+     * Time: 下午9:00
      */
     protected function getMoveNodeId(Response $response)
     {
@@ -208,6 +216,4 @@ class ClusterClient
     {
         return $this->nodeList;
     }
-
-
 }
