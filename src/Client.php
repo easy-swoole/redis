@@ -36,6 +36,17 @@ class Client
         return $this->client->send($data);
     }
 
+    public function sendCommand(array $commandList)
+    {
+        $argNum = count($commandList);
+        $str = "*{$argNum}\r\n";
+        foreach ($commandList as $value) {
+            $len = strlen($value);
+            $str = $str . '$' . "{$len}\r\n{$value}\r\n";
+        }
+        return $this->send($str);
+    }
+
     function recv(): ?Response
     {
         /*
@@ -59,17 +70,6 @@ class Client
         $op = substr($str, 0, 1);
         $result = $this->opHandel($op, $str);
         return $result;
-    }
-
-    public function sendCommand(array $commandList)
-    {
-        $argNum = count($commandList);
-        $str = "*{$argNum}\r\n";
-        foreach ($commandList as $value) {
-            $len = strlen($value);
-            $str = $str . '$' . "{$len}\r\n{$value}\r\n";
-        }
-        return $this->send($str);
     }
 
     /**
@@ -203,6 +203,14 @@ class Client
         return $response;
     }
 
+    /**
+     * 多条批量回复
+     * multipleBatchHandel
+     * @param $value
+     * @return Response
+     * @author Tioncico
+     * Time: 14:33
+     */
     protected function multipleBatchHandel($value)
     {
         $result = new Response();
