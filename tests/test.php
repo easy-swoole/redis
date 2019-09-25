@@ -11,22 +11,10 @@ include "../vendor/autoload.php";
 go(function (){
     $client = new \EasySwoole\Redis\Client('127.0.0.1',6379);
     $client->connect();
-//    $client->sendCommand(['del',"listA"]);
-//    $recv = $client->recv();
-//    $client->sendCommand(['sadd',"listA",1]);
-//    $recv = $client->recv();
-//    $client->sendCommand(['sadd',"listA",'a']);
-//    $recv = $client->recv();
-//    $client->sendCommand(['sadd',"listA",null]);
-//    $recv = $client->recv();
-//    $client->sendCommand(['sadd',"listA","1\r\n 2\r\n a\r\nf"]);
-//    $recv = $client->recv();
-//    $client->sendCommand(['sadd',"listA"," "]);
-//    $recv = $client->recv();
+    $client->sendCommand(['set','a',1]);
+    $recv = $client->recv();
 
-    $client->sendCommand(['smembers',"listA"]);
+    $client->sendCommand(['incr',"a"]);
     $recv = $client->recv();
     var_dump($recv);
-
-
 });

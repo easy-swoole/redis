@@ -69,7 +69,40 @@ class BaseTest extends TestCase
         $recv = $this->client->recv();
         $this->assertEquals(5, count($recv->getData()));
 
+    }
 
+    function testInt(){
+        $num = 1;
+        $this->client->sendCommand(['set', 'b', $num]);
+        $this->client->recv();
+        $this->client->sendCommand(['incr', 'b']);
+        $recv = $this->client->recv();
+
+        $this->assertEquals('0', $recv->getStatus());
+        $this->assertTrue(is_integer($recv->getData()));
+        $this->assertEquals($num + 1, $recv->getData());
+
+    }
+
+    function testHash(){
+        $this->client->sendCommand(['del', "ha"]);
+        $this->client->recv();
+        $this->client->sendCommand(['hset', "ha",'a', 1]);
+        $this->client->recv();
+        $this->client->sendCommand(['hset', "ha", 'b','0']);
+        $this->client->recv();
+        $this->client->sendCommand(['hset', "ha",'c', null]);
+        $this->client->recv();
+        $this->client->sendCommand(['hset', "ha",'d', "1\r\n 2\r\n a\r\nf"]);
+        $this->client->recv();
+        $this->client->sendCommand(['hset', "ha",'e', " "]);
+        $this->client->recv();
+
+        $this->client->sendCommand(['hgetall', "ha"]);
+
+        $recv = $this->client->recv();
+        $this->assertEquals(10, count($recv->getData()));
+        $this->assertEquals('a', $recv->getData()[0]);
     }
 
 

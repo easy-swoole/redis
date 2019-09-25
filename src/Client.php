@@ -81,7 +81,7 @@ class Client
             case ':':
                 {
                     $result->setStatus($result::STATUS_OK);
-                    $result->setData(substr($str, 1));
+                    $result->setData((int)substr($str, 1));
                     break;
                 }
             case '$':
@@ -111,12 +111,14 @@ class Client
                             $op = substr($str, 0, 1);
                             switch ($op) {
                                 case '+':
+                                    break;
                                 case ':':
+                                    $str = (int)$str;
                                     break;
                                 case '$':
                                     if ($str == -1) {
                                         $str = null;
-                                    }else {
+                                    } else {
                                         $str = $this->batchHandel($str, $timeout);
                                         break;
                                     }
@@ -159,16 +161,16 @@ class Client
         //批量回复,继续读取字节
         $len = 0;
         $buff = '';
+        if ($strLen == 0) {
+            $this->client->recv($timeout);
+            return '';
+        }
         while ($len < $strLen) {
             $strTmp = $this->client->recv($timeout);
             $len += strlen($strTmp);
             $buff .= $strTmp;
         }
-        if (empty($buff)){
-            return $buff;
-        }else{
-            return substr($buff, 0, -2);
-        }
+        return substr($buff, 0, -2);
     }
 
 }
