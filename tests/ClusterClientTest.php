@@ -37,9 +37,7 @@ class ClusterClientTest extends TestCase
     {
         $this->client->sendCommand(['set', 'a', '1']);
         $recv = $this->client->recv();
-//        var_dump($recv);
         $this->assertEquals('OK', $recv->getData());
-return;
         $this->client->sendCommand(['st', 'a', '1']);
         $recv = $this->client->recv();
         $this->assertEquals('-1', $recv->getStatus());
@@ -86,7 +84,6 @@ return;
         $this->client->recv();
         $this->client->sendCommand(['incr', 'b']);
         $recv = $this->client->recv();
-
         $this->assertEquals('0', $recv->getStatus());
         $this->assertTrue(is_integer($recv->getData()));
         $this->assertEquals($num + 1, $recv->getData());

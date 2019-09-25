@@ -8,7 +8,7 @@
 
 include "../vendor/autoload.php";
 $server_list = [
-    'tcp://172.16.253.156:9001',
+    'tcp://172.16.253.156:9002',
 ];
 $client = new Predis\Client($server_list, array('cluster' => 'predis'));
 

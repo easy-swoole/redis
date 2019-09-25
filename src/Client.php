@@ -61,7 +61,7 @@ class Client
         $str = $this->client->recv($this->timeout);
         if (empty($str)) {
             $result->setStatus($result::STATUS_TIMEOUT);
-            $result->setMsg('recv timeout');
+            $result->setMsg($this->client->errMsg);
             return $result;
         }
         /**
