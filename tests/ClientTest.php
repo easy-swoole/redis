@@ -109,7 +109,7 @@ class ClientTest extends TestCase
 
         $this->client->sendCommand(['del','geoa']);
         $recv = $this->client->recv();
-        $this->assertEquals(1, $recv->getData());
+        $this->assertEquals($recv::STATUS_OK, $recv->getStatus());
         $this->client->sendCommand(['geoadd',"geoa",'118.6197800000','24.88849','user1','118.6197800000','24.88859','user2','114.8197800000','25.88849','user3','118.8197800000','22.88849','user4']);
         $recv = $this->client->recv();
         $this->assertEquals(4, $recv->getData());

@@ -4,12 +4,15 @@
 namespace EasySwoole\Redis;
 
 
+use EasySwoole\Redis\Exception\ClientException;
+
 class Client
 {
     protected $client;
     protected $host;
     protected $port;
     protected $timeout = 3.0;
+    protected $tryTimes = 3;
 
     function __construct(string $host, int $port, float $timeout = 3.0)
     {
@@ -25,15 +28,20 @@ class Client
 
     public function connect()
     {
-        if ($this->client->isConnected()) {
-            return true;
-        }
-        return $this->client->connect($this->host, $this->port, $this->timeout);
+       return $this->client->connect($this->host, $this->port, $this->timeout);
     }
 
-    protected function send(string $data)
+    protected function send(string $data,$times=0)
     {
-        return $this->client->send($data);
+        if ($times>=$this->tryTimes){
+            $this->connect();
+            throw new ClientException($this->client->errMsg,$this->client->errCode);
+        }
+        $result = $this->client->send($data);
+        if ($result===false){
+            $result = $this->send($data,$times+1);
+        }
+        return $result;
     }
 
     public function sendCommand(array $commandList)

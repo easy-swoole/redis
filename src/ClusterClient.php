@@ -70,9 +70,6 @@ class ClusterClient
                 $this->nodeList[$node['name']] = $node;
                 $this->nodeClientList[$node['name']] = new Client($node['host'], $node['port'], $this->timeout);
             }
-//            if ($node['connected'] != 'connected' || strpos($node['flags'], 'fail') !== false) {
-//                unset($this->nodeClientList[$node['name']]);
-//            }
         }
     }
 
@@ -184,6 +181,7 @@ class ClusterClient
             $this->tryConnectServerList();
             return $this->recv($nodeId, $times + 1);
         }
+
         //节点转移客户端处理
         if ($result->getErrorType() == 'MOVED') {
             $nodeId = $this->getMoveNodeId($result);
