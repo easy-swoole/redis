@@ -24,7 +24,7 @@ class ClusterClient
      * @var bool 是否同步节点
      */
     protected $isSyncNode = false;
-    protected $tryTimes=3;
+    protected $tryTimes = 3;
 
     function __construct(array $serverList, float $timeout = 3.0)
     {
@@ -58,10 +58,39 @@ class ClusterClient
         if (empty($serverList) || empty($nodeList)) {
             throw new ClusterClientException('服务器配置错误');
         }
+        $this->nodeListInit($nodeList);
+    }
+
+    protected function nodeListInit($nodeList)
+    {
         foreach ($nodeList as $node) {
-            $this->nodeList[$node['name']] = $node;
-            $this->nodeClientList[$node['name']] = new Client($node['host'], $node['port'], $this->timeout);
+            if (isset($this->nodeList[$node['name']])) {
+                $this->nodeList[$node['name']] = $node;
+            } else {
+                $this->nodeList[$node['name']] = $node;
+                $this->nodeClientList[$node['name']] = new Client($node['host'], $node['port'], $this->timeout);
+            }
+//            if ($node['connected'] != 'connected' || strpos($node['flags'], 'fail') !== false) {
+//                unset($this->nodeClientList[$node['name']]);
+//            }
         }
+    }
+
+    protected function tryConnectServerList()
+    {
+        foreach ($this->getNodeClientList() as $client) {
+            $result = $client->connect();
+            if ($result === false) {
+                continue;
+            }
+            $nodeList = $this->getServerNodesList($client);
+            break;
+        }
+
+        if (empty($nodeList)) {
+            throw new ClusterClientException('节点服务器获取失败');
+        }
+        $this->nodeListInit($nodeList);
     }
 
     /**
@@ -90,10 +119,12 @@ class ClusterClient
             }
             list($host, $port) = explode(':', explode('@', $data[1])[0]);
             $node = [
-                'name'  => $data[0],
-                'host'  => $host,
-                'port'  => $port,
-                'flags' => $data[2]
+                'name'      => $data[0],
+                'host'      => $host,
+                'port'      => $port,
+                'flags'     => $data[2],
+                'connected' => $data[7],
+                'slot'      => isset($data[8]) ? explode('-', $data[8]) : [],
             ];
             $nodeList[$node['name']] = $node;
         }
@@ -112,14 +143,20 @@ class ClusterClient
      * @author tioncico
      * Time: 下午8:58
      */
-    public function sendCommand(array $commandList, $nodeId = null,$times=0)
+    public function sendCommand(array $commandList, $nodeId = null, $times = 0)
     {
-        if ($times>=$this->tryTimes){
+        if ($times >= $this->tryTimes) {
             throw new ClusterClientException('超过最大重试次数');
         }
         $client = $this->getClient($nodeId);
+
         $result = $client->sendCommand($commandList);
-        $commandList['times']=$times+1;
+        if ($result === false) {
+            //节点断线处理
+            $this->tryConnectServerList();
+            return $this->sendCommand($commandList, $nodeId, $times + 1);
+        }
+        $commandList['times'] = $times + 1;
         array_push($this->lastCommandLog, $commandList);
         return $result;
     }
@@ -134,20 +171,27 @@ class ClusterClient
      * @author tioncico
      * Time: 下午8:58
      */
-    function recv($nodeId = null,$times=0): ?Response
+    function recv($nodeId = null, $times = 0): ?Response
     {
-        if ($times>=$this->tryTimes){
+        if ($times >= $this->tryTimes) {
             throw new ClusterClientException('超过最大重试次数');
         }
         $client = $this->getClient($nodeId);
         $result = $client->recv();
         $command = array_shift($this->lastCommandLog);
+        if ($result->getStatus() === $result::STATUS_TIMEOUT) {
+            //节点断线处理
+            $this->tryConnectServerList();
+            return $this->recv($nodeId, $times + 1);
+        }
+        //节点转移客户端处理
         if ($result->getErrorType() == 'MOVED') {
             $nodeId = $this->getMoveNodeId($result);
-            $sendTimes = $command['times'];
+            $client = $this->getClient($nodeId);
             unset($command['times']);
-            $this->sendCommand($command, $nodeId,$sendTimes);
-            $result = $this->recv($nodeId,$times+1);
+            //只处理一次moved,如果出错则不再处理
+            $client->sendCommand($command);
+            $result = $client->recv();
         }
         return $result;
     }
@@ -162,11 +206,14 @@ class ClusterClient
      */
     protected function getClient($nodeKey = null): Client
     {
-        if ($nodeKey == null) {
-            $client = reset($this->nodeClientList);
+        if ($nodeKey == null || !isset($this->nodeClientList[$nodeKey])) {
+            foreach ($this->nodeClientList as $node) {
+                $client = $node;
+            }
         } else {
             $client = $this->nodeClientList[$nodeKey];
         }
+
         $client->connect();
         return $client;
     }
@@ -183,19 +230,23 @@ class ClusterClient
     protected function getMoveNodeId(Response $response)
     {
         $data = explode(' ', $response->getMsg());
-        $nodeId = $this->getSlotNodeId($data[2]);
+        $nodeId = $this->getSlotNodeId($data[1]);
         if ($nodeId == null) {
             throw new ClusterClientException('不存在节点:' . $nodeId);
         }
         return $nodeId;
     }
 
-    protected function getSlotNodeId($data)
+    protected function getSlotNodeId($slotId)
     {
-        list($host, $port) = explode(':', $data);
         foreach ($this->nodeList as $key => $node) {
-            if ($node['host'] == $host && $node['port'] == $port) {
-                return $key;
+            if (empty($node['slot'])){
+                continue;
+            }
+            if ($node['slot'][0] <= $slotId && $node['slot'][1] >= $slotId) {
+                if (strpos($node['flags'], 'master') !== false) {
+                    return $key;
+                }
             }
         }
         return null;

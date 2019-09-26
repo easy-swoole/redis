@@ -8,10 +8,9 @@
 
 include "../vendor/autoload.php";
 $server_list = [
-    'tcp://172.16.253.156:9002',
+    'tcp://172.16.253.156:9004',
 ];
-$client = new Predis\Client($server_list, array('cluster' => 'predis'));
+$client = new Predis\Client($server_list, array('cluster' => 'redis'));
 
-$client->set('foo', 'bar');
-$value = $client->get('foo');
-var_dump($value);
+$result = $client->incr('b');
+var_dump($result);
