@@ -4,12 +4,15 @@
 namespace EasySwoole\Redis;
 
 
+use EasySwoole\Redis\Exception\ClientException;
+
 class Client
 {
     protected $client;
     protected $host;
     protected $port;
     protected $timeout = 3.0;
+    protected $tryTimes = 3;
 
     function __construct(string $host, int $port, float $timeout = 3.0)
     {
@@ -25,15 +28,31 @@ class Client
 
     public function connect()
     {
-        if ($this->client->isConnected()) {
-            return true;
-        }
-        return $this->client->connect($this->host, $this->port, $this->timeout);
+       return $this->client->connect($this->host, $this->port, $this->timeout);
     }
 
-    protected function send(string $data)
+    protected function send(string $data,$times=0)
     {
-        return $this->client->send($data);
+        if ($times>=$this->tryTimes){
+            $this->connect();
+            throw new ClientException($this->client->errMsg,$this->client->errCode);
+        }
+        $result = $this->client->send($data);
+        if ($result===false){
+            $result = $this->send($data,$times+1);
+        }
+        return $result;
+    }
+
+    public function sendCommand(array $commandList)
+    {
+        $argNum = count($commandList);
+        $str = "*{$argNum}\r\n";
+        foreach ($commandList as $value) {
+            $len = strlen($value);
+            $str = $str . '$' . "{$len}\r\n{$value}\r\n";
+        }
+        return $this->send($str);
     }
 
     function recv(): ?Response
@@ -50,6 +69,7 @@ class Client
         $str = $this->client->recv($this->timeout);
         if (empty($str)) {
             $result->setStatus($result::STATUS_TIMEOUT);
+            $result->setMsg($this->client->errMsg);
             return $result;
         }
         /**
@@ -59,17 +79,6 @@ class Client
         $op = substr($str, 0, 1);
         $result = $this->opHandel($op, $str);
         return $result;
-    }
-
-    public function sendCommand(array $commandList)
-    {
-        $argNum = count($commandList);
-        $str = "*{$argNum}\r\n";
-        foreach ($commandList as $value) {
-            $len = strlen($value);
-            $str = $str . '$' . "{$len}\r\n{$value}\r\n";
-        }
-        return $this->send($str);
     }
 
     /**
@@ -203,6 +212,14 @@ class Client
         return $response;
     }
 
+    /**
+     * 多条批量回复
+     * multipleBatchHandel
+     * @param $value
+     * @return Response
+     * @author Tioncico
+     * Time: 14:33
+     */
     protected function multipleBatchHandel($value)
     {
         $result = new Response();
