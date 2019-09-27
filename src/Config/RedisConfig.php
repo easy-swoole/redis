@@ -1,14 +1,14 @@
 <?php
 
 
-namespace EasySwoole\Redis;
+namespace EasySwoole\Redis\Config;
 
 
 use EasySwoole\Spl\SplBean;
 
-class Config extends SplBean
+class RedisConfig extends SplBean
 {
-    protected $host;
+    protected $host='127.0.0.1';
     protected $port = 6379;
     protected $auth;
     protected $timeout = 3.0;
