@@ -38,8 +38,13 @@ class Redis
         return $this->isConnected;
     }
 
-    public function set($key, $val): bool
+    public function set($key, $val,$expireTime=null): bool
     {
+        $command = [$key,$val];
+        if ($expireTime!=null&&$expireTime>0){
+            $command[] = 'EX '.$expireTime;
+        }
+
         $data = ['set', $key, $val];
         if (!$this->sendCommand($data)) {
             return false;
@@ -54,6 +59,214 @@ class Redis
     public function get($key)
     {
         $data = ['get', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv===null){
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function del($key)
+    {
+        $data = ['del', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv===null){
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function exists($key)
+    {
+        $data = ['exists', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv===null){
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function expire($key,$expireTime=60)
+    {
+        $data = ['expire', $key,$expireTime];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv===null){
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function incr($key)
+    {
+        $data = ['incr', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv===null){
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function incrBy($key,$value)
+    {
+        $data = ['incrby', $key,$value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv===null){
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function decr($key)
+    {
+        $data = ['decr', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv===null){
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function decrBy($key,$value)
+    {
+        $data = ['decrby', $key,$value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv===null){
+            return false;
+        }
+        return $recv->getData();
+    }
+
+
+
+
+
+
+
+
+
+
+    public function hDel($key,...$field){
+        $data = ['hdel', $key,$field];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv===null){
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hMGet($key,...$field){
+        $data = ['hmget ', $key,$field];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv===null){
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hExists($key,$field){
+        $data = ['hexists', $key,$field];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv===null){
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hMSet($key,$data){
+        $data = ['hmset', $key,$data];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv===null){
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hSet($key,$field,$value){
+        $data = ['hset', $key,$field,$value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv===null){
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hVals($key){
+        $data = ['hvals', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv===null){
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hGetAll($key){
+        $data = ['hgetall', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv===null){
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hKeys($key){
+        $data = ['hkeys', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv===null){
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hLen($key){
+        $data = ['hlen', $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
