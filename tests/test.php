@@ -7,10 +7,15 @@
  */
 
 include "../vendor/autoload.php";
-$server_list = [
-    'tcp://172.16.253.156:9003',
-];
-$client = new Predis\Client($server_list, array('cluster' => 'redis'));
 
-$result = $client->incr('b');
-var_dump($result);
+go(function (){
+
+    $config = new \EasySwoole\Redis\Config\RedisConfig();
+
+    $redis = new \EasySwoole\Redis\Redis($config);
+
+    var_dump($redis->set('a',123));
+    $result = $redis->get('a');
+    var_dump($result);
+
+});

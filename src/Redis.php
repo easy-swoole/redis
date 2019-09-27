@@ -4,6 +4,8 @@
 namespace EasySwoole\Redis;
 
 
+use EasySwoole\Redis\Config\RedisConfig;
+
 class Redis
 {
     protected $config;
@@ -16,46 +18,298 @@ class Redis
     protected $errorType;
     protected $errorMsg;
 
-    public function __construct(Config $config)
+    public function __construct(RedisConfig $config)
     {
         $this->config = $config;
     }
 
-    public function connect(float $timeout = null):bool
+    public function connect(float $timeout = null): bool
     {
-        if($this->isConnected){
+        if ($this->isConnected) {
             return true;
         }
-        if($timeout === null){
+        if ($timeout === null) {
             $timeout = $this->config->getTimeout();
         }
-        if($this->client == null){
-            $this->client = new Client($this->config->getHost(),$this->config->getPort());
+        if ($this->client == null) {
+            $this->client = new Client($this->config->getHost(), $this->config->getPort());
         }
         $this->isConnected = $this->client->connect($timeout);
         return $this->isConnected;
     }
 
-    public function set($key,$val):bool
+    public function set($key, $val, $expireTime = null): bool
     {
-        $data = ['set',$key,$val];
-        if(!$this->sendCommand($data)){
+        $command = [$key, $val];
+        if ($expireTime != null && $expireTime > 0) {
+            $command[] = 'EX ' . $expireTime;
+        }
+
+        $data = ['set', $key, $val];
+        if (!$this->sendCommand($data)) {
             return false;
         }
-        /*
-         * 执行recv解析,并赋值errorType与errorMsg
-         */
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
         return true;
     }
 
-    protected function sendCommand(array $com):bool
+    public function get($key)
     {
-        while ($this->tryConnectTimes <= $this->config->getReconnectTimes()){
-            if($this->connect()){
-                if($this->client->sendCommand($com)){
-                    $this->reset();;
+        $data = ['get', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function del($key)
+    {
+        $data = ['del', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function exists($key)
+    {
+        $data = ['exists', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function expire($key, $expireTime = 60)
+    {
+        $data = ['expire', $key, $expireTime];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function incr($key)
+    {
+        $data = ['incr', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function incrBy($key, $value)
+    {
+        $data = ['incrby', $key, $value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function decr($key)
+    {
+        $data = ['decr', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function decrBy($key, $value)
+    {
+        $data = ['decrby', $key, $value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+
+    public function hSet($key, $field, $value)
+    {
+        $data = ['hset', $key, $field, $value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hGet($key, $field)
+    {
+        $data = ['hget', $key, $field];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hDel($key, ...$field)
+    {
+        $command = array_merge(['hdel', $key],$field);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hExists($key, $field)
+    {
+        $data = ['hexists', $key, $field];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hValS($key)
+    {
+        $data = ['hvals', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hGetAll($key)
+    {
+        $data = ['hgetall', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        $result = [];
+        $data = $recv->getData();
+        $dataCount = count($data);
+        for ($i=0;$i<$dataCount/2;$i++){
+            $result[$data[$i*2]] = $data[$i*2+1];
+        }
+        return $result;
+    }
+
+    public function hKeys($key)
+    {
+        $data = ['hkeys', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hLen($key)
+    {
+        $data = ['hlen', $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hMGet($key, ...$field)
+    {
+        $command = array_merge(['hmget', $key],$field);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hMSet($key, $data):bool
+    {
+        $command = ['hmset', $key];
+        foreach ($data as $key=>$value){
+            $command[]= $key;
+            $command[] = $value;
+        }
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return true;
+    }
+
+
+    protected function sendCommand(array $com): bool
+    {
+        while ($this->tryConnectTimes <= $this->config->getReconnectTimes()) {
+            if ($this->connect()) {
+                if ($this->client->sendCommand($com)) {
+                    $this->reset();
                     return true;
-                }else{
+                } else {
                     /*
                      * 发送失败的时候，强制切断链接进入重连发送逻辑
                      */
@@ -69,6 +323,31 @@ class Redis
         return false;
     }
 
+    protected function recv(): ?Response
+    {
+        while ($this->tryConnectTimes <= $this->config->getReconnectTimes()) {
+            if ($this->connect()) {
+                $recv = $this->client->recv($this->config->getTimeout());
+                if ($recv->getStatus() == $recv::STATUS_ERR) {
+                    $this->errorType = $recv->getErrorType();
+                    $this->errorMsg = $recv->getMsg();
+                    return null;
+                } elseif ($recv->getStatus() == $recv::STATUS_OK) {
+                    return $recv;
+                } elseif ($recv->getStatus() == $recv::STATUS_TIMEOUT) {
+                    /*
+                     * 接收失败的时候，强制切断链接进入重连发送逻辑
+                     */
+                    $this->client->close();;
+                }
+            }
+            $this->lastSocketError = $this->client->socketError();
+            $this->lastSocketErrno = $this->client->socketErrno();
+            $this->tryConnectTimes++;
+        }
+        return null;
+    }
+
     protected function reset()
     {
         $this->tryConnectTimes = 0;
@@ -77,4 +356,38 @@ class Redis
         $this->errorMsg = '';
         $this->errorType = '';
     }
+
+    /**
+     * @return mixed
+     */
+    public function getLastSocketError()
+    {
+        return $this->lastSocketError;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLastSocketErrno()
+    {
+        return $this->lastSocketErrno;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getErrorType()
+    {
+        return $this->errorType;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getErrorMsg()
+    {
+        return $this->errorMsg;
+    }
+
+
 }
