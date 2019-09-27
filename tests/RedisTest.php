@@ -77,4 +77,79 @@ class RedisTest extends TestCase
         $this->assertEquals($value, $data);
 
     }
+
+    function testHash()
+    {
+        $key = 'hKey';
+        $field = [
+            'hField1',
+            'hField2',
+            'hField3',
+            'hField4',
+            'hField5',
+        ];
+        $value = [
+            1,
+            2,
+            3,
+            4,
+            5,
+        ];
+
+        $redis = $this->redis;
+
+        $data = $redis->hSet($key, $field[0], $value[0]);
+        $this->assertNotFalse($data);
+
+        $data = $redis->hGet($key, $field[0]);
+        $this->assertEquals($data, $value[0]);
+
+        $data = $redis->hExists($key, $field[0]);
+        $this->assertEquals(1, $data);
+
+        $data = $redis->hDel($key, $field[0]);
+        $this->assertEquals(1, $data, $redis->getErrorMsg());
+
+        $data = $redis->hExists($key, $field[0]);
+        $this->assertEquals(0, $data);
+
+        $data = $redis->hMSet($key,[
+            "{$field[0]}"=>$value[0],
+            "{$field[1]}"=>$value[1],
+            "{$field[2]}"=>$value[2],
+            "{$field[3]}"=>$value[3],
+            "{$field[4]}"=>$value[4],
+        ]);
+        $this->assertTrue($data);
+        $data = $redis->hValS($key);
+        sort($data);
+        $this->assertEquals($value,$data);
+
+        $data = $redis->hGetAll($key);
+        $keyTmp = array_keys($data);
+        sort($keyTmp);
+        $this->assertEquals($field,$keyTmp);
+        $valueTmp = array_values($data);
+        sort($valueTmp);
+        $this->assertEquals($value,$valueTmp);
+        $this->assertEquals($value,[
+           $data[$field[0]],
+           $data[$field[1]],
+           $data[$field[2]],
+           $data[$field[3]],
+           $data[$field[4]],
+        ]);
+
+        $data = $redis->hKeys($key);
+        sort($data);
+        $this->assertEquals($field,$data);
+
+        $data = $redis->hLen($key);
+        $this->assertEquals(count($field),$data);
+
+        $data = $redis->hMGet($key,$field[0],$field[1],$field[2]);
+
+        $this->assertEquals([1,2,3],$data);
+
+    }
 }
