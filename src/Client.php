@@ -4,47 +4,39 @@
 namespace EasySwoole\Redis;
 
 
-use EasySwoole\Redis\Exception\ClientException;
-
 class Client
 {
+    /**
+     * @var \Swoole\Coroutine\Client
+     */
     protected $client;
     protected $host;
     protected $port;
-    protected $timeout = 3.0;
-    protected $tryTimes = 3;
 
-    function __construct(string $host, int $port, float $timeout = 3.0)
+    function __construct(string $host, int $port)
     {
-        $this->client = new \Swoole\Coroutine\Client(SWOOLE_TCP);
-        $this->client->set([
-            'open_eof_check' => true,
-            'package_eof'    => "\r\n",
-        ]);
         $this->host = $host;
         $this->port = $port;
-        $this->timeout = $timeout;
     }
 
-    public function connect()
+    public function connect(float $timeout = 3.0):bool
     {
-       return $this->client->connect($this->host, $this->port, $this->timeout);
+        if($this->client == null){
+            $this->client = new \Swoole\Coroutine\Client(SWOOLE_TCP);
+            $this->client->set([
+                'open_eof_check' => true,
+                'package_eof'    => "\r\n",
+            ]);
+        }
+       return $this->client->connect($this->host, $this->port, $timeout);
     }
 
-    protected function send(string $data,$times=0)
+    protected function send(string $data):bool
     {
-        if ($times>=$this->tryTimes){
-            $this->connect();
-            throw new ClientException($this->client->errMsg,$this->client->errCode);
-        }
-        $result = $this->client->send($data);
-        if ($result===false){
-            $result = $this->send($data,$times+1);
-        }
-        return $result;
+        return strlen($data) === $this->client->send($data);
     }
 
-    public function sendCommand(array $commandList)
+    public function sendCommand(array $commandList):bool
     {
         $argNum = count($commandList);
         $str = "*{$argNum}\r\n";
@@ -55,7 +47,7 @@ class Client
         return $this->send($str);
     }
 
-    function recv(): ?Response
+    function recv(float $timeout = 3.0): ?Response
     {
         /*
          *
@@ -66,7 +58,7 @@ class Client
             多个批量回复，回复的第一个字节将是“*”
          */
         $result = new Response();
-        $str = $this->client->recv($this->timeout);
+        $str = $this->client->recv($timeout);
         if (empty($str)) {
             $result->setStatus($result::STATUS_TIMEOUT);
             $result->setMsg($this->client->errMsg);
@@ -77,7 +69,7 @@ class Client
          */
         $str = substr($str, 0, -2);
         $op = substr($str, 0, 1);
-        $result = $this->opHandel($op, $str);
+        $result = $this->opHandel($op, $str,$timeout);
         return $result;
     }
 
@@ -86,11 +78,12 @@ class Client
      * opHandel
      * @param $op
      * @param $value
+     * @param $timeout
      * @return Response
      * @author Tioncico
      * Time: 11:52
      */
-    protected function opHandel($op, $value)
+    protected function opHandel($op, $value,float $timeout)
     {
         $result = new Response();
         switch ($op) {
@@ -111,12 +104,12 @@ class Client
                 }
             case '$':
                 {
-                    $result = $this->batchHandel($value);
+                    $result = $this->batchHandel($value,$timeout);
                     break;
                 }
             case "*":
                 {
-                    $result = $this->multipleBatchHandel($value);
+                    $result = $this->multipleBatchHandel($value,$timeout);
                     break;
                 }
         }
@@ -190,7 +183,7 @@ class Client
      * @author Tioncico
      * Time: 17:13
      */
-    protected function batchHandel($str)
+    protected function batchHandel($str,float $timeout)
     {
         $response = new Response();
         $strLen = substr($str, 1);
@@ -198,11 +191,11 @@ class Client
         $len = 0;
         $buff = '';
         if ($strLen == 0) {
-            $this->client->recv($this->timeout);
+            $this->client->recv($timeout);
             $response->setData('');
         } else {
             while ($len < $strLen) {
-                $strTmp = $this->client->recv($this->timeout);
+                $strTmp = $this->client->recv($timeout);
                 $len += strlen($strTmp);
                 $buff .= $strTmp;
             }
@@ -216,11 +209,12 @@ class Client
      * 多条批量回复
      * multipleBatchHandel
      * @param $value
+     * @param $timeout
      * @return Response
      * @author Tioncico
      * Time: 14:33
      */
-    protected function multipleBatchHandel($value)
+    protected function multipleBatchHandel($value,float $timeout)
     {
         $result = new Response();
         $len = substr($value, 1);
@@ -233,10 +227,10 @@ class Client
         } else {
             $arr = [];
             while ($len--) {
-                $str = $this->client->recv($this->timeout);
+                $str = $this->client->recv($timeout);
                 $str = substr($str, 0, -2);
                 $op = substr($str, 0, 1);
-                $response = $this->opHandel($op, $str);
+                $response = $this->opHandel($op, $str,$timeout);
                 $arr[] = $response->getData();
             }
             $result->setStatus($result::STATUS_OK);
@@ -245,4 +239,26 @@ class Client
         return $result;
     }
 
+    function close()
+    {
+        if($this->client){
+            $this->client->close();
+            $this->client = null;
+        }
+    }
+
+    public function socketError()
+    {
+        return $this->client->errMsg;
+    }
+
+    public function socketErrno()
+    {
+        return $this->client->errCode;
+    }
+
+    public function __destruct()
+    {
+        $this->close();;
+    }
 }
