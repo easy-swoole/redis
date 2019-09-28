@@ -7,6 +7,6 @@
  */
 namespace EasySwoole\Redis\Exception;
 
-class ClientException extends \Exception{
+class RedisException extends \Exception{
 
 }

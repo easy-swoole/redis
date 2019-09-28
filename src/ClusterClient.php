@@ -4,7 +4,7 @@
 namespace EasySwoole\Redis;
 
 
-use EasySwoole\Redis\Exception\ClusterClientException;
+use EasySwoole\Redis\Exception\RedisClusterException;
 
 class ClusterClient
 {
@@ -36,7 +36,7 @@ class ClusterClient
      * 初始化节点
      * nodeInit
      * @param $serverList
-     * @throws ClusterClientException
+     * @throws RedisClusterException
      * @author tioncico
      * Time: 下午9:00
      */
@@ -56,7 +56,7 @@ class ClusterClient
             break;
         }
         if (empty($serverList) || empty($nodeList)) {
-            throw new ClusterClientException('服务器配置错误');
+            throw new RedisClusterException('服务器配置错误');
         }
         $this->nodeListInit($nodeList);
     }
@@ -85,7 +85,7 @@ class ClusterClient
         }
 
         if (empty($nodeList)) {
-            throw new ClusterClientException('节点服务器获取失败');
+            throw new RedisClusterException('节点服务器获取失败');
         }
         $this->nodeListInit($nodeList);
     }
@@ -136,14 +136,14 @@ class ClusterClient
      * @param null  $nodeId
      * @param int   $times
      * @return mixed
-     * @throws ClusterClientException
+     * @throws RedisClusterException
      * @author tioncico
      * Time: 下午8:58
      */
     public function sendCommand(array $commandList, $nodeId = null, $times = 0)
     {
         if ($times >= $this->tryTimes) {
-            throw new ClusterClientException('超过最大重试次数');
+            throw new RedisClusterException('超过最大重试次数');
         }
         $client = $this->getClient($nodeId);
 
@@ -164,14 +164,14 @@ class ClusterClient
      * @param null $nodeId
      * @param int  $times
      * @return Response|null
-     * @throws ClusterClientException
+     * @throws RedisClusterException
      * @author tioncico
      * Time: 下午8:58
      */
     function recv($nodeId = null, $times = 0): ?Response
     {
         if ($times >= $this->tryTimes) {
-            throw new ClusterClientException('超过最大重试次数');
+            throw new RedisClusterException('超过最大重试次数');
         }
         $client = $this->getClient($nodeId);
         $result = $client->recv();
@@ -221,7 +221,7 @@ class ClusterClient
      * getMoveNodeId
      * @param Response $response
      * @return int|string|null
-     * @throws ClusterClientException
+     * @throws RedisClusterException
      * @author tioncico
      * Time: 下午9:00
      */
@@ -230,7 +230,7 @@ class ClusterClient
         $data = explode(' ', $response->getMsg());
         $nodeId = $this->getSlotNodeId($data[1]);
         if ($nodeId == null) {
-            throw new ClusterClientException('不存在节点:' . $nodeId);
+            throw new RedisClusterException('不存在节点:' . $nodeId);
         }
         return $nodeId;
     }
