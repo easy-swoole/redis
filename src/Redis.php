@@ -5,6 +5,7 @@ namespace EasySwoole\Redis;
 
 
 use EasySwoole\Redis\Config\RedisConfig;
+use EasySwoole\Redis\Exception\RedisException;
 
 class Redis
 {
@@ -49,7 +50,7 @@ class Redis
         $this->errorType = '';
     }
 
-    public function auth($password):bool
+    public function auth($password): bool
     {
         $data = ['auth', $password];
         if (!$this->sendCommand($data)) {
@@ -88,9 +89,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function select($db):bool
+    public function select($db): bool
     {
-        $data = ['select',$db];
+        $data = ['select', $db];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -248,7 +249,7 @@ class Redis
         return $recv->getData();
     }
 
-    public function rename($key, $new_key):bool
+    public function rename($key, $new_key): bool
     {
         $data = ['rename', $key, $new_key];
         if (!$this->sendCommand($data)) {
@@ -323,8 +324,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function getRange($key,$start,$end){
-        $data = ['getrange', $key,$start,$end];
+    public function getRange($key, $start, $end)
+    {
+        $data = ['getrange', $key, $start, $end];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -335,9 +337,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function getSet($key,$value)
+    public function getSet($key, $value)
     {
-        $data = ['getSet', $key,$value];
+        $data = ['getSet', $key, $value];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -348,9 +350,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function getBit($key,$offset)
+    public function getBit($key, $offset)
     {
-        $data = ['getBit', $key,$offset];
+        $data = ['getBit', $key, $offset];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -374,9 +376,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function setBit($key,$offset,$value)
+    public function setBit($key, $offset, $value)
     {
-        $data = ['setbit', $key,$offset,$value];
+        $data = ['setbit', $key, $offset, $value];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -387,9 +389,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function setEx($key,$expireTime,$value)
+    public function setEx($key, $expireTime, $value)
     {
-        $data = ['setex',$key,$expireTime,$value];
+        $data = ['setex', $key, $expireTime, $value];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -400,9 +402,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function setNx($key,$value)
+    public function setNx($key, $value)
     {
-        $data = ['setnx',$key,$value];
+        $data = ['setnx', $key, $value];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -413,9 +415,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function setRange($key,$offset,$value)
+    public function setRange($key, $offset, $value)
     {
-        $data = ['setrange',$key,$offset,$value];
+        $data = ['setrange', $key, $offset, $value];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -428,7 +430,7 @@ class Redis
 
     public function strLen($key)
     {
-        $data = ['strlen',$key];
+        $data = ['strlen', $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -661,27 +663,26 @@ class Redis
 
     protected function recv(): ?Response
     {
-        while ($this->tryConnectTimes <= $this->config->getReconnectTimes()) {
-            if ($this->connect()) {
-                $recv = $this->client->recv($this->config->getTimeout());
-                if ($recv->getStatus() == $recv::STATUS_ERR) {
-                    $this->errorType = $recv->getErrorType();
-                    $this->errorMsg = $recv->getMsg();
-                    return null;
-                } elseif ($recv->getStatus() == $recv::STATUS_OK) {
-                    return $recv;
-                } elseif ($recv->getStatus() == $recv::STATUS_TIMEOUT) {
-                    /*
-                     * 接收失败的时候，强制切断链接进入重连发送逻辑
-                     */
-                    $this->client->close();;
-                }
+        $recv = $this->client->recv($this->config->getTimeout());
+        if ($recv->getStatus() == $recv::STATUS_ERR) {
+            $this->errorType = $recv->getErrorType();
+            $this->errorMsg = $recv->getMsg();
+            //未登录
+            if ($this->errorType=='NOAUTH'){
+                throw new RedisException($recv->getMsg());
             }
+            return null;
+        } elseif ($recv->getStatus() == $recv::STATUS_OK) {
+            return $recv;
+        } elseif ($recv->getStatus() == $recv::STATUS_TIMEOUT) {
+            /*
+             * 接收失败的时候，强制切断链接进入重连发送逻辑
+             */
+            $this->client->close();;
             $this->lastSocketError = $this->client->socketError();
             $this->lastSocketErrno = $this->client->socketErrno();
-            $this->tryConnectTimes++;
+            return null;
         }
-        return null;
     }
     ###################### 发送接收tcp流数据 ######################
 
@@ -719,41 +720,47 @@ class Redis
 
     protected function serialize($val)
     {
-        switch ($this->config->getSerialize()){
-            case RedisConfig::SERIALIZE_PHP:{
-                return serialize($val);
-                break;
-            }
+        switch ($this->config->getSerialize()) {
+            case RedisConfig::SERIALIZE_PHP:
+                {
+                    return serialize($val);
+                    break;
+                }
 
-            case RedisConfig::SERIALIZE_JSON:{
-                return json_encode($val,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
-                break;
-            }
+            case RedisConfig::SERIALIZE_JSON:
+                {
+                    return json_encode($val, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                    break;
+                }
             default:
-            case RedisConfig::SERIALIZE_NONE:{
-                return $val;
-                break;
-            }
+            case RedisConfig::SERIALIZE_NONE:
+                {
+                    return $val;
+                    break;
+                }
         }
     }
 
     protected function unserialize($val)
     {
-        switch ($this->config->getSerialize()){
-            case RedisConfig::SERIALIZE_PHP:{
-                return unserialize($val);
-                break;
-            }
+        switch ($this->config->getSerialize()) {
+            case RedisConfig::SERIALIZE_PHP:
+                {
+                    return unserialize($val);
+                    break;
+                }
 
-            case RedisConfig::SERIALIZE_JSON:{
-                return json_decode($val,true);
-                break;
-            }
+            case RedisConfig::SERIALIZE_JSON:
+                {
+                    return json_decode($val, true);
+                    break;
+                }
             default:
-            case RedisConfig::SERIALIZE_NONE:{
-                return $val;
-                break;
-            }
+            case RedisConfig::SERIALIZE_NONE:
+                {
+                    return $val;
+                    break;
+                }
         }
     }
 }

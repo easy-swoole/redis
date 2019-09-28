@@ -7,15 +7,10 @@
  */
 
 include "../vendor/autoload.php";
-
-go(function (){
-
-    $config = new \EasySwoole\Redis\Config\RedisConfig();
-
-    $redis = new \EasySwoole\Redis\Redis($config);
-
-    var_dump($redis->set('a',123));
-    $result = $redis->get('a');
-    var_dump($result);
-
-});
+$server_list = [
+    'tcp://172.16.253.156:9003',
+];
+$client = new \Redis();
+$client->connect('172.16.253.156','6379');
+$result = $client->incr('b');
+var_dump($result);
