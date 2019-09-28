@@ -1473,7 +1473,6 @@ class Redis
             if ($this->errorType == 'NOAUTH') {
                 throw new RedisException($recv->getMsg());
             }
-            return null;
         } elseif ($recv->getStatus() == $recv::STATUS_OK) {
             return $recv;
         } elseif ($recv->getStatus() == $recv::STATUS_TIMEOUT) {
@@ -1483,8 +1482,8 @@ class Redis
             $this->client->close();;
             $this->lastSocketError = $this->client->socketError();
             $this->lastSocketErrno = $this->client->socketErrno();
-            return null;
         }
+        return null;
     }
     ###################### 发送接收tcp流数据 ######################
 
