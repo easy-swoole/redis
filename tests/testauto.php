@@ -35,37 +35,17 @@ foreach ($arr as $k=> $va){
         }
         if ($keys){
             $str .= <<<PHP
+            
+        \$data = \$redis->$command($keys);
+        \$this->assertEquals(1,\$data);
         
-    public function $command($keys)
-    {
-        \$data = [Command::$command, $keys];
-        if (!\$this->sendCommand(\$data)) {
-            return false;
-        }
-        \$recv = \$this->recv();
-        if (\$recv === null) {
-            return false;
-        }
-        return \$recv->getData();
-    }
-    
 PHP;
 
         }else{
             $str .= <<<PHP
         
-    public function $command()
-    {
-        \$data = [Command::$command];
-        if (!\$this->sendCommand(\$data)) {
-            return false;
-        }
-        \$recv = \$this->recv();
-        if (\$recv === null) {
-            return false;
-        }
-        return \$recv->getData();
-    }
+        \$data = \$redis->$command();
+        \$this->assertEquals(1,\$data);
     
 PHP;
         }

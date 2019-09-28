@@ -475,7 +475,6 @@ class Redis
         return $recv->getData();
     }
 
-
     public function pSetEx($key, $expireTime, $value){
         $data = [Command::PSETEX, $key, $expireTime, $value];
         if (!$this->sendCommand($data)) {
@@ -571,32 +570,6 @@ class Redis
 
     ######################hash操作方法####################
 
-    public function hSet($key, $field, $value)
-    {
-        $data = [Command::HSET, $key, $field, $value];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
-
-    public function hGet($key, $field)
-    {
-        $data = [Command::HGET, $key, $field];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
-
     public function hDel($key, ...$field)
     {
         $command = array_merge([Command::HDEL, $key], $field);
@@ -623,9 +596,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function hValS($key)
+    public function hGet($key, $field)
     {
-        $data = [Command::HVALS, $key];
+        $data = [Command::HGET, $key, $field];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -653,6 +626,32 @@ class Redis
             $result[$data[$i * 2]] = $data[$i * 2 + 1];
         }
         return $result;
+    }
+
+    public function hSet($key, $field, $value)
+    {
+        $data = [Command::HSET, $key, $field, $value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hValS($key)
+    {
+        $data = [Command::HVALS, $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
     }
 
     public function hKeys($key)
@@ -710,6 +709,7 @@ class Redis
         }
         return true;
     }
+
     ######################hash操作方法######################
 
     ###################### 发送接收tcp流数据 ######################
