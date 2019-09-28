@@ -19,24 +19,24 @@ class Client
         $this->port = $port;
     }
 
-    public function connect(float $timeout = 3.0):bool
+    public function connect(float $timeout = 3.0): bool
     {
-        if($this->client == null){
+        if ($this->client == null) {
             $this->client = new \Swoole\Coroutine\Client(SWOOLE_TCP);
             $this->client->set([
                 'open_eof_check' => true,
                 'package_eof'    => "\r\n",
             ]);
         }
-       return $this->client->connect($this->host, $this->port, $timeout);
+        return $this->client->connect($this->host, $this->port, $timeout);
     }
 
-    protected function send(string $data):bool
+    protected function send(string $data): bool
     {
         return strlen($data) === $this->client->send($data);
     }
 
-    public function sendCommand(array $commandList):bool
+    public function sendCommand(array $commandList): bool
     {
         $argNum = count($commandList);
         $str = "*{$argNum}\r\n";
@@ -69,7 +69,7 @@ class Client
          */
         $str = substr($str, 0, -2);
         $op = substr($str, 0, 1);
-        $result = $this->opHandel($op, $str,$timeout);
+        $result = $this->opHandel($op, $str, $timeout);
         return $result;
     }
 
@@ -83,7 +83,7 @@ class Client
      * @author Tioncico
      * Time: 11:52
      */
-    protected function opHandel($op, $value,float $timeout)
+    protected function opHandel($op, $value, float $timeout)
     {
         $result = new Response();
         switch ($op) {
@@ -104,12 +104,12 @@ class Client
                 }
             case '$':
                 {
-                    $result = $this->batchHandel($value,$timeout);
+                    $result = $this->batchHandel($value, $timeout);
                     break;
                 }
             case "*":
                 {
-                    $result = $this->multipleBatchHandel($value,$timeout);
+                    $result = $this->multipleBatchHandel($value, $timeout);
                     break;
                 }
         }
@@ -183,7 +183,7 @@ class Client
      * @author Tioncico
      * Time: 17:13
      */
-    protected function batchHandel($str,float $timeout)
+    protected function batchHandel($str, float $timeout)
     {
         $response = new Response();
         $strLen = substr($str, 1);
@@ -193,6 +193,8 @@ class Client
         if ($strLen == 0) {
             $this->client->recv($timeout);
             $response->setData('');
+        } elseif ($strLen == -1) {
+            $response->setData(null);
         } else {
             while ($len < $strLen) {
                 $strTmp = $this->client->recv($timeout);
@@ -214,7 +216,7 @@ class Client
      * @author Tioncico
      * Time: 14:33
      */
-    protected function multipleBatchHandel($value,float $timeout)
+    protected function multipleBatchHandel($value, float $timeout)
     {
         $result = new Response();
         $len = substr($value, 1);
@@ -230,7 +232,7 @@ class Client
                 $str = $this->client->recv($timeout);
                 $str = substr($str, 0, -2);
                 $op = substr($str, 0, 1);
-                $response = $this->opHandel($op, $str,$timeout);
+                $response = $this->opHandel($op, $str, $timeout);
                 $arr[] = $response->getData();
             }
             $result->setStatus($result::STATUS_OK);
@@ -241,7 +243,7 @@ class Client
 
     function close()
     {
-        if($this->client){
+        if ($this->client) {
             $this->client->close();
             $this->client = null;
         }

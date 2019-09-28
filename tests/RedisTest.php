@@ -28,6 +28,95 @@ class RedisTest extends TestCase
         $this->redis = $redis;
     }
 
+    function testConnect()
+    {
+        $redis = $this->redis;
+        $data = $redis->connect();
+        $this->assertTrue($data);
+//        $data = $redis->auth();
+//        $this->assertTrue($data);
+        $data = $redis->echo('test');
+        $this->assertEquals('test', $data);
+        $data = $redis->ping();
+        $this->assertEquals('PONG', $data);
+        $data = $redis->select(0);
+        $this->assertTrue($data);
+    }
+
+    /**
+     * key值操作测试
+     * testKey
+     * @author Tioncico
+     * Time: 10:02
+     */
+    function testKey()
+    {
+        $redis = $this->redis;
+        $key = 'test123213Key';
+        $redis->select(0);
+        $redis->set($key, 123);
+        $data = $redis->dump($key);
+        $this->assertTrue(!!$data);
+
+        $data = $redis->dump($key . 'x');
+        $this->assertNull($data);
+
+        $data = $this->redis->exists($key);
+        $this->assertEquals(1, $data);
+
+        $data = $this->redis->expire($key, 1);
+        $this->assertEquals(1, $data);
+        Coroutine::sleep(2);
+        $this->assertEquals(0, $this->redis->exists($key));
+
+        $redis->expireAt($key, 1 * 100);
+        Coroutine::sleep(0.1);
+        $this->assertEquals(0, $this->redis->exists($key));
+
+        $redis->set($key, 123);
+        $data = $redis->keys("{$key}*");
+        $this->assertEquals($key, $data[0]);
+
+        $redis->select(1);
+        $redis->del($key);
+        $redis->select(0);
+        $data = $redis->move($key, 1);
+        $this->assertEquals(1, $data);
+        $data = $redis->exists($key);
+        $this->assertEquals(0, $data);
+        $redis->select(0);
+
+        $redis->set($key, 123);
+        $data = $redis->expire($key, 1);
+        $this->assertEquals(1, $data);
+        $data = $redis->persist($key);
+        $this->assertEquals(1, $data);
+
+        $redis->expire($key, 1);
+        $data = $redis->pTTL($key);
+        $this->assertLessThanOrEqual($data, 1000);
+
+        $data = $redis->ttl($key);
+        $this->assertLessThanOrEqual($data, 1);
+
+        $data = $redis->randomKey();
+        $this->assertTrue(!!$data);
+        $data = $redis->rename($key, $key . 'new');
+        $this->assertTrue($data);
+        $this->assertEquals(1, $redis->expire($key . 'new'));
+        $this->assertEquals(0, $redis->expire($key));
+
+        $data = $redis->renameNx($key, $key . 'new');
+        $this->assertEquals(0, $data);
+        $redis->renameNx($key . 'new', $key);
+        $data = $redis->renameNx($key, $key . 'new');
+        $this->assertEquals(1, $data);
+        $data = $redis->type($key);
+        $this->assertEquals('none',$data);
+        $data = $redis->type($key. 'new');
+        $this->assertEquals('string',$data);
+    }
+
     /**
      * 字符串单元测试
      * testString
@@ -36,14 +125,11 @@ class RedisTest extends TestCase
      */
     function testString()
     {
+        $redis = $this->redis;
         $key = 'test';
         $value = 1;
         $data = $this->redis->del($key);
         $this->assertNotFalse($data);
-
-        $data = $this->redis->exists($key);
-        $this->assertEquals(0, $data);
-
         $data = $this->redis->set($key, $value);
         $this->assertTrue($data);
 
@@ -52,11 +138,6 @@ class RedisTest extends TestCase
 
         $data = $this->redis->exists($key);
         $this->assertEquals(1, $data);
-
-        $data = $this->redis->expire($key, 1);
-        $this->assertEquals(1, $data);
-        Coroutine::sleep(1);
-        $this->assertEquals(0, $this->redis->exists($key));
 
         $data = $this->redis->set($key, $value);
         $this->assertTrue($data);
@@ -75,7 +156,6 @@ class RedisTest extends TestCase
         $value -= 10;
         $data = $this->redis->decrBy($key, 10);
         $this->assertEquals($value, $data);
-
     }
 
     function testHash()
@@ -113,43 +193,43 @@ class RedisTest extends TestCase
         $data = $redis->hExists($key, $field[0]);
         $this->assertEquals(0, $data);
 
-        $data = $redis->hMSet($key,[
-            "{$field[0]}"=>$value[0],
-            "{$field[1]}"=>$value[1],
-            "{$field[2]}"=>$value[2],
-            "{$field[3]}"=>$value[3],
-            "{$field[4]}"=>$value[4],
+        $data = $redis->hMSet($key, [
+            "{$field[0]}" => $value[0],
+            "{$field[1]}" => $value[1],
+            "{$field[2]}" => $value[2],
+            "{$field[3]}" => $value[3],
+            "{$field[4]}" => $value[4],
         ]);
         $this->assertTrue($data);
         $data = $redis->hValS($key);
         sort($data);
-        $this->assertEquals($value,$data);
+        $this->assertEquals($value, $data);
 
         $data = $redis->hGetAll($key);
         $keyTmp = array_keys($data);
         sort($keyTmp);
-        $this->assertEquals($field,$keyTmp);
+        $this->assertEquals($field, $keyTmp);
         $valueTmp = array_values($data);
         sort($valueTmp);
-        $this->assertEquals($value,$valueTmp);
-        $this->assertEquals($value,[
-           $data[$field[0]],
-           $data[$field[1]],
-           $data[$field[2]],
-           $data[$field[3]],
-           $data[$field[4]],
+        $this->assertEquals($value, $valueTmp);
+        $this->assertEquals($value, [
+            $data[$field[0]],
+            $data[$field[1]],
+            $data[$field[2]],
+            $data[$field[3]],
+            $data[$field[4]],
         ]);
 
         $data = $redis->hKeys($key);
         sort($data);
-        $this->assertEquals($field,$data);
+        $this->assertEquals($field, $data);
 
         $data = $redis->hLen($key);
-        $this->assertEquals(count($field),$data);
+        $this->assertEquals(count($field), $data);
 
-        $data = $redis->hMGet($key,$field[0],$field[1],$field[2]);
+        $data = $redis->hMGet($key, $field[0], $field[1], $field[2]);
 
-        $this->assertEquals([1,2,3],$data);
+        $this->assertEquals([1, 2, 3], $data);
 
     }
 }
