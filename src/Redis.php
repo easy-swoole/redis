@@ -390,7 +390,7 @@ class Redis
         return $recv->getData();
     }
 
-    public function setEx($key, $expireTime, $value):bool
+    public function setEx($key, $expireTime, $value): bool
     {
         $data = [Command::SETEX, $key, $expireTime, $value];
         if (!$this->sendCommand($data)) {
@@ -442,7 +442,7 @@ class Redis
         return $recv->getData();
     }
 
-    public function mSet($data):bool
+    public function mSet($data): bool
     {
         $command = [Command::MSET];
         foreach ($data as $key => $value) {
@@ -459,7 +459,8 @@ class Redis
         return true;
     }
 
-    public function mSetNx($data){
+    public function mSetNx($data)
+    {
         $command = [Command::MSETNX];
         foreach ($data as $key => $value) {
             $command[] = $key;
@@ -475,7 +476,8 @@ class Redis
         return $recv->getData();
     }
 
-    public function pSetEx($key, $expireTime, $value){
+    public function pSetEx($key, $expireTime, $value)
+    {
         $data = [Command::PSETEX, $key, $expireTime, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -710,6 +712,58 @@ class Redis
         return true;
     }
 
+    public function hIncrBy($key, $field, $increment)
+    {
+        $data = [Command::HINCRBY, $key, $field, $increment];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hIncrByFloat($key, $field, $increment)
+    {
+        $data = [Command::HINCRBYFLOAT, $key, $field, $increment];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function hSetNx($key, $field, $value)
+    {
+        $data = [Command::HSETNX, $key, $field, $value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+//    public function hScan($key, $iterator, $pattern = '', $count = 0)
+//    {
+//        $data = [Command::HSCAN, $key, $iterator, $pattern, $count];
+//        if (!$this->sendCommand($data)) {
+//            return false;
+//        }
+//        $recv = $this->recv();
+//        if ($recv === null) {
+//            return false;
+//        }
+//        return $recv->getData();
+//    }
+
     ######################hash操作方法######################
 
     ###################### 发送接收tcp流数据 ######################
@@ -741,7 +795,7 @@ class Redis
             $this->errorType = $recv->getErrorType();
             $this->errorMsg = $recv->getMsg();
             //未登录
-            if ($this->errorType=='NOAUTH'){
+            if ($this->errorType == 'NOAUTH') {
                 throw new RedisException($recv->getMsg());
             }
             return null;
@@ -814,7 +868,7 @@ class Redis
         }
     }
 
-    protected function unserialize($val)
+    protected function unSerialize($val)
     {
         switch ($this->config->getSerialize()) {
             case RedisConfig::SERIALIZE_PHP:

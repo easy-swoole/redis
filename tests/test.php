@@ -12,5 +12,5 @@ $server_list = [
 ];
 $client = new \Redis();
 $client->connect('172.16.253.156','6379');
-$result = $client->incr('b');
+$result = $client->hScan('b');
 var_dump($result);
