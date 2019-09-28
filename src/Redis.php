@@ -766,6 +766,230 @@ class Redis
 
     ######################hash操作方法######################
 
+    ######################列表操作方法######################
+
+    public function bLPop($key1, ...$data)
+    {
+        $command = array_merge([Command::BLPOP, $key1], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return [$recv->getData()[0] => $recv->getData()[1]];
+    }
+
+    public function bRPop($key1, ...$data)
+    {
+        $command = array_merge([Command::BLPOP, $key1], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function bRPopLPush($source, $destination, $timeout)
+    {
+        $data = [Command::BRPOPLPUSH, $source, $destination, $timeout];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function lIndex($key, $index)
+    {
+        $data = [Command::LINDEX, $key, $index];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function lInsert($key, bool $isBefore, $pivot, $value)
+    {
+        $data = [Command::LINSERT, $key, $isBefore == true ? 'BEFORE' : 'AFTER', $pivot, $value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function lLen($key)
+    {
+        $data = [Command::LLEN, $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function lPop($key)
+    {
+        $data = [Command::LPOP, $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function lPush($key, ...$data)
+    {
+        $command = array_merge([Command::LPUSH, $key], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function lPuShx($key, $value)
+    {
+        $data = [Command::LPUSHX, $key, $value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function lRange($key, $start, $stop)
+    {
+        $data = [Command::LRANGE, $key, $start, $stop];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function lRem($key, $count, $value)
+    {
+        $data = [Command::LREM, $key, $count, $value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function lSet($key, $index, $value):bool
+    {
+        $data = [Command::LSET, $key, $index, $value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return true;
+    }
+
+    public function lTrim($key, $start, $stop):bool
+    {
+        $data = [Command::LTRIM, $key, $start, $stop];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return true;
+    }
+
+    public function rPop($key)
+    {
+        $data = [Command::RPOP, $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function rPopLPush($source, $destination)
+    {
+        $data = [Command::RPOPLPUSH, $source, $destination];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function rPush($key, ...$data)
+    {
+        $command = array_merge([Command::LPUSH, $key], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function rPuShx($key, $value)
+    {
+        $data = [Command::RPUSHX, $key, $value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    ######################列表操作方法######################
+
     ###################### 发送接收tcp流数据 ######################
     protected function sendCommand(array $com): bool
     {
