@@ -6,6 +6,7 @@ namespace EasySwoole\Redis;
 
 use EasySwoole\Redis\Config\RedisConfig;
 use EasySwoole\Redis\Exception\RedisException;
+use EasySwoole\Redis\CommandConst as Command;
 
 class Redis
 {
@@ -52,7 +53,7 @@ class Redis
 
     public function auth($password): bool
     {
-        $data = ['auth', $password];
+        $data = [Command::AUTH, $password];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -65,7 +66,7 @@ class Redis
 
     public function echo($str)
     {
-        $data = ['echo', $str];
+        $data = [Command::ECHO, $str];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -78,7 +79,7 @@ class Redis
 
     public function ping()
     {
-        $data = ['ping'];
+        $data = [Command::PING];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -91,7 +92,7 @@ class Redis
 
     public function select($db): bool
     {
-        $data = ['select', $db];
+        $data = [Command::SELECT, $db];
         if (!$this->sendCommand($data)) {
             return false;
         }

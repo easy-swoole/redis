@@ -7,16 +7,18 @@
  */
 include "../vendor/autoload.php";
 
-$txt = file_get_contents('/home/tioncico/tioncico-redis/tests/1.txt');
-var_dump($txt);
+$txt = file_get_contents('./CommandTXT/key.txt');
 $arr = explode("
 ",$txt);
 
-var_dump($arr);
-foreach ($arr as $va){
-    $data = explode(' ',$va);
-
-
-
-
+$str='';
+foreach ($arr as $k=> $va){
+    if ($k%2==0){
+        $data = explode(' ',$va);
+        $str .= "const {$data[0]}='{$data[0]}';";
+    }else{
+        $str .="//{$va}\n";
+    }
 }
+
+echo $str;
