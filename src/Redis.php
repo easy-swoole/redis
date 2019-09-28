@@ -39,6 +39,12 @@ class Redis
             $this->client = new Client($this->config->getHost(), $this->config->getPort());
         }
         $this->isConnected = $this->client->connect($timeout);
+        if($this->isConnected && !empty($this->config->getAuth())){
+            if(!$this->auth($this->config->getAuth())){
+                $this->isConnected = false;
+                throw new RedisException("auth to redis host {$this->config->getHost()}:{$this->config->getPort()} fail");
+            }
+        }
         return $this->isConnected;
     }
 
@@ -1449,18 +1455,15 @@ class Redis
                 if ($this->client->sendCommand($com)) {
                     $this->reset();
                     return true;
-                } else {
-                    /*
-                     * 发送失败的时候，强制切断链接进入重连发送逻辑
-                     */
-                    $this->client->close();;
                 }
             }
-            $this->lastSocketError = $this->client->socketError();
-            $this->lastSocketErrno = $this->client->socketErrno();
+            $this->disconnect();
             $this->tryConnectTimes++;
         }
-        return false;
+        /*
+         * 链接超过重连次数，应该抛出异常
+         */
+        throw new RedisException("connect to redis host {$this->config->getHost()}:{$this->config->getPort()} fail after retry {$this->tryConnectTimes} times");
     }
 
     protected function recv(): ?Response
@@ -1476,12 +1479,7 @@ class Redis
         } elseif ($recv->getStatus() == $recv::STATUS_OK) {
             return $recv;
         } elseif ($recv->getStatus() == $recv::STATUS_TIMEOUT) {
-            /*
-             * 接收失败的时候，强制切断链接进入重连发送逻辑
-             */
-            $this->client->close();;
-            $this->lastSocketError = $this->client->socketError();
-            $this->lastSocketErrno = $this->client->socketErrno();
+            $this->disconnect();
         }
         return null;
     }
@@ -1517,6 +1515,16 @@ class Redis
     public function getErrorMsg()
     {
         return $this->errorMsg;
+    }
+
+    function disconnect()
+    {
+        if($this->isConnected){
+            $this->client->close();
+            $this->isConnected = false;
+            $this->lastSocketError = $this->client->socketError();
+            $this->lastSocketErrno = $this->client->socketErrno();
+        }
     }
 
     protected function serialize($val)
