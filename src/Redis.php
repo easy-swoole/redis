@@ -716,4 +716,44 @@ class Redis
     {
         return $this->errorMsg;
     }
+
+    protected function serialize($val)
+    {
+        switch ($this->config->getSerialize()){
+            case RedisConfig::SERIALIZE_PHP:{
+                return serialize($val);
+                break;
+            }
+
+            case RedisConfig::SERIALIZE_JSON:{
+                return json_encode($val,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+                break;
+            }
+            default:
+            case RedisConfig::SERIALIZE_NONE:{
+                return $val;
+                break;
+            }
+        }
+    }
+
+    protected function unserialize($val)
+    {
+        switch ($this->config->getSerialize()){
+            case RedisConfig::SERIALIZE_PHP:{
+                return unserialize($val);
+                break;
+            }
+
+            case RedisConfig::SERIALIZE_JSON:{
+                return json_decode($val,true);
+                break;
+            }
+            default:
+            case RedisConfig::SERIALIZE_NONE:{
+                return $val;
+                break;
+            }
+        }
+    }
 }

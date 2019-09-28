@@ -8,11 +8,15 @@ use EasySwoole\Spl\SplBean;
 
 class RedisConfig extends SplBean
 {
+    public const SERIALIZE_NONE = 0;
+    public const SERIALIZE_PHP = 1;
+    public const SERIALIZE_JSON = 1;
     protected $host='127.0.0.1';
     protected $port = 6379;
     protected $auth;
     protected $timeout = 3.0;
     protected $reconnectTimes = 3;
+    protected $serialize = self::SERIALIZE_NONE;
 
     /**
      * @return mixed
@@ -92,5 +96,21 @@ class RedisConfig extends SplBean
     public function setReconnectTimes(int $reconnectTimes): void
     {
         $this->reconnectTimes = $reconnectTimes;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSerialize(): int
+    {
+        return $this->serialize;
+    }
+
+    /**
+     * @param int $serialize
+     */
+    public function setSerialize(int $serialize): void
+    {
+        $this->serialize = $serialize;
     }
 }
