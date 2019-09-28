@@ -323,6 +323,122 @@ class Redis
         return $recv->getData();
     }
 
+    public function getRange($key,$start,$end){
+        $data = ['getrange', $key,$start,$end];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function getSet($key,$value)
+    {
+        $data = ['getSet', $key,$value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function getBit($key,$offset)
+    {
+        $data = ['getBit', $key,$offset];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function mGet(...$keys)
+    {
+        $data = ['mget', $keys];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function setBit($key,$offset,$value)
+    {
+        $data = ['setbit', $key,$offset,$value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function setEx($key,$expireTime,$value)
+    {
+        $data = ['setex',$key,$expireTime,$value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function setNx($key,$value)
+    {
+        $data = ['setnx',$key,$value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function setRange($key,$offset,$value)
+    {
+        $data = ['setrange',$key,$offset,$value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function strLen($key)
+    {
+        $data = ['strlen',$key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
     public function incr($key)
     {
         $data = ['incr', $key];
@@ -600,6 +716,4 @@ class Redis
     {
         return $this->errorMsg;
     }
-
-
 }

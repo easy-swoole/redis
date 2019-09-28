@@ -128,33 +128,33 @@ class RedisTest extends TestCase
         $redis = $this->redis;
         $key = 'test';
         $value = 1;
-        $data = $this->redis->del($key);
+        $data = $redis->del($key);
         $this->assertNotFalse($data);
-        $data = $this->redis->set($key, $value);
+        $data = $redis->set($key, $value);
         $this->assertTrue($data);
 
-        $data = $this->redis->get($key);
+        $data = $redis->get($key);
         $this->assertEquals($data, $value);
 
-        $data = $this->redis->exists($key);
+        $data = $redis->exists($key);
         $this->assertEquals(1, $data);
 
-        $data = $this->redis->set($key, $value);
+        $data = $redis->set($key, $value);
         $this->assertTrue($data);
         $value += 1;
-        $data = $this->redis->incr($key);
+        $data = $redis->incr($key);
         $this->assertEquals($value, $data);
 
         $value += 10;
-        $data = $this->redis->incrBy($key, 10);
+        $data = $redis->incrBy($key, 10);
         $this->assertEquals($value, $data);
 
         $value -= 1;
-        $data = $this->redis->decr($key);
+        $data = $redis->decr($key);
         $this->assertEquals($value, $data);
 
         $value -= 10;
-        $data = $this->redis->decrBy($key, 10);
+        $data = $redis->decrBy($key, 10);
         $this->assertEquals($value, $data);
     }
 
