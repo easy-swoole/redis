@@ -109,7 +109,7 @@ class Redis
 
     public function del($key)
     {
-        $data = ['del', $key];
+        $data = [Command::DEL, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -122,7 +122,7 @@ class Redis
 
     public function dump($key)
     {
-        $data = ['dump', $key];
+        $data = [Command::DUMP, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -135,7 +135,7 @@ class Redis
 
     public function exists($key)
     {
-        $data = ['exists', $key];
+        $data = [Command::EXISTS, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -148,7 +148,7 @@ class Redis
 
     public function expire($key, $expireTime = 60)
     {
-        $data = ['expire', $key, $expireTime];
+        $data = [Command::EXPIRE, $key, $expireTime];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -161,7 +161,7 @@ class Redis
 
     public function expireAt($key, $expireTime)
     {
-        $data = ['expireat', $key, $expireTime];
+        $data = [Command::EXPIREAT, $key, $expireTime];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -174,7 +174,7 @@ class Redis
 
     public function keys($pattern)
     {
-        $data = ['keys', $pattern];
+        $data = [Command::KEYS, $pattern];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -187,7 +187,7 @@ class Redis
 
     public function move($key, $db)
     {
-        $data = ['move', $key, $db];
+        $data = [Command::MOVE, $key, $db];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -200,7 +200,7 @@ class Redis
 
     public function persist($key)
     {
-        $data = ['persist', $key];
+        $data = [Command::PERSIST, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -213,7 +213,7 @@ class Redis
 
     public function pTTL($key)
     {
-        $data = ['pttl', $key];
+        $data = [Command::PTTL, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -226,7 +226,7 @@ class Redis
 
     public function ttl($key)
     {
-        $data = ['ttl', $key];
+        $data = [Command::TTL, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -239,7 +239,7 @@ class Redis
 
     public function randomKey()
     {
-        $data = ['randomkey'];
+        $data = [Command::RANDOMKEY];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -252,7 +252,7 @@ class Redis
 
     public function rename($key, $new_key): bool
     {
-        $data = ['rename', $key, $new_key];
+        $data = [Command::RENAME, $key, $new_key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -265,7 +265,7 @@ class Redis
 
     public function renameNx($key, $new_key)
     {
-        $data = ['renamenx', $key, $new_key];
+        $data = [Command::RENAMENX, $key, $new_key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -278,7 +278,7 @@ class Redis
 
     public function type($key)
     {
-        $data = ['type', $key];
+        $data = [Command::TYPE, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -301,7 +301,7 @@ class Redis
             $command[] = 'EX ' . $expireTime;
         }
 
-        $data = ['set', $key, $val];
+        $data = [Command::SET, $key, $val];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -314,7 +314,7 @@ class Redis
 
     public function get($key)
     {
-        $data = ['get', $key];
+        $data = [Command::GET, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -327,7 +327,7 @@ class Redis
 
     public function getRange($key, $start, $end)
     {
-        $data = ['getrange', $key, $start, $end];
+        $data = [Command::GETRANGE, $key, $start, $end];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -340,7 +340,7 @@ class Redis
 
     public function getSet($key, $value)
     {
-        $data = ['getSet', $key, $value];
+        $data = [Command::GETSET, $key, $value];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -353,7 +353,7 @@ class Redis
 
     public function getBit($key, $offset)
     {
-        $data = ['getBit', $key, $offset];
+        $data = [Command::GETBIT, $key, $offset];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -366,8 +366,8 @@ class Redis
 
     public function mGet(...$keys)
     {
-        $data = ['mget', $keys];
-        if (!$this->sendCommand($data)) {
+        $command = array_merge([Command::MGET], $keys);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -379,7 +379,7 @@ class Redis
 
     public function setBit($key, $offset, $value)
     {
-        $data = ['setbit', $key, $offset, $value];
+        $data = [Command::SETBIT, $key, $offset, $value];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -390,9 +390,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function setEx($key, $expireTime, $value)
+    public function setEx($key, $expireTime, $value):bool
     {
-        $data = ['setex', $key, $expireTime, $value];
+        $data = [Command::SETEX, $key, $expireTime, $value];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -400,12 +400,12 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return true;
     }
 
     public function setNx($key, $value)
     {
-        $data = ['setnx', $key, $value];
+        $data = [Command::SETNX, $key, $value];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -418,7 +418,7 @@ class Redis
 
     public function setRange($key, $offset, $value)
     {
-        $data = ['setrange', $key, $offset, $value];
+        $data = [Command::SETRANGE, $key, $offset, $value];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -431,7 +431,7 @@ class Redis
 
     public function strLen($key)
     {
-        $data = ['strlen', $key];
+        $data = [Command::STRLEN, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -442,9 +442,55 @@ class Redis
         return $recv->getData();
     }
 
+    public function mSet($data):bool
+    {
+        $command = [Command::MSET];
+        foreach ($data as $key => $value) {
+            $command[] = $key;
+            $command[] = $value;
+        }
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return true;
+    }
+
+    public function mSetNx($data){
+        $command = [Command::MSETNX];
+        foreach ($data as $key => $value) {
+            $command[] = $key;
+            $command[] = $value;
+        }
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+
+    public function pSetEx($key, $expireTime, $value){
+        $data = [Command::PSETEX, $key, $expireTime, $value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return true;
+    }
+
     public function incr($key)
     {
-        $data = ['incr', $key];
+        $data = [Command::INCR, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -457,7 +503,20 @@ class Redis
 
     public function incrBy($key, $value)
     {
-        $data = ['incrby', $key, $value];
+        $data = [Command::INCRBY, $key, $value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function incrByFloat($key, $value)
+    {
+        $data = [Command::INCRBYFLOAT, $key, $value];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -470,7 +529,7 @@ class Redis
 
     public function decr($key)
     {
-        $data = ['decr', $key];
+        $data = [Command::DECR, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -483,7 +542,20 @@ class Redis
 
     public function decrBy($key, $value)
     {
-        $data = ['decrby', $key, $value];
+        $data = [Command::DECRBY, $key, $value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function appEnd($key, $value)
+    {
+        $data = [Command::APPEND, $key, $value];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -501,7 +573,7 @@ class Redis
 
     public function hSet($key, $field, $value)
     {
-        $data = ['hset', $key, $field, $value];
+        $data = [Command::HSET, $key, $field, $value];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -514,7 +586,7 @@ class Redis
 
     public function hGet($key, $field)
     {
-        $data = ['hget', $key, $field];
+        $data = [Command::HGET, $key, $field];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -527,7 +599,7 @@ class Redis
 
     public function hDel($key, ...$field)
     {
-        $command = array_merge(['hdel', $key], $field);
+        $command = array_merge([Command::HDEL, $key], $field);
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -540,7 +612,7 @@ class Redis
 
     public function hExists($key, $field)
     {
-        $data = ['hexists', $key, $field];
+        $data = [Command::HEXISTS, $key, $field];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -553,7 +625,7 @@ class Redis
 
     public function hValS($key)
     {
-        $data = ['hvals', $key];
+        $data = [Command::HVALS, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -566,7 +638,7 @@ class Redis
 
     public function hGetAll($key)
     {
-        $data = ['hgetall', $key];
+        $data = [Command::HGETALL, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -585,7 +657,7 @@ class Redis
 
     public function hKeys($key)
     {
-        $data = ['hkeys', $key];
+        $data = [Command::HKEYS, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -598,7 +670,7 @@ class Redis
 
     public function hLen($key)
     {
-        $data = ['hlen', $key];
+        $data = [Command::HLEN, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -611,7 +683,7 @@ class Redis
 
     public function hMGet($key, ...$field)
     {
-        $command = array_merge(['hmget', $key], $field);
+        $command = array_merge([Command::HMGET, $key], $field);
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -624,7 +696,7 @@ class Redis
 
     public function hMSet($key, $data): bool
     {
-        $command = ['hmset', $key];
+        $command = [Command::HMSET, $key];
         foreach ($data as $key => $value) {
             $command[] = $key;
             $command[] = $value;

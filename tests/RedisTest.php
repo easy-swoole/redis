@@ -158,6 +158,97 @@ class RedisTest extends TestCase
         $value -= 10;
         $data = $redis->decrBy($key, 10);
         $this->assertEquals($value, $data);
+
+        $key='stringTest';
+        $value='tioncico';
+        $redis->set($key,$value);
+
+        $data = $redis->getRange($key,1,2);
+        $this->assertEquals('io',$data);
+
+        $data = $redis->getSet($key,$value.'a');
+        $this->assertEquals($data,$value);
+        $redis->set($key,$value);
+
+        $bitKey ='testBit';
+        $bitValue=10000;
+        $redis->set($bitKey,$bitValue);
+        $data = $redis->setBit($bitKey,1,0);
+        $this->assertEquals(0,$data);
+        $data = $redis->getBit($key,1);
+        $this->assertEquals(1,$data);
+
+
+        $field = [
+            'stringField1',
+            'stringField2',
+            'stringField3',
+            'stringField4',
+            'stringField5',
+        ];
+        $value = [
+            1,
+            2,
+            3,
+            4,
+            5,
+        ];
+        $data = $redis->mSet([
+            "{$field[0]}" => $value[0],
+            "{$field[1]}" => $value[1],
+            "{$field[2]}" => $value[2],
+            "{$field[3]}" => $value[3],
+            "{$field[4]}" => $value[4],
+        ]);
+        $this->assertTrue($data);
+        $data = $redis->mGet($field[3],$field[2],$field[1]);
+        $this->assertEquals([$value[3],$value[2],$value[1]],$data);
+
+
+        $data = $redis->setEx($key,1,$value[0].$value[0]);
+        $this->assertTrue($data);
+        $this->assertEquals($value[0].$value[0],$redis->get($key));
+
+        $data = $redis->pSetEx($key,1,$value[0]);
+        $this->assertTrue($data);
+        $this->assertEquals($value[0],$redis->get($key));
+
+
+
+        $redis->del($key);
+        $data = $redis->setNx($key,1);
+        $this->assertEquals(1,$data);
+
+
+        $redis->del($field[0]);
+        $data = $redis->mSetNx([
+            "{$field[0]}" => $value[0],
+            "{$field[1]}" => $value[1],
+        ]);
+        $this->assertEquals(0,$data);
+        $this->assertEquals($value[1],$redis->get($field[1]));
+        $redis->del($field[1]);
+        $data = $redis->mSetNx([
+            "{$field[0]}" => $value[0]+1,
+            "{$field[1]}" => $value[1]+1,
+        ]);
+        $this->assertEquals(1,$data);
+        $this->assertEquals($value[0]+1,$redis->get($field[0]));
+
+
+        $data = $redis->setRange($field[0],1,1);
+        $this->assertEquals(2,$data);
+        $this->assertEquals('2'.$value[0],$redis->get($field[0]));
+
+        $data = $redis->strLen($field[0]);
+        $this->assertEquals(2,$data);
+
+        $redis->set($key,1);
+        $data = $redis->incrByFloat($key,0.1);
+        $this->assertEquals(1.1,$data);
+        $data = $redis->appEnd($field[0],'1');
+        $this->assertEquals($redis->strLen($field[0]),$data);
+        $this->assertEquals('2'.$value[0].'1',$redis->get($field[0]));
     }
 
     /**
