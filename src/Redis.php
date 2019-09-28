@@ -990,6 +990,457 @@ class Redis
     }
     ######################列表操作方法######################
 
+    ######################集合操作方法######################
+    public function sAdd($key, ...$data)
+    {
+        $command = array_merge([Command::SADD, $key], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    public function sCard($key)
+    {
+        $data = [Command::SCARD,$key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    public function sDiff($key1,...$keys)
+    {
+        $command = array_merge([Command::SDIFF, $key1], $keys);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    public function sDiffStore($destination,...$keys)
+    {
+        $command = array_merge([Command::SDIFFSTORE,$destination], $keys);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    public function sInter($key1,...$keys)
+    {
+        $command = array_merge([Command::SINTER, $key1], $keys);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    public function sInterStore($destination,...$keys)
+    {
+        $command = array_merge([Command::SINTERSTORE,$destination], $keys);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    public function sIsMember($key,$member)
+    {
+        $data = [Command::SISMEMBER,$key,$member];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    public function sMembers($key)
+    {
+        $data = [Command::SMEMBERS,$key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    public function sMove($source,$destination,$member)
+    {
+        $data = [Command::SMOVE,$source,$destination,$member];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    public function sPop($key)
+    {
+        $data = [Command::SPOP,$key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    public function sRandMemBer($key,$count=null)
+    {
+        $data = [Command::SRANDMEMBER ,$key];
+        if ($count!==null){
+            $data[] = $count;
+        }
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    public function sRen($key,$member1,...$members)
+    {
+        $command = array_merge([Command::SREM,$key, $member1], $members);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    public function sUnion($key1,...$keys)
+    {
+        $command = array_merge([Command::SUNION,$key1], $keys);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    public function sUnIomStore($destination,$key1,...$keys)
+    {
+        $command = array_merge([Command::SUNIONSTORE,$destination,$key1], $keys);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+//    public function sScan($key,$cursor,$pattern,$count)
+//    {
+//        $data = [Command::SSCAN,$key,$cursor,$pattern,$count];
+//        if (!$this->sendCommand($data)) {
+//            return false;
+//        }
+//        $recv = $this->recv();
+//        if ($recv === null) {
+//            return false;
+//        }
+//        return $recv->getData();
+//    }
+
+    ######################集合操作方法######################
+
+    ######################有序集合操作方法######################
+    public function zAdd($key,$score1,$member1,$score2)
+    {
+        $data = [Command::ZADD, $key,$score1,$member1,$score2];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zCard($key)
+    {
+        $data = [Command::ZCARD, $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zCoumt($key,$min,$max)
+    {
+        $data = [Command::ZCOUNT, $key,$min,$max];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zInCrBy($key,$increment,$member)
+    {
+        $data = [Command::ZINCRBY, $key,$increment,$member];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zInTerStore($destination,$numKeys,$key,$key1)
+    {
+        $data = [Command::ZINTERSTORE,$destination,$numKeys,$key,$key1];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zLexCount($key,$min,$max)
+    {
+        $data = [Command::ZLEXCOUNT, $key,$min,$max];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRange($key,$start,$stop,$withScores)
+    {
+        $data = [Command::ZRANGE,$key,$start,$stop,$withScores];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRangeByLex($key,$min,$max,$count)
+    {
+        $data = [Command::ZRANGEBYLEX,$key,$min,$max,$count];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRangeBysCore($key,$min,$max,$LIMIT)
+    {
+        $data = [Command::ZRANGEBYSCORE,$key,$min,$max,$LIMIT];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRank($key,$member)
+    {
+        $data = [Command::ZRANK, $key,$member];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRem($kye,$member,$member1)
+    {
+        $data = [Command::ZREM, $kye,$member,$member1];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRemRangeByLex($key,$min,$max)
+    {
+        $data = [Command::ZREMRANGEBYLEX, $key,$min,$max];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRemRangeByRank($key,$start,$stop)
+    {
+        $data = [Command::ZREMRANGEBYRANK, $key,$start,$stop];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRemRangeByScore($key,$min,$max)
+    {
+        $data = [Command::ZREMRANGEBYSCORE, $key,$min,$max];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRevRange($key,$start,$stop,$withScores)
+    {
+        $data = [Command::ZREVRANGE,$key,$start,$stop,$withScores];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRevRangeByScore($key,$min,$max,$withScores)
+    {
+        $data = [Command::ZREVRANGEBYSCORE,$key,$min,$max,$withScores];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRevRank($key,$member)
+    {
+        $data = [Command::ZREVRANK, $key,$member];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zScore($key,$member)
+    {
+        $data = [Command::ZSCORE, $key,$member];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zUnionStore($destination,$numkeys,$key,$key1)
+    {
+        $data = [Command::ZUNIONSTORE,$destination,$numkeys,$key,$key1];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zScan($key,$cursor,$pattern,$count)
+    {
+        $data = [Command::ZSCAN,$key,$cursor,$pattern,$count];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    ######################有序集合操作方法######################
+
+
     ###################### 发送接收tcp流数据 ######################
     protected function sendCommand(array $com): bool
     {
