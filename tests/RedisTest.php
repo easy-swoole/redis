@@ -20,6 +20,9 @@ class RedisTest extends TestCase
      * @var $redis Redis
      */
     protected $redis;
+    /**
+     * @var $redisPHPSerialize Redis
+     */
     protected $redisPHPSerialize;
 
     protected function setUp()
@@ -36,6 +39,10 @@ class RedisTest extends TestCase
             'auth'=>REDIS_AUTH,
             'serialize'=>RedisConfig::SERIALIZE_PHP
         ]));
+        $this->redis->connect();
+        $this->redis->auth('easyswoole');
+        $this->redisPHPSerialize->connect();
+        $this->redisPHPSerialize->auth('easyswoole');
     }
 
     function testConnect()
@@ -257,6 +264,94 @@ class RedisTest extends TestCase
     }
 
     /**
+     * 序列化字符串单元测试
+     * testString
+     * @author tioncico
+     * Time: 下午9:41
+     */
+    function testStringSerialize()
+    {
+        $redis = $this->redisPHPSerialize;
+        $key = 'test';
+        $value = 1;
+        $data = $redis->del($key);
+        $this->assertNotFalse($data);
+        $data = $redis->set($key, $value);
+        $this->assertTrue($data);
+
+        $data = $redis->get($key);
+        $this->assertEquals($data, $value);
+
+        $data = $redis->exists($key);
+        $this->assertEquals(1, $data);
+
+
+        $key = 'stringTest';
+        $value = 'tioncico';
+        $redis->set($key, $value);
+
+        $data = $redis->getSet($key, $value . 'a');
+        $this->assertEquals($data, $value);
+        $redis->set($key, $value);
+
+
+        $field = [
+            'stringField1',
+            'stringField2',
+            'stringField3',
+            'stringField4',
+            'stringField5',
+        ];
+        $value = [
+            1,
+            2,
+            3,
+            4,
+            5,
+        ];
+        $data = $redis->mSet([
+            "{$field[0]}" => $value[0],
+            "{$field[1]}" => $value[1],
+            "{$field[2]}" => $value[2],
+            "{$field[3]}" => $value[3],
+            "{$field[4]}" => $value[4],
+        ]);
+        $this->assertTrue($data);
+        $data = $redis->mGet($field[3], $field[2], $field[1]);
+        $this->assertEquals([$value[3], $value[2], $value[1]], $data);
+
+
+        $data = $redis->setEx($key, 1, $value[0] . $value[0]);
+        $this->assertTrue($data);
+        $this->assertEquals($value[0] . $value[0], $redis->get($key));
+
+        $data = $redis->pSetEx($key, 1, $value[0]);
+        $this->assertTrue($data);
+        $this->assertEquals($value[0], $redis->get($key));
+
+
+        $redis->del($key);
+        $data = $redis->setNx($key, 1);
+        $this->assertEquals(1, $data);
+
+
+        $redis->del($field[0]);
+        $data = $redis->mSetNx([
+            "{$field[0]}" => $value[0],
+            "{$field[1]}" => $value[1],
+        ]);
+        $this->assertEquals(0, $data);
+        $this->assertEquals($value[1], $redis->get($field[1]));
+        $redis->del($field[1]);
+        $data = $redis->mSetNx([
+            "{$field[0]}" => $value[0] + 1,
+            "{$field[1]}" => $value[1] + 1,
+        ]);
+        $this->assertEquals(1, $data);
+        $this->assertEquals($value[0] + 1, $redis->get($field[0]));
+    }
+
+    /**
      * testHash
      * @author Tioncico
      * Time: 11:54
@@ -352,13 +447,102 @@ class RedisTest extends TestCase
     }
 
     /**
+     * testHash序列化测试
+     * @author Tioncico
+     * Time: 11:54
+     */
+    function testHashSerialize()
+    {
+        $key = 'hKey';
+        $field = [
+            'hField1',
+            'hField2',
+            'hField3',
+            'hField4',
+            'hField5',
+        ];
+        $value = [
+            1,
+            2,
+            3,
+            4,
+            5,
+        ];
+
+        $redis = $this->redisPHPSerialize;
+        $redis->del($key);
+        $data = $redis->hSet($key, $field[0], $value[0]);
+        $this->assertNotFalse($data);
+
+        $data = $redis->hGet($key, $field[0]);
+        $this->assertEquals($data, $value[0]);
+
+        $data = $redis->hExists($key, $field[0]);
+        $this->assertEquals(1, $data);
+
+        $data = $redis->hDel($key, $field[0]);
+        $this->assertEquals(1, $data, $redis->getErrorMsg());
+
+        $data = $redis->hExists($key, $field[0]);
+        $this->assertEquals(0, $data);
+
+        $data = $redis->hMSet($key, [
+            "{$field[0]}" => $value[0],
+            "{$field[1]}" => $value[1],
+            "{$field[2]}" => $value[2],
+            "{$field[3]}" => $value[3],
+            "{$field[4]}" => $value[4],
+        ]);
+        $this->assertTrue($data);
+        $data = $redis->hValS($key);
+        sort($data);
+        $this->assertEquals($value, $data);
+
+        $data = $redis->hGetAll($key);
+        $keyTmp = array_keys($data);
+        sort($keyTmp);
+        $this->assertEquals($field, $keyTmp);
+        $valueTmp = array_values($data);
+        sort($valueTmp);
+        $this->assertEquals($value, $valueTmp);
+        $this->assertEquals($value, [
+            $data[$field[0]],
+            $data[$field[1]],
+            $data[$field[2]],
+            $data[$field[3]],
+            $data[$field[4]],
+        ]);
+
+        $data = $redis->hKeys($key);
+        sort($data);
+        $this->assertEquals($field, $data);
+
+        $data = $redis->hLen($key);
+        $this->assertEquals(count($field), $data);
+
+        $data = $redis->hMGet($key, $field[0], $field[1], $field[2]);
+        $this->assertEquals([1, 2, 3], $data);
+
+        $data = $redis->hSetNx($key, $field[0], 1);
+        $this->assertEquals(0, $data);
+
+        $data = $redis->hSetNx($key, $field[0] . 'a', 1);
+        $this->assertEquals(1, $data);
+        $this->assertEquals(1, $redis->hGet($key, $field[0] . 'a'));
+
+//        $data = $redis->hScan($key,1,'',100);
+//        var_dump($data);
+//        var_dump($redis->getErrorMsg());;
+    }
+
+    /**
      * testList
      * @author tioncico
      * Time: 下午8:17
      */
     function testList()
     {
-        $redis = $this->redis;
+        $redis = $this->redisPHPSerialize;
         $key = [
             'listKey1',
             'listKey2',
@@ -529,6 +713,12 @@ class RedisTest extends TestCase
 //        $this->assertEquals(1, $data);
     }
 
+    /**
+     * 有序集合测试
+     * testSortMuster
+     * @author Tioncico
+     * Time: 14:17
+     */
     function testSortMuster()
     {
         $redis = $this->redis;
@@ -728,7 +918,6 @@ class RedisTest extends TestCase
 //        $data = $redis->unsubscribe('a','sdf');
 //        $this->assertEquals(1,$data);
     }
-
 
     function testWatch()
     {

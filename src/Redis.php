@@ -39,8 +39,8 @@ class Redis
             $this->client = new Client($this->config->getHost(), $this->config->getPort());
         }
         $this->isConnected = $this->client->connect($timeout);
-        if($this->isConnected && !empty($this->config->getAuth())){
-            if(!$this->auth($this->config->getAuth())){
+        if ($this->isConnected && !empty($this->config->getAuth())) {
+            if (!$this->auth($this->config->getAuth())) {
                 $this->isConnected = false;
                 throw new RedisException("auth to redis host {$this->config->getHost()}:{$this->config->getPort()} fail");
             }
@@ -302,13 +302,12 @@ class Redis
 
     public function set($key, $val, $expireTime = null): bool
     {
-        $command = [$key, $val];
+        $val = $this->serialize($val);
+        $command = [Command::SET, $key, $val];
         if ($expireTime != null && $expireTime > 0) {
             $command[] = 'EX ' . $expireTime;
         }
-
-        $data = [Command::SET, $key, $val];
-        if (!$this->sendCommand($data)) {
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -328,7 +327,8 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        return $this->unserialize($data);
     }
 
     public function getRange($key, $start, $end)
@@ -346,6 +346,7 @@ class Redis
 
     public function getSet($key, $value)
     {
+        $value = $this->serialize($value);
         $data = [Command::GETSET, $key, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -354,7 +355,8 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        return $this->unserialize($data);
     }
 
     public function getBit($key, $offset)
@@ -380,7 +382,12 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->unSerialize($value);
+        }
+
+        return $data;
     }
 
     public function setBit($key, $offset, $value)
@@ -398,6 +405,7 @@ class Redis
 
     public function setEx($key, $expireTime, $value): bool
     {
+        $value = $this->serialize($value);
         $data = [Command::SETEX, $key, $expireTime, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -453,7 +461,7 @@ class Redis
         $command = [Command::MSET];
         foreach ($data as $key => $value) {
             $command[] = $key;
-            $command[] = $value;
+            $command[] = $this->serialize($value);
         }
         if (!$this->sendCommand($command)) {
             return false;
@@ -470,7 +478,7 @@ class Redis
         $command = [Command::MSETNX];
         foreach ($data as $key => $value) {
             $command[] = $key;
-            $command[] = $value;
+            $command[] = $this->serialize($value);
         }
         if (!$this->sendCommand($command)) {
             return false;
@@ -484,6 +492,7 @@ class Redis
 
     public function pSetEx($key, $expireTime, $value)
     {
+        $value = $this->serialize($value);
         $data = [Command::PSETEX, $key, $expireTime, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -614,7 +623,9 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+
+        $data = $recv->getData();
+        return $this->unserialize($data);
     }
 
     public function hGetAll($key)
@@ -631,13 +642,14 @@ class Redis
         $data = $recv->getData();
         $dataCount = count($data);
         for ($i = 0; $i < $dataCount / 2; $i++) {
-            $result[$data[$i * 2]] = $data[$i * 2 + 1];
+            $result[$data[$i * 2]] = $this->unserialize($data[$i * 2 + 1]);
         }
         return $result;
     }
 
     public function hSet($key, $field, $value)
     {
+        $value = $this->serialize($value);
         $data = [Command::HSET, $key, $field, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -659,7 +671,11 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key=>$value){
+            $data[$key] = $this->unSerialize($value);
+        }
+        return $data;
     }
 
     public function hKeys($key)
@@ -698,7 +714,12 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->unSerialize($value);
+        }
+
+        return $data;
     }
 
     public function hMSet($key, $data): bool
@@ -706,7 +727,7 @@ class Redis
         $command = [Command::HMSET, $key];
         foreach ($data as $key => $value) {
             $command[] = $key;
-            $command[] = $value;
+            $command[] = $this->serialize($value);
         }
         if (!$this->sendCommand($command)) {
             return false;
@@ -746,6 +767,7 @@ class Redis
 
     public function hSetNx($key, $field, $value)
     {
+        $value = $this->serialize($value);
         $data = [Command::HSETNX, $key, $field, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -784,7 +806,7 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return [$recv->getData()[0] => $recv->getData()[1]];
+        return [$recv->getData()[0] => $this->unSerialize($recv->getData()[1])];
     }
 
     public function bRPop($key1, ...$data)
@@ -797,7 +819,7 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return [$recv->getData()[0] => $this->unSerialize($recv->getData()[1])];
     }
 
     public function bRPopLPush($source, $destination, $timeout)
@@ -810,7 +832,8 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        return $this->unserialize($data);
     }
 
     public function lIndex($key, $index)
@@ -828,6 +851,7 @@ class Redis
 
     public function lInsert($key, bool $isBefore, $pivot, $value)
     {
+        $value = $this->serialize($value);
         $data = [Command::LINSERT, $key, $isBefore == true ? 'BEFORE' : 'AFTER', $pivot, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -862,11 +886,15 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        return $this->unserialize($data);
     }
 
     public function lPush($key, ...$data)
     {
+        foreach ($data as $k => $va) {
+            $data[$k] = $this->serialize($va);
+        }
         $command = array_merge([Command::LPUSH, $key], $data);
         if (!$this->sendCommand($command)) {
             return false;
@@ -880,6 +908,7 @@ class Redis
 
     public function lPuShx($key, $value)
     {
+        $value = $this->serialize($value);
         $data = [Command::LPUSHX, $key, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -901,7 +930,12 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key => $va) {
+            $data[$key] = $this->unSerialize($va);
+        }
+
+        return $data;
     }
 
     public function lRem($key, $count, $value)
@@ -919,6 +953,7 @@ class Redis
 
     public function lSet($key, $index, $value): bool
     {
+        $value = $this->serialize($value);
         $data = [Command::LSET, $key, $index, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -953,7 +988,8 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        return $this->unserialize($data);
     }
 
     public function rPopLPush($source, $destination)
@@ -966,11 +1002,15 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        return $this->unserialize($data);
     }
 
     public function rPush($key, ...$data)
     {
+        foreach ($data as $k => $va) {
+            $data[$k] = $this->serialize($va);
+        }
         $command = array_merge([Command::LPUSH, $key], $data);
         if (!$this->sendCommand($command)) {
             return false;
@@ -984,6 +1024,7 @@ class Redis
 
     public function rPuShx($key, $value)
     {
+        $value = $this->serialize($value);
         $data = [Command::RPUSHX, $key, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -1650,70 +1691,70 @@ class Redis
 
     ######################事务操作方法(待测试)######################
 
-   /* public function discard():bool
-    {
-        $data = [Command::DISCARD];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return true;
-    }
+    /* public function discard():bool
+     {
+         $data = [Command::DISCARD];
+         if (!$this->sendCommand($data)) {
+             return false;
+         }
+         $recv = $this->recv();
+         if ($recv === null) {
+             return false;
+         }
+         return true;
+     }
 
-    public function exec()
-    {
-        $data = [Command::EXEC];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
+     public function exec()
+     {
+         $data = [Command::EXEC];
+         if (!$this->sendCommand($data)) {
+             return false;
+         }
+         $recv = $this->recv();
+         if ($recv === null) {
+             return false;
+         }
+         return $recv->getData();
+     }
 
-    public function multi():bool
-    {
-        $data = [Command::MULTI];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return true;
-    }
+     public function multi():bool
+     {
+         $data = [Command::MULTI];
+         if (!$this->sendCommand($data)) {
+             return false;
+         }
+         $recv = $this->recv();
+         if ($recv === null) {
+             return false;
+         }
+         return true;
+     }
 
-    public function unWatch():bool
-    {
-        $data = [Command::UNWATCH];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return true;
-    }
+     public function unWatch():bool
+     {
+         $data = [Command::UNWATCH];
+         if (!$this->sendCommand($data)) {
+             return false;
+         }
+         $recv = $this->recv();
+         if ($recv === null) {
+             return false;
+         }
+         return true;
+     }
 
-    public function watch($key,...$keys):bool
-    {
-        $command = array_merge([Command::WATCH, $key], $keys);
-        if (!$this->sendCommand($command)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return true;
-    }*/
+     public function watch($key,...$keys):bool
+     {
+         $command = array_merge([Command::WATCH, $key], $keys);
+         if (!$this->sendCommand($command)) {
+             return false;
+         }
+         $recv = $this->recv();
+         if ($recv === null) {
+             return false;
+         }
+         return true;
+     }*/
     ######################事务操作方法(待测试)######################
 
 
@@ -1870,7 +1911,7 @@ class Redis
 
     function disconnect()
     {
-        if($this->isConnected){
+        if ($this->isConnected) {
             $this->client->close();
             $this->isConnected = false;
             $this->lastSocketError = $this->client->socketError();
