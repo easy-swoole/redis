@@ -263,4 +263,5 @@ class Client
     {
         $this->close();;
     }
+
 }

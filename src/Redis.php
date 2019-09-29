@@ -20,6 +20,12 @@ class Redis
     protected $errorType;
     protected $errorMsg;
 
+    /**
+     * @var bool 是否停止消息订阅
+     */
+    protected $subscribeStop = true;
+
+
     public function __construct(RedisConfig $config)
     {
         $this->config = $config;
@@ -53,6 +59,7 @@ class Redis
         $this->tryConnectTimes = 0;
         $this->lastSocketErrno = 0;
         $this->lastSocketError = '';
+        $this->subscribeStop = true;
         $this->errorMsg = '';
         $this->errorType = '';
     }
@@ -1213,8 +1220,8 @@ class Redis
     public function sRem($key, $member1, ...$members)
     {
         $member1 = $this->serialize($member1);
-        foreach ($members as $k=>$va){
-            $members[$k]= $this->serialize($va);
+        foreach ($members as $k => $va) {
+            $members[$k] = $this->serialize($va);
         }
         $command = array_merge([Command::SREM, $key, $member1], $members);
         if (!$this->sendCommand($command)) {
@@ -1276,8 +1283,8 @@ class Redis
     public function zAdd($key, $score1, $member1, ...$data)
     {
         $member1 = $this->serialize($member1);
-        foreach ($data as $k=>$va){
-            if ($k%2!=0){
+        foreach ($data as $k => $va) {
+            if ($k % 2 != 0) {
                 $data[$k] = $this->serialize($va);
             }
         }
@@ -1381,10 +1388,10 @@ class Redis
                     $result[$this->unSerialize($data[$k - 1])] = $va;
                 }
             }
-        }else{
+        } else {
             $result = [];
             foreach ($data as $k => $va) {
-                $result[$k]  =$this->unSerialize($va);
+                $result[$k] = $this->unSerialize($va);
             }
         }
 
@@ -1402,7 +1409,7 @@ class Redis
             return false;
         }
         $data = $recv->getData();
-        foreach ($data as $key=>$va){
+        foreach ($data as $key => $va) {
             $data[$key] = $this->unSerialize($va);
         }
 
@@ -1435,10 +1442,10 @@ class Redis
                     $result[$this->unSerialize($data[$k - 1])] = $va;
                 }
             }
-        }else{
+        } else {
             $result = [];
             foreach ($data as $k => $va) {
-                $result[$k]  =$this->unSerialize($va);
+                $result[$k] = $this->unSerialize($va);
             }
         }
         return $result;
@@ -1461,7 +1468,7 @@ class Redis
     public function zRem($key, $member, ...$members)
     {
         $member = $this->serialize($member);
-        foreach ($members as $k=>$va){
+        foreach ($members as $k => $va) {
             $members[$k] = $this->serialize($va);
         }
         $command = array_merge([Command::ZREM, $key, $member], $members);
@@ -1537,10 +1544,10 @@ class Redis
                     $result[$this->unSerialize($data[$k - 1])] = $va;
                 }
             }
-        }else{
+        } else {
             $result = [];
             foreach ($data as $k => $va) {
-                $result[$k]  =$this->unSerialize($va);
+                $result[$k] = $this->unSerialize($va);
             }
         }
         return $result;
@@ -1569,10 +1576,10 @@ class Redis
                     $result[$this->unSerialize($data[$k - 1])] = $va;
                 }
             }
-        }else{
+        } else {
             $result = [];
             foreach ($data as $k => $va) {
-                $result[$k]  =$this->unSerialize($va);
+                $result[$k] = $this->unSerialize($va);
             }
         }
         return $result;
@@ -1678,23 +1685,32 @@ class Redis
 
     ######################发布订阅操作方法(待测试)######################
 
-    /*public function pSubscribe($callback, $pattern, ...$patterns)
+    public function pSubscribe($callback, $pattern, ...$patterns)
     {
         $command = array_merge([Command::PSUBSCRIBE, $pattern], $patterns);
         if (!$this->sendCommand($command)) {
             return false;
         }
-        $recv = $this->recv();
+        $recv = $this->recv(-1);
         if ($recv === null) {
             return false;
         }
-//       return call_user_func($callback,$this,array_merge($pattern,$patterns),$recv);
+        $this->subscribeStop = false;
+        while ($this->subscribeStop == false) {
+            $recv = $this->recv(-1);
+            if ($recv === null) {
+                return false;
+            }
+            if ($recv->getData()[0] == 'pmessage') {
+                call_user_func($callback, $this, $recv->getData()[2], $recv->getData()[3]);
+            }
+        }
     }
 
-    public function pUbSub($subCommand, $argument, $argument1)
+    public function pubSub($subCommand, ...$arguments)
     {
-        $data = [Command::PUBSUB, $subCommand, $argument, $argument1];
-        if (!$this->sendCommand($data)) {
+        $command = array_merge([Command::PUBSUB, $subCommand,], $arguments);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -1717,10 +1733,10 @@ class Redis
         return $recv->getData();
     }
 
-    public function pUnSubscribe($pattern, $pattern1)
+    public function pUnSubscribe($pattern, ...$patterns)
     {
-        $data = [Command::PUNSUBSCRIBE, $pattern, $pattern1];
-        if (!$this->sendCommand($data)) {
+        $command = array_merge([Command::PUNSUBSCRIBE, $pattern], $patterns);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -1730,10 +1746,32 @@ class Redis
         return $recv->getData();
     }
 
-    public function subscribe($channel, $channel1)
+    public function subscribe($callback, $channel, ...$channels)
     {
-        $data = [Command::SUBSCRIBE, $channel, $channel1];
-        if (!$this->sendCommand($data)) {
+        $command = array_merge([Command::SUBSCRIBE, $channel], $channels);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv(-1);
+        if ($recv === null) {
+            return false;
+        }
+        $this->subscribeStop = false;
+        while ($this->subscribeStop == false) {
+            $recv = $this->recv(-1);
+            if ($recv === null) {
+                return false;
+            }
+            if ($recv->getData()[0] == 'message') {
+                call_user_func($callback, $this, $recv->getData()[1], $recv->getData()[2]);
+            }
+        }
+    }
+
+    public function unsubscribe($channel, ...$channels)
+    {
+        $command = array_merge([Command::UNSUBSCRIBE, $channel], $channels);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -1743,18 +1781,11 @@ class Redis
         return $recv->getData();
     }
 
-    public function unsubscribe($channel, $channel1)
+    public function subscribeStop(): void
     {
-        $data = [Command::UNSUBSCRIBE, $channel, $channel1];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }*/
+        $this->subscribeStop = true;
+    }
+
 
     ######################发布订阅操作方法(待测试)######################
 
@@ -1927,9 +1958,9 @@ class Redis
         throw new RedisException("connect to redis host {$this->config->getHost()}:{$this->config->getPort()} fail after retry {$this->tryConnectTimes} times");
     }
 
-    protected function recv(): ?Response
+    protected function recv($timeout = null): ?Response
     {
-        $recv = $this->client->recv($this->config->getTimeout());
+        $recv = $this->client->recv($timeout ?? $this->config->getTimeout());
         if ($recv->getStatus() == $recv::STATUS_ERR) {
             $this->errorType = $recv->getErrorType();
             $this->errorMsg = $recv->getMsg();
