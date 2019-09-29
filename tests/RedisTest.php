@@ -589,7 +589,7 @@ class RedisTest extends TestCase
         $data = $redis->zRangeByLex($key[0], '-', '+');
         $this->assertEquals(3, count($data));
 
-        $data = $redis->zRangeByScore($key[0], 2, 3,true);
+        $data = $redis->zRangeByScore($key[0], 2, 3, true);
 
         $this->assertEquals([
             $member[1] => $score[1],
@@ -653,11 +653,11 @@ class RedisTest extends TestCase
         ], $data);
         $redis->del($key[0]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
-        $data = $redis->zReVRangeByScore($key[0], 3, 0,false);
+        $data = $redis->zReVRangeByScore($key[0], 3, 0, false);
         $this->assertEquals([
-            $member[2] ,
-            $member[1] ,
-            $member[0] ,
+            $member[2],
+            $member[1],
+            $member[0],
         ], $data);
 
         $data = $redis->zRevRank($key[0], $member[0]);
@@ -671,11 +671,12 @@ class RedisTest extends TestCase
         $redis->del($key[2]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
         $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
-        $data = $redis->zUnionStore($key[2],2,$key[1],$key[0]);
+        $data = $redis->zUnionStore($key[2], 2, $key[1], $key[0]);
         $this->assertEquals(3, $data);
     }
 
-    function testHyperLog(){
+    function testHyperLog()
+    {
         $redis = $this->redis;
 
         $key = [
@@ -687,17 +688,94 @@ class RedisTest extends TestCase
         ];
         $redis->del($key[0]);
         $redis->del($key[1]);
-        $data = $redis->pfAdd($key[0],...[1,2,2,3,3]);
-        $this->assertEquals(1,$data);
+        $data = $redis->pfAdd($key[0], ...[1, 2, 2, 3, 3]);
+        $this->assertEquals(1, $data);
 
-        $data = $redis->pfAdd($key[1],...[1,2,2,3,3]);
-        $data = $redis->pfCount($key[0],$key[1]);
-        $this->assertEquals(3,$data);
+        $redis->pfAdd($key[1], ...[1, 2, 2, 3, 3]);
+        $data = $redis->pfCount($key[0], $key[1]);
+        $this->assertEquals(3, $data);
 
-        $data = $redis->pfMerge($key[2],$key[0],$key[1]);
-//        var_dump($data);
-        $this->assertEquals(1,$data);
-
-
+        $data = $redis->pfMerge($key[2], $key[0], $key[1]);
+        $this->assertEquals(1, $data);
     }
+
+    function testSubscribe()
+    {
+        $redis = $this->redis;
+        $key = 'redisChat';
+//        $data = $redis->pSubscribe($key);
+//        var_dump($data);
+        $this->assertEquals(1, 1);
+
+//        $data = $redis->pUbSub('a','b','v');
+//        $this->assertEquals(1,$data);
+//
+//        $data = $redis->publish('a','f');
+//        $this->assertEquals(1,$data);
+//
+//        $data = $redis->pUnSubscribe('a','v');
+//        $this->assertEquals(1,$data);
+//
+//        $data = $redis->subscribe('a','s');
+//        $this->assertEquals(1,$data);
+//
+//        $data = $redis->unsubscribe('a','sdf');
+//        $this->assertEquals(1,$data);
+    }
+
+
+    function testWatch()
+    {
+
+        $redis = $this->redis;
+
+        $data = $redis->multi();
+        $this->assertTrue($data);
+        $data = $redis->set('a', 1);
+        var_dump($data);
+        $data = $redis->set('b', 1);
+        var_dump($data);
+        $data = $redis->set('c', 1);
+        var_dump($data);
+        $data = $redis->get('a', 1);
+        var_dump($data);
+        $data = $redis->get('b', 1);
+        var_dump($data);
+        $data = $redis->get('c', 1);
+        var_dump($data);
+        $data = $redis->exec();
+        var_dump($data);
+        $this->assertEquals(1, 1);
+
+//        $data = $redis->discard();
+//        $this->assertEquals(1, $data);
+//        $data = $redis->unwatch();
+//        $this->assertEquals(1, $data);
+//        $data = $redis->watch();
+    }
+
+
+    function testScript(){
+
+        $redis = $this->redis;
+
+        $data = $redis->eval('s','s','a','1','2','a');
+        $this->assertEquals(1,$data);
+
+        $data = $redis->evalsha('a','g','g','1','a','a');
+        $this->assertEquals(1,$data);
+
+        $data = $redis->scriptExists('a','f');
+        $this->assertEquals(1,$data);
+
+        $data = $redis->scriptFlush();
+        $this->assertEquals(1,$data);
+
+        $data = $redis->scriptKill();
+        $this->assertEquals(1,$data);
+
+        $data = $redis->scriptLoad('a');
+        $this->assertEquals(1,$data);
+    }
+
 }

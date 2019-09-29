@@ -1519,7 +1519,7 @@ class Redis
 
     ######################HyperLogLog操作方法######################
 
-    public function pfAdd($key,...$data)
+    public function pfAdd($key, ...$data)
     {
         $command = array_merge([Command::PFADD, $key], $data);
         if (!$this->sendCommand($command)) {
@@ -1547,7 +1547,7 @@ class Redis
 
     public function pfMerge($deStKey, $sourceKey, ...$sourceKeys)
     {
-        $command = array_merge([Command::PFMERGE, $deStKey,$sourceKey], $sourceKeys);
+        $command = array_merge([Command::PFMERGE, $deStKey, $sourceKey], $sourceKeys);
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1560,6 +1560,237 @@ class Redis
 
     ######################HyperLogLog操作方法######################
 
+    ######################发布订阅操作方法######################
+
+    public function pSubscribe($callback, $pattern, ...$patterns)
+    {
+        $command = array_merge([Command::PSUBSCRIBE, $pattern], $patterns);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+//       return call_user_func($callback,$this,array_merge($pattern,$patterns),$recv);
+    }
+
+    public function pUbSub($subCommand, $argument, $argument1)
+    {
+        $data = [Command::PUBSUB, $subCommand, $argument, $argument1];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function publish($channel, $message)
+    {
+        $data = [Command::PUBLISH, $channel, $message];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function pUnSubscribe($pattern, $pattern1)
+    {
+        $data = [Command::PUNSUBSCRIBE, $pattern, $pattern1];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function subscribe($channel, $channel1)
+    {
+        $data = [Command::SUBSCRIBE, $channel, $channel1];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function unsubscribe($channel, $channel1)
+    {
+        $data = [Command::UNSUBSCRIBE, $channel, $channel1];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    ######################发布订阅操作方法######################
+
+    ######################事务操作方法######################
+
+    public function discard():bool
+    {
+        $data = [Command::DISCARD];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return true;
+    }
+
+    public function exec()
+    {
+        $data = [Command::EXEC];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function multi():bool
+    {
+        $data = [Command::MULTI];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return true;
+    }
+
+    public function unWatch():bool
+    {
+        $data = [Command::UNWATCH];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return true;
+    }
+
+    public function watch($key,...$keys):bool
+    {
+        $command = array_merge([Command::WATCH, $key], $keys);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return true;
+    }
+    ######################事务操作方法######################
+
+
+    ######################脚本操作方法######################
+
+    public function eval($script, $keyNum, $key,...$data)
+    {
+        $command = array_merge([Command::EVAL,$script, $keyNum, $key,], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function evalSha($sha1,$keyNum,$key,...$data)
+    {
+        $command = array_merge([Command::EVAL,$sha1, $keyNum, $key,], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function scriptExists($script,...$scripts)
+    {
+        $command = array_merge([Command::SCRIPT_EXISTS,$script], $scripts);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function scriptFlush()
+    {
+        $data = [Command::SCRIPT_FLUSH];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function scriptKill():bool
+    {
+        $data = [Command::SCRIPT_KILL];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return true;
+    }
+
+    public function scriptLoad($script)
+    {
+        $data = [Command::SCRIPT_LOAD,$script];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    ######################脚本操作方法######################
 
     ###################### 发送接收tcp流数据 ######################
     protected function sendCommand(array $com): bool
