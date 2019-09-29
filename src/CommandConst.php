@@ -128,12 +128,11 @@ class CommandConst
     const PFADD = 'PFADD';//添加指定元素到 HyperLogLog 中。
     const PFCOUNT = 'PFCOUNT';//返回给定 HyperLogLog 的基数估算值。
     const PFMERGE = 'PFMERGE';//将多个 HyperLogLog 合并为一个 HyperLogLog
+
     const PSUBSCRIBE = 'PSUBSCRIBE';//订阅一个或多个符合给定模式的频道。
     const PUBSUB = 'PUBSUB';//查看订阅与发布系统状态。
     const PUBLISH = 'PUBLISH';//将信息发送到指定的频道。
     const PUNSUBSCRIBE = 'PUNSUBSCRIBE';//退订所有给定模式的频道。
-
-
     const SUBSCRIBE = 'SUBSCRIBE';//订阅给定的一个或多个频道的信息。
     const UNSUBSCRIBE = 'UNSUBSCRIBE';//指退订给定的频道。
 
@@ -147,6 +146,10 @@ class CommandConst
     const EVAL = 'EVAL';//执行 Lua 脚本。
     const EVALSHA = 'EVALSHA';//执行 Lua 脚本。
     const SCRIPT = 'SCRIPT';//查看指定的脚本是否已经被保存在缓存当中。
+    const SCRIPT_EXISTS = 'SCRIPT EXISTS';//查看指定的脚本是否已经被保存在缓存当中。
+    const SCRIPT_FLUSH = 'SCRIPT FLUSH';//查看指定的脚本是否已经被保存在缓存当中。
+    const SCRIPT_KILL = 'SCRIPT KILL';//查看指定的脚本是否已经被保存在缓存当中。
+    const SCRIPT_LOAD = 'SCRIPT LOAD';//查看指定的脚本是否已经被保存在缓存当中。
 
 
     const AUTH = 'AUTH';//验证密码是否正确

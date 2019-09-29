@@ -20,6 +20,12 @@ class Redis
     protected $errorType;
     protected $errorMsg;
 
+    /**
+     * @var bool 是否停止消息订阅
+     */
+    protected $subscribeStop = true;
+
+
     public function __construct(RedisConfig $config)
     {
         $this->config = $config;
@@ -39,8 +45,8 @@ class Redis
             $this->client = new Client($this->config->getHost(), $this->config->getPort());
         }
         $this->isConnected = $this->client->connect($timeout);
-        if($this->isConnected && !empty($this->config->getAuth())){
-            if(!$this->auth($this->config->getAuth())){
+        if ($this->isConnected && !empty($this->config->getAuth())) {
+            if (!$this->auth($this->config->getAuth())) {
                 $this->isConnected = false;
                 throw new RedisException("auth to redis host {$this->config->getHost()}:{$this->config->getPort()} fail");
             }
@@ -53,6 +59,7 @@ class Redis
         $this->tryConnectTimes = 0;
         $this->lastSocketErrno = 0;
         $this->lastSocketError = '';
+        $this->subscribeStop = true;
         $this->errorMsg = '';
         $this->errorType = '';
     }
@@ -302,13 +309,12 @@ class Redis
 
     public function set($key, $val, $expireTime = null): bool
     {
-        $command = [$key, $val];
+        $val = $this->serialize($val);
+        $command = [Command::SET, $key, $val];
         if ($expireTime != null && $expireTime > 0) {
             $command[] = 'EX ' . $expireTime;
         }
-
-        $data = [Command::SET, $key, $val];
-        if (!$this->sendCommand($data)) {
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -328,7 +334,8 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        return $this->unserialize($data);
     }
 
     public function getRange($key, $start, $end)
@@ -346,6 +353,7 @@ class Redis
 
     public function getSet($key, $value)
     {
+        $value = $this->serialize($value);
         $data = [Command::GETSET, $key, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -354,7 +362,8 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        return $this->unserialize($data);
     }
 
     public function getBit($key, $offset)
@@ -380,7 +389,12 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->unSerialize($value);
+        }
+
+        return $data;
     }
 
     public function setBit($key, $offset, $value)
@@ -398,6 +412,7 @@ class Redis
 
     public function setEx($key, $expireTime, $value): bool
     {
+        $value = $this->serialize($value);
         $data = [Command::SETEX, $key, $expireTime, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -453,7 +468,7 @@ class Redis
         $command = [Command::MSET];
         foreach ($data as $key => $value) {
             $command[] = $key;
-            $command[] = $value;
+            $command[] = $this->serialize($value);
         }
         if (!$this->sendCommand($command)) {
             return false;
@@ -470,7 +485,7 @@ class Redis
         $command = [Command::MSETNX];
         foreach ($data as $key => $value) {
             $command[] = $key;
-            $command[] = $value;
+            $command[] = $this->serialize($value);
         }
         if (!$this->sendCommand($command)) {
             return false;
@@ -484,6 +499,7 @@ class Redis
 
     public function pSetEx($key, $expireTime, $value)
     {
+        $value = $this->serialize($value);
         $data = [Command::PSETEX, $key, $expireTime, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -614,7 +630,9 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+
+        $data = $recv->getData();
+        return $this->unserialize($data);
     }
 
     public function hGetAll($key)
@@ -631,13 +649,14 @@ class Redis
         $data = $recv->getData();
         $dataCount = count($data);
         for ($i = 0; $i < $dataCount / 2; $i++) {
-            $result[$data[$i * 2]] = $data[$i * 2 + 1];
+            $result[$data[$i * 2]] = $this->unserialize($data[$i * 2 + 1]);
         }
         return $result;
     }
 
     public function hSet($key, $field, $value)
     {
+        $value = $this->serialize($value);
         $data = [Command::HSET, $key, $field, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -659,7 +678,11 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->unSerialize($value);
+        }
+        return $data;
     }
 
     public function hKeys($key)
@@ -698,7 +721,12 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->unSerialize($value);
+        }
+
+        return $data;
     }
 
     public function hMSet($key, $data): bool
@@ -706,7 +734,7 @@ class Redis
         $command = [Command::HMSET, $key];
         foreach ($data as $key => $value) {
             $command[] = $key;
-            $command[] = $value;
+            $command[] = $this->serialize($value);
         }
         if (!$this->sendCommand($command)) {
             return false;
@@ -746,6 +774,7 @@ class Redis
 
     public function hSetNx($key, $field, $value)
     {
+        $value = $this->serialize($value);
         $data = [Command::HSETNX, $key, $field, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -784,7 +813,7 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return [$recv->getData()[0] => $recv->getData()[1]];
+        return [$recv->getData()[0] => $this->unSerialize($recv->getData()[1])];
     }
 
     public function bRPop($key1, ...$data)
@@ -797,7 +826,7 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return [$recv->getData()[0] => $this->unSerialize($recv->getData()[1])];
     }
 
     public function bRPopLPush($source, $destination, $timeout)
@@ -810,7 +839,8 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        return $this->unserialize($data);
     }
 
     public function lIndex($key, $index)
@@ -823,11 +853,14 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        return $this->unSerialize($data);
     }
 
     public function lInsert($key, bool $isBefore, $pivot, $value)
     {
+        $value = $this->serialize($value);
+        $pivot = $this->serialize($pivot);
         $data = [Command::LINSERT, $key, $isBefore == true ? 'BEFORE' : 'AFTER', $pivot, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -862,11 +895,15 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        return $this->unserialize($data);
     }
 
     public function lPush($key, ...$data)
     {
+        foreach ($data as $k => $va) {
+            $data[$k] = $this->serialize($va);
+        }
         $command = array_merge([Command::LPUSH, $key], $data);
         if (!$this->sendCommand($command)) {
             return false;
@@ -880,6 +917,7 @@ class Redis
 
     public function lPuShx($key, $value)
     {
+        $value = $this->serialize($value);
         $data = [Command::LPUSHX, $key, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -901,11 +939,17 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key => $va) {
+            $data[$key] = $this->unSerialize($va);
+        }
+
+        return $data;
     }
 
     public function lRem($key, $count, $value)
     {
+        $value = $this->serialize($value);
         $data = [Command::LREM, $key, $count, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -917,8 +961,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function lSet($key, $index, $value):bool
+    public function lSet($key, $index, $value): bool
     {
+        $value = $this->serialize($value);
         $data = [Command::LSET, $key, $index, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -930,7 +975,7 @@ class Redis
         return true;
     }
 
-    public function lTrim($key, $start, $stop):bool
+    public function lTrim($key, $start, $stop): bool
     {
         $data = [Command::LTRIM, $key, $start, $stop];
         if (!$this->sendCommand($data)) {
@@ -953,7 +998,8 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        return $this->unserialize($data);
     }
 
     public function rPopLPush($source, $destination)
@@ -966,11 +1012,15 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        return $this->unserialize($data);
     }
 
     public function rPush($key, ...$data)
     {
+        foreach ($data as $k => $va) {
+            $data[$k] = $this->serialize($va);
+        }
         $command = array_merge([Command::LPUSH, $key], $data);
         if (!$this->sendCommand($command)) {
             return false;
@@ -984,6 +1034,7 @@ class Redis
 
     public function rPuShx($key, $value)
     {
+        $value = $this->serialize($value);
         $data = [Command::RPUSHX, $key, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -999,6 +1050,9 @@ class Redis
     ######################集合操作方法######################
     public function sAdd($key, ...$data)
     {
+        foreach ($data as $k => $va) {
+            $data[$k] = $this->serialize($va);
+        }
         $command = array_merge([Command::SADD, $key], $data);
         if (!$this->sendCommand($command)) {
             return false;
@@ -1009,9 +1063,10 @@ class Redis
         }
         return $recv->getData();
     }
+
     public function sCard($key)
     {
-        $data = [Command::SCARD,$key];
+        $data = [Command::SCARD, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1021,7 +1076,8 @@ class Redis
         }
         return $recv->getData();
     }
-    public function sDiff($key1,...$keys)
+
+    public function sDiff($key1, ...$keys)
     {
         $command = array_merge([Command::SDIFF, $key1], $keys);
         if (!$this->sendCommand($command)) {
@@ -1031,11 +1087,16 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->unSerialize($value);
+        }
+        return $data;
     }
-    public function sDiffStore($destination,...$keys)
+
+    public function sDiffStore($destination, ...$keys)
     {
-        $command = array_merge([Command::SDIFFSTORE,$destination], $keys);
+        $command = array_merge([Command::SDIFFSTORE, $destination], $keys);
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1045,7 +1106,8 @@ class Redis
         }
         return $recv->getData();
     }
-    public function sInter($key1,...$keys)
+
+    public function sInter($key1, ...$keys)
     {
         $command = array_merge([Command::SINTER, $key1], $keys);
         if (!$this->sendCommand($command)) {
@@ -1055,11 +1117,16 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->unSerialize($value);
+        }
+        return $data;
     }
-    public function sInterStore($destination,...$keys)
+
+    public function sInterStore($destination, ...$keys)
     {
-        $command = array_merge([Command::SINTERSTORE,$destination], $keys);
+        $command = array_merge([Command::SINTERSTORE, $destination], $keys);
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1069,9 +1136,11 @@ class Redis
         }
         return $recv->getData();
     }
-    public function sIsMember($key,$member)
+
+    public function sIsMember($key, $member)
     {
-        $data = [Command::SISMEMBER,$key,$member];
+        $member = $this->serialize($member);
+        $data = [Command::SISMEMBER, $key, $member];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1081,9 +1150,10 @@ class Redis
         }
         return $recv->getData();
     }
+
     public function sMembers($key)
     {
-        $data = [Command::SMEMBERS,$key];
+        $data = [Command::SMEMBERS, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1091,11 +1161,17 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->unSerialize($value);
+        }
+        return $data;
     }
-    public function sMove($source,$destination,$member)
+
+    public function sMove($source, $destination, $member)
     {
-        $data = [Command::SMOVE,$source,$destination,$member];
+        $member = $this->serialize($member);
+        $data = [Command::SMOVE, $source, $destination, $member];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1105,9 +1181,10 @@ class Redis
         }
         return $recv->getData();
     }
+
     public function sPop($key)
     {
-        $data = [Command::SPOP,$key];
+        $data = [Command::SPOP, $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1115,12 +1192,15 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        $data = $this->unSerialize($data);
+        return $data;
     }
-    public function sRandMemBer($key,$count=null)
+
+    public function sRandMemBer($key, $count = null)
     {
-        $data = [Command::SRANDMEMBER ,$key];
-        if ($count!==null){
+        $data = [Command::SRANDMEMBER, $key];
+        if ($count !== null) {
             $data[] = $count;
         }
         if (!$this->sendCommand($data)) {
@@ -1130,35 +1210,20 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->unSerialize($value);
+        }
+        return $data;
     }
-    public function sRen($key,$member1,...$members)
+
+    public function sRem($key, $member1, ...$members)
     {
-        $command = array_merge([Command::SREM,$key, $member1], $members);
-        if (!$this->sendCommand($command)) {
-            return false;
+        $member1 = $this->serialize($member1);
+        foreach ($members as $k => $va) {
+            $members[$k] = $this->serialize($va);
         }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
-    public function sUnion($key1,...$keys)
-    {
-        $command = array_merge([Command::SUNION,$key1], $keys);
-        if (!$this->sendCommand($command)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
-    public function sUnIomStore($destination,$key1,...$keys)
-    {
-        $command = array_merge([Command::SUNIONSTORE,$destination,$key1], $keys);
+        $command = array_merge([Command::SREM, $key, $member1], $members);
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1169,26 +1234,63 @@ class Redis
         return $recv->getData();
     }
 
-//    public function sScan($key,$cursor,$pattern,$count)
-//    {
-//        $data = [Command::SSCAN,$key,$cursor,$pattern,$count];
-//        if (!$this->sendCommand($data)) {
-//            return false;
-//        }
-//        $recv = $this->recv();
-//        if ($recv === null) {
-//            return false;
-//        }
-//        return $recv->getData();
-//    }
+    public function sUnion($key1, ...$keys)
+    {
+        $command = array_merge([Command::SUNION, $key1], $keys);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        $data = $recv->getData();
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->unSerialize($value);
+        }
+        return $data;
+    }
+
+    public function sUnIomStore($destination, $key1, ...$keys)
+    {
+        $command = array_merge([Command::SUNIONSTORE, $destination, $key1], $keys);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    /*    public function sScan($key,$cursor,$pattern,$count)
+        {
+            $data = [Command::SSCAN,$key,$cursor,$pattern,$count];
+            if (!$this->sendCommand($data)) {
+                return false;
+            }
+            $recv = $this->recv();
+            if ($recv === null) {
+                return false;
+            }
+            return $recv->getData();
+        }*/
 
     ######################集合操作方法######################
 
     ######################有序集合操作方法######################
-    public function zAdd($key,$score1,$member1,$score2)
+    public function zAdd($key, $score1, $member1, ...$data)
     {
-        $data = [Command::ZADD, $key,$score1,$member1,$score2];
-        if (!$this->sendCommand($data)) {
+        $member1 = $this->serialize($member1);
+        foreach ($data as $k => $va) {
+            if ($k % 2 != 0) {
+                $data[$k] = $this->serialize($va);
+            }
+        }
+
+        $command = array_merge([Command::ZADD, $key, $score1, $member1], $data);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -1211,9 +1313,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function zCoumt($key,$min,$max)
+    public function zCount($key, $min, $max)
     {
-        $data = [Command::ZCOUNT, $key,$min,$max];
+        $data = [Command::ZCOUNT, $key, $min, $max];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1224,9 +1326,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function zInCrBy($key,$increment,$member)
+    public function zInCrBy($key, $increment, $member)
     {
-        $data = [Command::ZINCRBY, $key,$increment,$member];
+        $data = [Command::ZINCRBY, $key, $increment, $member];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1237,9 +1339,22 @@ class Redis
         return $recv->getData();
     }
 
-    public function zInTerStore($destination,$numKeys,$key,$key1)
+    public function zInTerStore($destination, $numKeys, $key, ...$data)
     {
-        $data = [Command::ZINTERSTORE,$destination,$numKeys,$key,$key1];
+        $command = array_merge([Command::ZINTERSTORE, $destination, $numKeys, $key,], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zLexCount($key, $min, $max)
+    {
+        $data = [Command::ZLEXCOUNT, $key, $min, $max];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1250,9 +1365,96 @@ class Redis
         return $recv->getData();
     }
 
-    public function zLexCount($key,$min,$max)
+    public function zRange($key, $start, $stop, $withScores = false)
     {
-        $data = [Command::ZLEXCOUNT, $key,$min,$max];
+        $data = [Command::ZRANGE, $key, $start, $stop];
+        if ($withScores == true) {
+            $data[] = 'WITHSCORES';
+        }
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        $data = $recv->getData();
+        if ($withScores == true) {
+            $result = [];
+            foreach ($data as $k => $va) {
+                if ($k % 2 == 0) {
+                    $result[$this->unSerialize($va)] = 0;
+                } else {
+                    $result[$this->unSerialize($data[$k - 1])] = $va;
+                }
+            }
+        } else {
+            $result = [];
+            foreach ($data as $k => $va) {
+                $result[$k] = $this->unSerialize($va);
+            }
+        }
+
+        return $result;
+    }
+
+    public function zRangeByLex($key, $min, $max, ...$data)
+    {
+        $command = array_merge([Command::ZRANGEBYLEX, $key, $min, $max], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        $data = $recv->getData();
+        foreach ($data as $key => $va) {
+            $data[$key] = $this->unSerialize($va);
+        }
+
+        return $data;
+    }
+
+    public function zRangeByScore($key, $min, $max, $withScores = false, ...$data)
+    {
+        if ($withScores == true) {
+            $command = array_merge([Command::ZRANGEBYSCORE, $key, $min, $max, 'WITHSCORES'], $data);
+        } else {
+            $command = array_merge([Command::ZRANGEBYSCORE, $key, $min, $max], $data);
+        }
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+
+        $data = $recv->getData();
+        if ($withScores == true) {
+            $result = [];
+            foreach ($data as $k => $va) {
+                if ($k % 2 == 0) {
+                    $result[$this->unSerialize($va)] = 0;
+                } else {
+                    $result[$this->unSerialize($data[$k - 1])] = $va;
+                }
+            }
+        } else {
+            $result = [];
+            foreach ($data as $k => $va) {
+                $result[$k] = $this->unSerialize($va);
+            }
+        }
+        return $result;
+    }
+
+    public function zRank($key, $member)
+    {
+        $member = $this->serialize($member);
+        $data = [Command::ZRANK, $key, $member];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1263,9 +1465,26 @@ class Redis
         return $recv->getData();
     }
 
-    public function zRange($key,$start,$stop,$withScores)
+    public function zRem($key, $member, ...$members)
     {
-        $data = [Command::ZRANGE,$key,$start,$stop,$withScores];
+        $member = $this->serialize($member);
+        foreach ($members as $k => $va) {
+            $members[$k] = $this->serialize($va);
+        }
+        $command = array_merge([Command::ZREM, $key, $member], $members);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRemRangeByLex($key, $min, $max)
+    {
+        $data = [Command::ZREMRANGEBYLEX, $key, $min, $max];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1276,9 +1495,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function zRangeByLex($key,$min,$max,$count)
+    public function zRemRangeByRank($key, $start, $stop)
     {
-        $data = [Command::ZRANGEBYLEX,$key,$min,$max,$count];
+        $data = [Command::ZREMRANGEBYRANK, $key, $start, $stop];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1289,9 +1508,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function zRangeBysCore($key,$min,$max,$LIMIT)
+    public function zRemRangeByScore($key, $min, $max)
     {
-        $data = [Command::ZRANGEBYSCORE,$key,$min,$max,$LIMIT];
+        $data = [Command::ZREMRANGEBYSCORE, $key, $min, $max];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1302,9 +1521,74 @@ class Redis
         return $recv->getData();
     }
 
-    public function zRank($key,$member)
+    public function zRevRange($key, $start, $stop, $withScores = false)
     {
-        $data = [Command::ZRANK, $key,$member];
+        $data = [Command::ZREVRANGE, $key, $start, $stop];
+        if ($withScores == true) {
+            $data[] = 'WITHSCORES';
+        }
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        $data = $recv->getData();
+        if ($withScores == true) {
+            $result = [];
+            foreach ($data as $k => $va) {
+                if ($k % 2 == 0) {
+                    $result[$this->unSerialize($va)] = 0;
+                } else {
+                    $result[$this->unSerialize($data[$k - 1])] = $va;
+                }
+            }
+        } else {
+            $result = [];
+            foreach ($data as $k => $va) {
+                $result[$k] = $this->unSerialize($va);
+            }
+        }
+        return $result;
+    }
+
+    public function zRevRangeByScore($key, $max, $min, $withScores = false)
+    {
+        $data = [Command::ZREVRANGEBYSCORE, $key, $max, $min];
+        if ($withScores == true) {
+            $data[] = 'WITHSCORES';
+        }
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        $data = $recv->getData();
+        if ($withScores == true) {
+            $result = [];
+            foreach ($data as $k => $va) {
+                if ($k % 2 == 0) {
+                    $result[$this->unSerialize($va)] = 0;
+                } else {
+                    $result[$this->unSerialize($data[$k - 1])] = $va;
+                }
+            }
+        } else {
+            $result = [];
+            foreach ($data as $k => $va) {
+                $result[$k] = $this->unSerialize($va);
+            }
+        }
+        return $result;
+    }
+
+    public function zRevRank($key, $member)
+    {
+        $member = $this->serialize($member);
+        $data = [Command::ZREVRANK, $key, $member];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1315,9 +1599,10 @@ class Redis
         return $recv->getData();
     }
 
-    public function zRem($kye,$member,$member1)
+    public function zScore($key, $member)
     {
-        $data = [Command::ZREM, $kye,$member,$member1];
+        $member = $this->serialize($member);
+        $data = [Command::ZSCORE, $key, $member];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1328,10 +1613,10 @@ class Redis
         return $recv->getData();
     }
 
-    public function zRemRangeByLex($key,$min,$max)
+    public function zUnionStore($destination, $keyNum, $key, ...$data)
     {
-        $data = [Command::ZREMRANGEBYLEX, $key,$min,$max];
-        if (!$this->sendCommand($data)) {
+        $command = array_merge([Command::ZUNIONSTORE, $destination, $keyNum, $key], $data);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -1341,9 +1626,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function zRemRangeByRank($key,$start,$stop)
+    /*public function zScan($key, $cursor, $pattern, $count)
     {
-        $data = [Command::ZREMRANGEBYRANK, $key,$start,$stop];
+        $data = [Command::ZSCAN, $key, $cursor, $pattern, $count];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1352,99 +1637,718 @@ class Redis
             return false;
         }
         return $recv->getData();
-    }
-
-    public function zRemRangeByScore($key,$min,$max)
-    {
-        $data = [Command::ZREMRANGEBYSCORE, $key,$min,$max];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
-
-    public function zRevRange($key,$start,$stop,$withScores)
-    {
-        $data = [Command::ZREVRANGE,$key,$start,$stop,$withScores];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
-
-    public function zRevRangeByScore($key,$min,$max,$withScores)
-    {
-        $data = [Command::ZREVRANGEBYSCORE,$key,$min,$max,$withScores];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
-
-    public function zRevRank($key,$member)
-    {
-        $data = [Command::ZREVRANK, $key,$member];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
-
-    public function zScore($key,$member)
-    {
-        $data = [Command::ZSCORE, $key,$member];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
-
-    public function zUnionStore($destination,$numkeys,$key,$key1)
-    {
-        $data = [Command::ZUNIONSTORE,$destination,$numkeys,$key,$key1];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
-
-    public function zScan($key,$cursor,$pattern,$count)
-    {
-        $data = [Command::ZSCAN,$key,$cursor,$pattern,$count];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
+    }*/
     ######################有序集合操作方法######################
+
+    ######################HyperLogLog操作方法######################
+
+    public function pfAdd($key, ...$data)
+    {
+        $command = array_merge([Command::PFADD, $key], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function pfCount($key, ...$keys)
+    {
+        $command = array_merge([Command::PFCOUNT, $key], $keys);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function pfMerge($deStKey, $sourceKey, ...$sourceKeys)
+    {
+        $command = array_merge([Command::PFMERGE, $deStKey, $sourceKey], $sourceKeys);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return true;
+    }
+
+    ######################HyperLogLog操作方法######################
+
+    ######################发布订阅操作方法(待测试)######################
+
+    public function pSubscribe($callback, $pattern, ...$patterns)
+    {
+        $command = array_merge([Command::PSUBSCRIBE, $pattern], $patterns);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv(-1);
+        if ($recv === null) {
+            return false;
+        }
+        $this->subscribeStop = false;
+        while ($this->subscribeStop == false) {
+            $recv = $this->recv(-1);
+            if ($recv === null) {
+                return false;
+            }
+            if ($recv->getData()[0] == 'pmessage') {
+                call_user_func($callback, $this, $recv->getData()[2], $recv->getData()[3]);
+            }
+        }
+    }
+
+    public function pubSub($subCommand, ...$arguments)
+    {
+        $command = array_merge([Command::PUBSUB, $subCommand,], $arguments);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function publish($channel, $message)
+    {
+        $data = [Command::PUBLISH, $channel, $message];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function pUnSubscribe($pattern, ...$patterns)
+    {
+        $command = array_merge([Command::PUNSUBSCRIBE, $pattern], $patterns);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function subscribe($callback, $channel, ...$channels)
+    {
+        $command = array_merge([Command::SUBSCRIBE, $channel], $channels);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv(-1);
+        if ($recv === null) {
+            return false;
+        }
+        $this->subscribeStop = false;
+        while ($this->subscribeStop == false) {
+            $recv = $this->recv(-1);
+            if ($recv === null) {
+                return false;
+            }
+            if ($recv->getData()[0] == 'message') {
+                call_user_func($callback, $this, $recv->getData()[1], $recv->getData()[2]);
+            }
+        }
+    }
+
+    public function unsubscribe($channel, ...$channels)
+    {
+        $command = array_merge([Command::UNSUBSCRIBE, $channel], $channels);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function subscribeStop(): void
+    {
+        $this->subscribeStop = true;
+    }
+
+
+    ######################发布订阅操作方法(待测试)######################
+
+    ######################事务操作方法(待测试)######################
+
+    /* public function discard():bool
+     {
+         $data = [Command::DISCARD];
+         if (!$this->sendCommand($data)) {
+             return false;
+         }
+         $recv = $this->recv();
+         if ($recv === null) {
+             return false;
+         }
+         return true;
+     }
+
+     public function exec()
+     {
+         $data = [Command::EXEC];
+         if (!$this->sendCommand($data)) {
+             return false;
+         }
+         $recv = $this->recv();
+         if ($recv === null) {
+             return false;
+         }
+         return $recv->getData();
+     }
+
+     public function multi():bool
+     {
+         $data = [Command::MULTI];
+         if (!$this->sendCommand($data)) {
+             return false;
+         }
+         $recv = $this->recv();
+         if ($recv === null) {
+             return false;
+         }
+         return true;
+     }
+
+     public function unWatch():bool
+     {
+         $data = [Command::UNWATCH];
+         if (!$this->sendCommand($data)) {
+             return false;
+         }
+         $recv = $this->recv();
+         if ($recv === null) {
+             return false;
+         }
+         return true;
+     }
+
+     public function watch($key,...$keys):bool
+     {
+         $command = array_merge([Command::WATCH, $key], $keys);
+         if (!$this->sendCommand($command)) {
+             return false;
+         }
+         $recv = $this->recv();
+         if ($recv === null) {
+             return false;
+         }
+         return true;
+     }*/
+    ######################事务操作方法(待测试)######################
+
+
+    ######################脚本操作方法(待测试)######################
+
+    /*public function eval($script, $keyNum, $key,...$data)
+    {
+        $command = array_merge([Command::EVAL,$script, $keyNum, $key,], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function evalSha($sha1,$keyNum,$key,...$data)
+    {
+        $command = array_merge([Command::EVAL,$sha1, $keyNum, $key,], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function scriptExists($script,...$scripts)
+    {
+        $command = array_merge([Command::SCRIPT_EXISTS,$script], $scripts);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function scriptFlush()
+    {
+        $data = [Command::SCRIPT_FLUSH];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function scriptKill():bool
+    {
+        $data = [Command::SCRIPT_KILL];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return true;
+    }
+
+    public function scriptLoad($script)
+    {
+        $data = [Command::SCRIPT_LOAD,$script];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }*/
+    ######################脚本操作方法(待测试)######################
+
+
+    ######################脚本操作方法(待测试)######################
+
+
+
+######################服务器操作方法######################
+
+    public function bgReWriteAof()
+    {
+        $data = [Command::BGREWRITEAOF];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function bgSave()
+    {
+        $data = [Command::BGSAVE];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function clientKill($ip,$id)
+    {
+        $data = [Command::CLIENT,$ip,$id];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function clientList()
+    {
+        $data = [Command::CLIENT];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function clientGetName()
+    {
+        $data = [Command::CLIENT];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function clientPause($PAUSE,$timeout)
+    {
+        $data = [Command::CLIENT,$PAUSE,$timeout];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function clientSetName($connectionName)
+    {
+        $data = [Command::CLIENT, $connectionName];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function clusterSlots()
+    {
+        $data = [Command::CLUSTER];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function command()
+    {
+        $data = [Command::COMMAND];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function commandCount()
+    {
+        $data = [Command::COMMAND];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function commandGetKeys()
+    {
+        $data = [Command::COMMAND];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function time()
+    {
+        $data = [Command::TIME];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function commandInfo($commandName,$commandName1)
+    {
+        $data = [Command::COMMAND,$commandName,$commandName1];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function configGet($parameter)
+    {
+        $data = [Command::CONFIG,$parameter];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function configRewrite()
+    {
+        $data = [Command::CONFIG];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function configSet($parameter,$value)
+    {
+        $data = [Command::CONFIG,$parameter,$value];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function configResetsTat()
+    {
+        $data = [Command::CONFIG];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function dBSize()
+    {
+        $data = [Command::DBSIZE];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function debugObject($key)
+    {
+        $data = [Command::DEBUG, $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function debugSegfault()
+    {
+        $data = [Command::DEBUG ];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function flushAll()
+    {
+        $data = [Command::FLUSHALL];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function flushDb()
+    {
+        $data = [Command::FLUSHDB];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function info($section)
+    {
+        $data = [Command::INFO, $section];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function lastSave()
+    {
+        $data = [Command::LASTSAVE];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function monitor()
+    {
+        $data = [Command::MONITOR];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function role()
+    {
+        $data = [Command::ROLE];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function save()
+    {
+        $data = [Command::SAVE];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function shutdown($noSave,$save)
+    {
+        $data = [Command::SHUTDOWN,$noSave,$save];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function slaveOf($host,$port)
+    {
+        $data = [Command::SLAVEOF, $host,$port];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function slowLog($subcommand,$argument)
+    {
+        $data = [Command::SLOWLOG,$subcommand,$argument];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function SYNC()
+    {
+        $data = [Command::SYNC];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    ######################服务器操作方法######################
 
 
     ###################### 发送接收tcp流数据 ######################
@@ -1466,9 +2370,9 @@ class Redis
         throw new RedisException("connect to redis host {$this->config->getHost()}:{$this->config->getPort()} fail after retry {$this->tryConnectTimes} times");
     }
 
-    protected function recv(): ?Response
+    protected function recv($timeout = null): ?Response
     {
-        $recv = $this->client->recv($this->config->getTimeout());
+        $recv = $this->client->recv($timeout ?? $this->config->getTimeout());
         if ($recv->getStatus() == $recv::STATUS_ERR) {
             $this->errorType = $recv->getErrorType();
             $this->errorMsg = $recv->getMsg();
@@ -1519,7 +2423,7 @@ class Redis
 
     function disconnect()
     {
-        if($this->isConnected){
+        if ($this->isConnected) {
             $this->client->close();
             $this->isConnected = false;
             $this->lastSocketError = $this->client->socketError();
