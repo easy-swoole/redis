@@ -542,6 +542,92 @@ class RedisTest extends TestCase
      */
     function testList()
     {
+        $redis = $this->redis;
+        $key = [
+            'listKey1',
+            'listKey2',
+            'listKey3',
+        ];
+        $value = [
+            'a', 'b', 'c', 'd'
+        ];
+
+        $redis->del($key[0]);
+        $data = $redis->lPush($key[0], $value[0], $value[1]);
+        $this->assertEquals(2, $data);
+
+        $data = $redis->bLPop($key[0], 1);
+        $this->assertTrue(!!$data);
+
+        $data = $redis->bRPop($key[0], 1);
+        $this->assertTrue(!!$data);
+
+        $redis->del($key[0]);
+        $redis->lPush($key[0], $value[0], $value[1]);
+        $data = $redis->bRPopLPush($key[0], $key[1], 1);
+        $this->assertEquals($value[0], $data);
+
+        $redis->del($key[0]);
+        $redis->lPush($key[0], $value[0], $value[1]);
+        $data = $redis->rPopLPush($key[0], $key[1]);
+        $this->assertEquals($value[0], $data);
+
+        $redis->del($key[0]);
+        $redis->lPush($key[0], $value[0], $value[1]);
+        $data = $redis->lIndex($key[0], 1);
+        $this->assertEquals($value[0], $data);
+        $data = $redis->lLen($key[0]);
+        $this->assertEquals(2, $data);
+
+        $data = $redis->lInsert($key[0], true, 'b', 'c');
+        $this->assertEquals($redis->lLen($key[0]), $data);
+        $data = $redis->lInsert($key[0], true, 'd', 'c');
+        $this->assertEquals(-1, $data);
+
+
+        $redis->del($key[1]);
+        $data = $redis->rPush($key[1], $value[0], $value[2], $value[1]);
+        $this->assertEquals(3, $data);
+
+
+        $data = $redis->lRange($key[1], 0, 3);
+        $this->assertEquals([$value[1], $value[2], $value[0]], $data);
+
+        $data = $redis->lPop($key[1]);
+        $this->assertEquals($value[1], $data);
+
+        $data = $redis->rPop($key[1]);
+        $this->assertEquals($value[0], $data);
+
+        $data = $redis->lPuShx($key[1], 'x');
+        $this->assertEquals($redis->lLen($key[1]), $data);
+        $this->assertEquals('x', $redis->lPop($key[1]));
+
+        $data = $redis->rPuShx($key[1], 'z');
+        $this->assertEquals($redis->lLen($key[1]), $data);
+        $this->assertEquals('z', $redis->rPop($key[1]));
+
+        $redis->del($key[1]);
+        $redis->rPush($key[1], $value[0], $value[0], $value[0]);
+        $data = $redis->lRem($key[1], 1, $value[0]);
+        $this->assertEquals(1, $data);
+
+        $data = $redis->lSet($key[1], 0, 'xx');
+        $this->assertTrue($data);
+        $this->assertEquals('xx', $redis->lPop($key[1]));
+
+        $data = $redis->lTrim($key[1], 0, 2);
+        $this->assertTrue($data);
+        $this->assertEquals(1, $redis->lLen($key[1]));
+    }
+
+    /**
+     * testList序列化测试
+     * @author tioncico
+     * Time: 下午8:17
+     */
+    function testListSerialize()
+    {
         $redis = $this->redisPHPSerialize;
         $key = [
             'listKey1',

@@ -846,12 +846,14 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        return $this->unSerialize($data);
     }
 
     public function lInsert($key, bool $isBefore, $pivot, $value)
     {
         $value = $this->serialize($value);
+        $pivot = $this->serialize($pivot);
         $data = [Command::LINSERT, $key, $isBefore == true ? 'BEFORE' : 'AFTER', $pivot, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -940,6 +942,7 @@ class Redis
 
     public function lRem($key, $count, $value)
     {
+        $value= $this->serialize($value);
         $data = [Command::LREM, $key, $count, $value];
         if (!$this->sendCommand($data)) {
             return false;
