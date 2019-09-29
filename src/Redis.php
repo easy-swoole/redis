@@ -672,7 +672,7 @@ class Redis
             return false;
         }
         $data = $recv->getData();
-        foreach ($data as $key=>$value){
+        foreach ($data as $key => $value) {
             $data[$key] = $this->unSerialize($value);
         }
         return $data;
@@ -942,7 +942,7 @@ class Redis
 
     public function lRem($key, $count, $value)
     {
-        $value= $this->serialize($value);
+        $value = $this->serialize($value);
         $data = [Command::LREM, $key, $count, $value];
         if (!$this->sendCommand($data)) {
             return false;
@@ -1043,6 +1043,9 @@ class Redis
     ######################集合操作方法######################
     public function sAdd($key, ...$data)
     {
+        foreach ($data as $k => $va) {
+            $data[$k] = $this->serialize($va);
+        }
         $command = array_merge([Command::SADD, $key], $data);
         if (!$this->sendCommand($command)) {
             return false;
@@ -1077,7 +1080,11 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->unSerialize($value);
+        }
+        return $data;
     }
 
     public function sDiffStore($destination, ...$keys)
@@ -1103,7 +1110,11 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->unSerialize($value);
+        }
+        return $data;
     }
 
     public function sInterStore($destination, ...$keys)
@@ -1121,6 +1132,7 @@ class Redis
 
     public function sIsMember($key, $member)
     {
+        $member = $this->serialize($member);
         $data = [Command::SISMEMBER, $key, $member];
         if (!$this->sendCommand($data)) {
             return false;
@@ -1142,11 +1154,16 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->unSerialize($value);
+        }
+        return $data;
     }
 
     public function sMove($source, $destination, $member)
     {
+        $member = $this->serialize($member);
         $data = [Command::SMOVE, $source, $destination, $member];
         if (!$this->sendCommand($data)) {
             return false;
@@ -1168,7 +1185,9 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        $data = $this->unSerialize($data);
+        return $data;
     }
 
     public function sRandMemBer($key, $count = null)
@@ -1184,11 +1203,19 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->unSerialize($value);
+        }
+        return $data;
     }
 
-    public function sRen($key, $member1, ...$members)
+    public function sRem($key, $member1, ...$members)
     {
+        $member1 = $this->serialize($member1);
+        foreach ($members as $k=>$va){
+            $members[$k]= $this->serialize($va);
+        }
         $command = array_merge([Command::SREM, $key, $member1], $members);
         if (!$this->sendCommand($command)) {
             return false;
@@ -1210,7 +1237,11 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->unSerialize($value);
+        }
+        return $data;
     }
 
     public function sUnIomStore($destination, $key1, ...$keys)

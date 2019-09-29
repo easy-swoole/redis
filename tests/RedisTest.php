@@ -708,6 +708,98 @@ class RedisTest extends TestCase
     }
 
     /**
+     * 集合序列化测试
+     * testMuster
+     * @author Tioncico
+     * Time: 9:10
+     */
+    function testMusterSerialize()
+    {
+        $redis = $this->redisPHPSerialize;
+        $key = [
+            'muster1',
+            'muster2',
+            'muster3',
+            'muster4',
+            'muster5',
+        ];
+        $value = [
+            '1',
+            '2',
+            '3',
+            '4',
+        ];
+
+        $redis->del($key[0]);
+        $redis->del($key[1]);
+        $data = $redis->sAdd($key[0], $value[0], $value[1]);
+        $this->assertEquals(2, $data);
+
+        $data = $redis->sCard($key[0]);
+        $this->assertEquals(2, $data);
+
+        $redis->sAdd($key[1], $value[0], $value[2]);
+
+        $data = $redis->sDiff($key[0], $key[1]);
+        $this->assertEquals([$value[1]], $data);
+
+        $data = $redis->sDiff($key[1], $key[0]);
+        $this->assertEquals([$value[2]], $data);
+
+        $data = $redis->sMembers($key[0]);
+        $this->assertEquals([$value[1], $value[0]], $data);
+        $data = $redis->sMembers($key[1]);
+        $this->assertEquals([$value[2], $value[0]], $data);
+
+        $data = $redis->sDiffStore($key[2], $key[0], $key[1]);
+        $this->assertEquals(1, $data);
+        $data = $redis->sMembers($key[2]);
+        $this->assertEquals([$value[1]], $data);
+
+        $data = $redis->sInter($key[0], $key[1]);
+        $this->assertEquals([$value[0]], $data);
+
+        $data = $redis->sInterStore($key[3], $key[0], $key[1]);
+        $this->assertEquals(1, $data);
+        $this->assertEquals([$value[0]], $redis->sMembers($key[3]));
+
+        $data = $redis->sIsMember($key[0], $value[0]);
+        $this->assertEquals(1, $data);
+        $data = $redis->sIsMember($key[0], $value[3]);
+        $this->assertEquals(0, $data);
+
+        $data = $redis->sMove($key[0], $key[1], $value[1]);
+        $this->assertEquals(1, $data);
+
+        $data = $redis->sPop($key[0]);
+        $this->assertEquals(1, $data);
+
+        $redis->del($key[3]);
+        $redis->sAdd($key[3], $value[0], $value[1], $value[2], $value[3]);
+        $data = $redis->sRandMemBer($key[3], 4);
+        $this->assertEquals(4, count($data));
+
+        $data = $redis->sRem($key[3], $value[0], $value[1], $value[2], $value[3]);
+        $this->assertEquals(4, $data);
+        $this->assertEquals([], $redis->sMembers($key[3]));
+
+        $data = $redis->sUnion($key[0], $key[1]);
+        $this->assertTrue(!!$data);
+
+        $redis->del($key[1]);
+        $redis->del($key[2]);
+        $redis->del($key[3]);
+        $redis->del($key[4]);
+        $redis->sAdd($key[1], 1, 2, 3, 4);
+        $redis->sAdd($key[2], 5);
+        $redis->sAdd($key[3], 6, 7);
+        $data = $redis->sUnIomStore($key[4], $key[1], $key[2], $key[3]);
+        $this->assertEquals(7, $data);
+//        $data = $redis->sScan('s', 'a', 's');
+//        $this->assertEquals(1, $data);
+    }
+
+    /**
      * 集合测试
      * testMuster
      * @author Tioncico
@@ -779,7 +871,7 @@ class RedisTest extends TestCase
         $data = $redis->sRandMemBer($key[3], 4);
         $this->assertEquals(4, count($data));
 
-        $data = $redis->sRen($key[3], $value[0], $value[1], $value[2], $value[3]);
+        $data = $redis->sRem($key[3], $value[0], $value[1], $value[2], $value[3]);
         $this->assertEquals(4, $data);
         $this->assertEquals([], $redis->sMembers($key[3]));
 
