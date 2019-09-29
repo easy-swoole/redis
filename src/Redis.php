@@ -990,12 +990,11 @@ class Redis
     }
     ######################列表操作方法######################
 
-
     ######################集合操作方法######################
-    public function sAdd($key, $member1, $member2)
+    public function sAdd($key, ...$data)
     {
-        $data = [Command::SADD, $key, $member1, $member2];
-        if (!$this->sendCommand($data)) {
+        $command = array_merge([Command::SADD, $key], $data);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -1018,10 +1017,10 @@ class Redis
         return $recv->getData();
     }
 
-    public function sDiff($key1, $key2)
+    public function sDiff($key1, ...$keys)
     {
-        $data = [Command::SDIFF, $key1, $key2];
-        if (!$this->sendCommand($data)) {
+        $command = array_merge([Command::SDIFF, $key1], $keys);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -1031,10 +1030,10 @@ class Redis
         return $recv->getData();
     }
 
-    public function sDiffStore($destination, $key1, $key2)
+    public function sDiffStore($destination, ...$keys)
     {
-        $data = [Command::SDIFFSTORE, $destination, $key1, $key2];
-        if (!$this->sendCommand($data)) {
+        $command = array_merge([Command::SDIFFSTORE, $destination], $keys);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -1044,10 +1043,10 @@ class Redis
         return $recv->getData();
     }
 
-    public function sInter($key1, $key2)
+    public function sInter($key1, ...$keys)
     {
-        $data = [Command::STNTER, $key1, $key2];
-        if (!$this->sendCommand($data)) {
+        $command = array_merge([Command::SINTER, $key1], $keys);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -1057,10 +1056,10 @@ class Redis
         return $recv->getData();
     }
 
-    public function sInterStore($destination, $key1, $key2)
+    public function sInterStore($destination, ...$keys)
     {
-        $data = [Command::SINTERSTORE, $destination, $key1, $key2];
-        if (!$this->sendCommand($data)) {
+        $command = array_merge([Command::SINTERSTORE, $destination], $keys);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -1122,9 +1121,12 @@ class Redis
         return $recv->getData();
     }
 
-    public function sRandMemBer($key, $count)
+    public function sRandMemBer($key, $count = null)
     {
-        $data = [Command::SRANDMEMBER, $key, $count];
+        $data = [Command::SRANDMEMBER, $key];
+        if ($count !== null) {
+            $data[] = $count;
+        }
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1135,10 +1137,10 @@ class Redis
         return $recv->getData();
     }
 
-    public function sRen($key, $member1, $member2)
+    public function sRen($key, $member1, ...$members)
     {
-        $data = [Command::SREM, $key, $member1, $member2];
-        if (!$this->sendCommand($data)) {
+        $command = array_merge([Command::SREM, $key, $member1], $members);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -1148,10 +1150,10 @@ class Redis
         return $recv->getData();
     }
 
-    public function sUnion($key1, $key2)
+    public function sUnion($key1, ...$keys)
     {
-        $data = [Command::SUNION, $key1, $key2];
-        if (!$this->sendCommand($data)) {
+        $command = array_merge([Command::SUNION, $key1], $keys);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -1161,10 +1163,10 @@ class Redis
         return $recv->getData();
     }
 
-    public function sUnIomStore($destination, $key1, $key2)
+    public function sUnIomStore($destination, $key1, ...$keys)
     {
-        $data = [Command::SUNIONSTORE, $destination, $key1, $key2];
-        if (!$this->sendCommand($data)) {
+        $command = array_merge([Command::SUNIONSTORE, $destination, $key1], $keys);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -1174,19 +1176,346 @@ class Redis
         return $recv->getData();
     }
 
-    public function sScan($key, $cursor, $pattern, $count)
-    {
-        $data = [Command::SSCAN, $key, $cursor, $pattern, $count];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
+    /*    public function sScan($key,$cursor,$pattern,$count)
+        {
+            $data = [Command::SSCAN,$key,$cursor,$pattern,$count];
+            if (!$this->sendCommand($data)) {
+                return false;
+            }
+            $recv = $this->recv();
+            if ($recv === null) {
+                return false;
+            }
+            return $recv->getData();
+        }*/
+
     ######################集合操作方法######################
+
+    ######################有序集合操作方法######################
+    public function zAdd($key, $score1, $member1, ...$data)
+    {
+        $command = array_merge([Command::ZADD, $key, $score1, $member1], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zCard($key)
+    {
+        $data = [Command::ZCARD, $key];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zCount($key, $min, $max)
+    {
+        $data = [Command::ZCOUNT, $key, $min, $max];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zInCrBy($key, $increment, $member)
+    {
+        $data = [Command::ZINCRBY, $key, $increment, $member];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zInTerStore($destination, $numKeys, $key, ...$data)
+    {
+        $command = array_merge([Command::ZINTERSTORE, $destination, $numKeys, $key,], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zLexCount($key, $min, $max)
+    {
+        $data = [Command::ZLEXCOUNT, $key, $min, $max];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRange($key, $start, $stop, $withScores = false)
+    {
+        $data = [Command::ZRANGE, $key, $start, $stop];
+        if ($withScores == true) {
+            $data[] = 'WITHSCORES';
+        }
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        $data = $recv->getData();
+        $result = $data;
+        if ($withScores == true) {
+            $result = [];
+            foreach ($data as $k => $va) {
+                if ($k % 2 == 0) {
+                    $result[$va] = 0;
+                } else {
+                    $result[$data[$k - 1]] = $va;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    public function zRangeByLex($key, $min, $max, ...$data)
+    {
+        $command = array_merge([Command::ZRANGEBYLEX, $key, $min, $max], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRangeByScore($key, $min, $max, $withScores = false, ...$data)
+    {
+        if ($withScores == true) {
+            $command = array_merge([Command::ZRANGEBYSCORE, $key, $min, $max, 'WITHSCORES'], $data);
+        } else {
+            $command = array_merge([Command::ZRANGEBYSCORE, $key, $min, $max], $data);
+        }
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+
+        $data = $recv->getData();
+        $result = $data;
+        if ($withScores == true) {
+            $result = [];
+            foreach ($data as $k => $va) {
+                if ($k % 2 == 0) {
+                    $result[$va] = 0;
+                } else {
+                    $result[$data[$k - 1]] = $va;
+                }
+            }
+        }
+        return $result;
+    }
+
+    public function zRank($key, $member)
+    {
+        $data = [Command::ZRANK, $key, $member];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRem($key, $member, ...$members)
+    {
+        $command = array_merge([Command::ZREM, $key, $member], $members);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRemRangeByLex($key, $min, $max)
+    {
+        $data = [Command::ZREMRANGEBYLEX, $key, $min, $max];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRemRangeByRank($key, $start, $stop)
+    {
+        $data = [Command::ZREMRANGEBYRANK, $key, $start, $stop];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRemRangeByScore($key, $min, $max)
+    {
+        $data = [Command::ZREMRANGEBYSCORE, $key, $min, $max];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zRevRange($key, $start, $stop, $withScores = false)
+    {
+        $data = [Command::ZREVRANGE, $key, $start, $stop];
+        if ($withScores == true) {
+            $data[] = 'WITHSCORES';
+        }
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        $data = $recv->getData();
+        $result = $data;
+        if ($withScores == true) {
+            $result = [];
+            foreach ($data as $k => $va) {
+                if ($k % 2 == 0) {
+                    $result[$va] = 0;
+                } else {
+                    $result[$data[$k - 1]] = $va;
+                }
+            }
+        }
+        return $result;
+    }
+
+    public function zRevRangeByScore($key, $max, $min, $withScores = false)
+    {
+        $data = [Command::ZREVRANGEBYSCORE, $key, $max, $min];
+        if ($withScores == true) {
+            $data[] = 'WITHSCORES';
+        }
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        $data = $recv->getData();
+        $result = $data;
+        if ($withScores == true) {
+            $result = [];
+            foreach ($data as $k => $va) {
+                if ($k % 2 == 0) {
+                    $result[$va] = 0;
+                } else {
+                    $result[$data[$k - 1]] = $va;
+                }
+            }
+        }
+        return $result;
+    }
+
+    public function zRevRank($key, $member)
+    {
+        $data = [Command::ZREVRANK, $key, $member];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zScore($key, $member)
+    {
+        $data = [Command::ZSCORE, $key, $member];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function zUnionStore($destination, $keyNum, $key,...$data)
+    {
+        $command = array_merge([Command::ZUNIONSTORE, $destination,$keyNum, $key], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    /*public function zScan($key, $cursor, $pattern, $count)
+    {
+        $data = [Command::ZSCAN, $key, $cursor, $pattern, $count];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }*/
+    ######################有序集合操作方法######################
 
 
     ###################### 发送接收tcp流数据 ######################

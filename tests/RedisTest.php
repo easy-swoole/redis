@@ -431,6 +431,12 @@ class RedisTest extends TestCase
         $this->assertEquals(1, $redis->lLen($key[1]));
     }
 
+    /**
+     * 集合测试
+     * testMuster
+     * @author Tioncico
+     * Time: 9:10
+     */
     function testMuster()
     {
         $redis = $this->redis;
@@ -469,15 +475,15 @@ class RedisTest extends TestCase
         $data = $redis->sMembers($key[1]);
         $this->assertEquals([$value[0], $value[2]], $data);
 
-        $data = $redis->sDiffStore($key[2],$key[0],$key[1]);
+        $data = $redis->sDiffStore($key[2], $key[0], $key[1]);
         $this->assertEquals(1, $data);
         $data = $redis->sMembers($key[2]);
         $this->assertEquals([$value[1]], $data);
 
-        $data = $redis->sInter($key[0],$key[1]);
+        $data = $redis->sInter($key[0], $key[1]);
         $this->assertEquals([$value[0]], $data);
 
-        $data = $redis->sInterStore($key[3],$key[0],$key[1]);
+        $data = $redis->sInterStore($key[3], $key[0], $key[1]);
         $this->assertEquals(1, $data);
         $this->assertEquals([$value[0]], $redis->sMembers($key[3]));
 
@@ -493,27 +499,181 @@ class RedisTest extends TestCase
         $this->assertEquals(1, $data);
 
         $redis->del($key[3]);
-        $redis->sAdd($key[3],$value[0],$value[1],$value[2],$value[3]);
-        $data = $redis->sRandMemBer($key[3],4);
+        $redis->sAdd($key[3], $value[0], $value[1], $value[2], $value[3]);
+        $data = $redis->sRandMemBer($key[3], 4);
         $this->assertEquals(4, count($data));
 
-        $data = $redis->sRen($key[3],$value[0],$value[1],$value[2],$value[3]);
+        $data = $redis->sRen($key[3], $value[0], $value[1], $value[2], $value[3]);
         $this->assertEquals(4, $data);
-        $this->assertEquals([],$redis->sMembers($key[3]));
+        $this->assertEquals([], $redis->sMembers($key[3]));
 
         $data = $redis->sUnion($key[0], $key[1]);
-        $this->assertEquals([$value[0],$value[1],$value[2]], $data);
+        $this->assertEquals([$value[0], $value[1], $value[2]], $data);
 
         $redis->del($key[1]);
         $redis->del($key[2]);
         $redis->del($key[3]);
         $redis->del($key[4]);
-        $redis->sAdd($key[1],1,2,3,4);
-        $redis->sAdd($key[2],5);
-        $redis->sAdd($key[3],6,7);
-        $data = $redis->sUnIomStore($key[4], $key[1],  $key[2],  $key[3]);
+        $redis->sAdd($key[1], 1, 2, 3, 4);
+        $redis->sAdd($key[2], 5);
+        $redis->sAdd($key[3], 6, 7);
+        $data = $redis->sUnIomStore($key[4], $key[1], $key[2], $key[3]);
         $this->assertEquals(7, $data);
 //        $data = $redis->sScan('s', 'a', 's');
 //        $this->assertEquals(1, $data);
+    }
+
+    function testSortMuster()
+    {
+        $redis = $this->redis;
+
+
+        $key = [
+            'sortMuster1',
+            'sortMuster2',
+            'sortMuster3',
+            'sortMuster4',
+            'sortMuster5',
+        ];
+        $member = [
+            'member1',
+            'member2',
+            'member3',
+            'member4',
+            'member5',
+        ];
+        $score = [
+            1,
+            2,
+            3,
+            4,
+        ];
+        $redis->del($key[0]);
+        $data = $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
+
+        $this->assertEquals(2, $data);
+
+        $data = $redis->zCard($key[0]);
+        $this->assertEquals(2, $data);
+
+        $data = $redis->zCount($key[0], 0, 3);
+        $this->assertEquals(2, $data);
+
+        $data = $redis->zInCrBy($key[0], 1, $member[1]);
+        $this->assertEquals($score[1] + 1, $data);
+
+        $redis->del($key[0]);
+        $redis->del($key[1]);
+        $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
+        $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
+        $data = $redis->zInTerStore($key[2], 2, $key[0], $key[1]);
+        $this->assertEquals(1, $data);
+
+        $data = $redis->zLexCount($key[0], '-', '+');
+        $this->assertEquals(2, $data);
+
+        $redis->del($key[0]);
+        $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
+        $data = $redis->zRange($key[0], 0, -1, true);
+        $this->assertEquals([
+            $member[0] => $score[0],
+            $member[1] => $score[1],
+            $member[2] => $score[2],
+        ], $data);
+        $data = $redis->zRange($key[0], 0, -1, false);
+        $this->assertEquals([
+            $member[0],
+            $member[1],
+            $member[2],
+        ], $data);
+
+        $data = $redis->zRangeByLex($key[0], '-', '+');
+        $this->assertEquals(3, count($data));
+
+        $data = $redis->zRangeByScore($key[0], 2, 3,true);
+
+        $this->assertEquals([
+            $member[1] => $score[1],
+            $member[2] => $score[2],
+        ], $data);
+
+        $data = $redis->zRangeByScore($key[0], 2, 3, false);
+        $this->assertEquals([
+            $member[1],
+            $member[2],
+        ], $data);
+
+        $data = $redis->zRank($key[0], $member[1]);
+        $this->assertEquals(1, $data);
+
+        $data = $redis->zRem($key[0], $member[1], $member[2]);
+        $this->assertEquals(2, $data);
+
+        $redis->del($key[0]);
+        $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
+        $data = $redis->zRemRangeByLex($key[0], '-', '+');
+        $this->assertEquals(3, $data);
+
+        $redis->del($key[0]);
+        $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
+        $data = $redis->zRemRangeByRank($key[0], 0, 2);
+        $this->assertEquals(3, $data);
+
+        $redis->del($key[0]);
+        $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
+        $data = $redis->zRemRangeByScore($key[0], 0, 3);
+        $this->assertEquals(3, $data);
+
+
+        $redis->del($key[0]);
+        $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
+        $data = $redis->zRevRange($key[0], 0, 3);
+        $this->assertEquals([
+            $member[2],
+            $member[1],
+            $member[0],
+        ], $data);
+        $redis->del($key[0]);
+        $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
+        $data = $redis->zRevRange($key[0], 0, 3, true);
+        $this->assertEquals([
+            $member[2] => $score[2],
+            $member[1] => $score[1],
+            $member[0] => $score[0],
+        ], $data);
+
+
+        $redis->del($key[0]);
+        $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
+        $data = $redis->zRevRangeByScore($key[0], 3, 0, true);
+
+        $this->assertEquals([
+            $member[2] => $score[2],
+            $member[1] => $score[1],
+            $member[0] => $score[0],
+        ], $data);
+        $redis->del($key[0]);
+        $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
+        $data = $redis->zReVRangeByScore($key[0], 3, 0,false);
+        $this->assertEquals([
+            $member[2] ,
+            $member[1] ,
+            $member[0] ,
+        ], $data);
+
+        $data = $redis->zRevRank($key[0], $member[0]);
+        $this->assertEquals(2, $data);
+
+        $data = $redis->zScore($key[0], $member[0]);
+        $this->assertEquals($score[0], $data);
+
+        $redis->del($key[0]);
+        $redis->del($key[1]);
+        $redis->del($key[2]);
+        $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
+        $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
+        $data = $redis->zUnionStore($key[2],2,$key[1],$key[0]);
+        $this->assertEquals(3, $data);
+
     }
 }
