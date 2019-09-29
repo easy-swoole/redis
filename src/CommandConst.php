@@ -128,6 +128,7 @@ class CommandConst
     const PFADD = 'PFADD';//添加指定元素到 HyperLogLog 中。
     const PFCOUNT = 'PFCOUNT';//返回给定 HyperLogLog 的基数估算值。
     const PFMERGE = 'PFMERGE';//将多个 HyperLogLog 合并为一个 HyperLogLog
+
     const PSUBSCRIBE = 'PSUBSCRIBE';//订阅一个或多个符合给定模式的频道。
     const PUBSUB = 'PUBSUB';//查看订阅与发布系统状态。
     const PUBLISH = 'PUBLISH';//将信息发送到指定的频道。

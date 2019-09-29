@@ -527,7 +527,6 @@ class RedisTest extends TestCase
     {
         $redis = $this->redis;
 
-
         $key = [
             'sortMuster1',
             'sortMuster2',
@@ -674,6 +673,31 @@ class RedisTest extends TestCase
         $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
         $data = $redis->zUnionStore($key[2],2,$key[1],$key[0]);
         $this->assertEquals(3, $data);
+    }
+
+    function testHyperLog(){
+        $redis = $this->redis;
+
+        $key = [
+            'hp1',
+            'hp2',
+            'hp3',
+            'hp4',
+            'hp5',
+        ];
+        $redis->del($key[0]);
+        $redis->del($key[1]);
+        $data = $redis->pfAdd($key[0],...[1,2,2,3,3]);
+        $this->assertEquals(1,$data);
+
+        $data = $redis->pfAdd($key[1],...[1,2,2,3,3]);
+        $data = $redis->pfCount($key[0],$key[1]);
+        $this->assertEquals(3,$data);
+
+        $data = $redis->pfMerge($key[2],$key[0],$key[1]);
+//        var_dump($data);
+        $this->assertEquals(1,$data);
+
 
     }
 }

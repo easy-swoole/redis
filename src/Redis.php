@@ -1490,9 +1490,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function zUnionStore($destination, $keyNum, $key,...$data)
+    public function zUnionStore($destination, $keyNum, $key, ...$data)
     {
-        $command = array_merge([Command::ZUNIONSTORE, $destination,$keyNum, $key], $data);
+        $command = array_merge([Command::ZUNIONSTORE, $destination, $keyNum, $key], $data);
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1516,6 +1516,49 @@ class Redis
         return $recv->getData();
     }*/
     ######################有序集合操作方法######################
+
+    ######################HyperLogLog操作方法######################
+
+    public function pfAdd($key,...$data)
+    {
+        $command = array_merge([Command::PFADD, $key], $data);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function pfCount($key, ...$keys)
+    {
+        $command = array_merge([Command::PFCOUNT, $key], $keys);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function pfMerge($deStKey, $sourceKey, ...$sourceKeys)
+    {
+        $command = array_merge([Command::PFMERGE, $deStKey,$sourceKey], $sourceKeys);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return true;
+    }
+
+    ######################HyperLogLog操作方法######################
 
 
     ###################### 发送接收tcp流数据 ######################
