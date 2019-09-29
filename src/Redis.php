@@ -39,6 +39,12 @@ class Redis
             $this->client = new Client($this->config->getHost(), $this->config->getPort());
         }
         $this->isConnected = $this->client->connect($timeout);
+        if($this->isConnected && !empty($this->config->getAuth())){
+            if(!$this->auth($this->config->getAuth())){
+                $this->isConnected = false;
+                throw new RedisException("auth to redis host {$this->config->getHost()}:{$this->config->getPort()} fail");
+            }
+        }
         return $this->isConnected;
     }
 
@@ -1560,9 +1566,9 @@ class Redis
 
     ######################HyperLogLog操作方法######################
 
-    ######################发布订阅操作方法######################
+    ######################发布订阅操作方法(待测试)######################
 
-    public function pSubscribe($callback, $pattern, ...$patterns)
+    /*public function pSubscribe($callback, $pattern, ...$patterns)
     {
         $command = array_merge([Command::PSUBSCRIBE, $pattern], $patterns);
         if (!$this->sendCommand($command)) {
@@ -1638,13 +1644,13 @@ class Redis
             return false;
         }
         return $recv->getData();
-    }
+    }*/
 
-    ######################发布订阅操作方法######################
+    ######################发布订阅操作方法(待测试)######################
 
-    ######################事务操作方法######################
+    ######################事务操作方法(待测试)######################
 
-    public function discard():bool
+   /* public function discard():bool
     {
         $data = [Command::DISCARD];
         if (!$this->sendCommand($data)) {
@@ -1707,13 +1713,13 @@ class Redis
             return false;
         }
         return true;
-    }
-    ######################事务操作方法######################
+    }*/
+    ######################事务操作方法(待测试)######################
 
 
-    ######################脚本操作方法######################
+    ######################脚本操作方法(待测试)######################
 
-    public function eval($script, $keyNum, $key,...$data)
+    /*public function eval($script, $keyNum, $key,...$data)
     {
         $command = array_merge([Command::EVAL,$script, $keyNum, $key,], $data);
         if (!$this->sendCommand($command)) {
@@ -1789,8 +1795,8 @@ class Redis
             return false;
         }
         return $recv->getData();
-    }
-    ######################脚本操作方法######################
+    }*/
+    ######################脚本操作方法(待测试)######################
 
     ###################### 发送接收tcp流数据 ######################
     protected function sendCommand(array $com): bool
@@ -1800,18 +1806,15 @@ class Redis
                 if ($this->client->sendCommand($com)) {
                     $this->reset();
                     return true;
-                } else {
-                    /*
-                     * 发送失败的时候，强制切断链接进入重连发送逻辑
-                     */
-                    $this->client->close();;
                 }
             }
-            $this->lastSocketError = $this->client->socketError();
-            $this->lastSocketErrno = $this->client->socketErrno();
+            $this->disconnect();
             $this->tryConnectTimes++;
         }
-        return false;
+        /*
+         * 链接超过重连次数，应该抛出异常
+         */
+        throw new RedisException("connect to redis host {$this->config->getHost()}:{$this->config->getPort()} fail after retry {$this->tryConnectTimes} times");
     }
 
     protected function recv(): ?Response
@@ -1824,18 +1827,12 @@ class Redis
             if ($this->errorType == 'NOAUTH') {
                 throw new RedisException($recv->getMsg());
             }
-            return null;
         } elseif ($recv->getStatus() == $recv::STATUS_OK) {
             return $recv;
         } elseif ($recv->getStatus() == $recv::STATUS_TIMEOUT) {
-            /*
-             * 接收失败的时候，强制切断链接进入重连发送逻辑
-             */
-            $this->client->close();;
-            $this->lastSocketError = $this->client->socketError();
-            $this->lastSocketErrno = $this->client->socketErrno();
-            return null;
+            $this->disconnect();
         }
+        return null;
     }
     ###################### 发送接收tcp流数据 ######################
 
@@ -1869,6 +1866,16 @@ class Redis
     public function getErrorMsg()
     {
         return $this->errorMsg;
+    }
+
+    function disconnect()
+    {
+        if($this->isConnected){
+            $this->client->close();
+            $this->isConnected = false;
+            $this->lastSocketError = $this->client->socketError();
+            $this->lastSocketErrno = $this->client->socketErrno();
+        }
     }
 
     protected function serialize($val)
