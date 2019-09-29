@@ -1275,6 +1275,13 @@ class Redis
     ######################有序集合操作方法######################
     public function zAdd($key, $score1, $member1, ...$data)
     {
+        $member1 = $this->serialize($member1);
+        foreach ($data as $k=>$va){
+            if ($k%2!=0){
+                $data[$k] = $this->serialize($va);
+            }
+        }
+
         $command = array_merge([Command::ZADD, $key, $score1, $member1], $data);
         if (!$this->sendCommand($command)) {
             return false;
@@ -1365,15 +1372,19 @@ class Redis
             return false;
         }
         $data = $recv->getData();
-        $result = $data;
         if ($withScores == true) {
             $result = [];
             foreach ($data as $k => $va) {
                 if ($k % 2 == 0) {
-                    $result[$va] = 0;
+                    $result[$this->unSerialize($va)] = 0;
                 } else {
-                    $result[$data[$k - 1]] = $va;
+                    $result[$this->unSerialize($data[$k - 1])] = $va;
                 }
+            }
+        }else{
+            $result = [];
+            foreach ($data as $k => $va) {
+                $result[$k]  =$this->unSerialize($va);
             }
         }
 
@@ -1390,7 +1401,12 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        foreach ($data as $key=>$va){
+            $data[$key] = $this->unSerialize($va);
+        }
+
+        return $data;
     }
 
     public function zRangeByScore($key, $min, $max, $withScores = false, ...$data)
@@ -1410,15 +1426,19 @@ class Redis
         }
 
         $data = $recv->getData();
-        $result = $data;
         if ($withScores == true) {
             $result = [];
             foreach ($data as $k => $va) {
                 if ($k % 2 == 0) {
-                    $result[$va] = 0;
+                    $result[$this->unSerialize($va)] = 0;
                 } else {
-                    $result[$data[$k - 1]] = $va;
+                    $result[$this->unSerialize($data[$k - 1])] = $va;
                 }
+            }
+        }else{
+            $result = [];
+            foreach ($data as $k => $va) {
+                $result[$k]  =$this->unSerialize($va);
             }
         }
         return $result;
@@ -1426,6 +1446,7 @@ class Redis
 
     public function zRank($key, $member)
     {
+        $member = $this->serialize($member);
         $data = [Command::ZRANK, $key, $member];
         if (!$this->sendCommand($data)) {
             return false;
@@ -1439,6 +1460,10 @@ class Redis
 
     public function zRem($key, $member, ...$members)
     {
+        $member = $this->serialize($member);
+        foreach ($members as $k=>$va){
+            $members[$k] = $this->serialize($va);
+        }
         $command = array_merge([Command::ZREM, $key, $member], $members);
         if (!$this->sendCommand($command)) {
             return false;
@@ -1503,15 +1528,19 @@ class Redis
             return false;
         }
         $data = $recv->getData();
-        $result = $data;
         if ($withScores == true) {
             $result = [];
             foreach ($data as $k => $va) {
                 if ($k % 2 == 0) {
-                    $result[$va] = 0;
+                    $result[$this->unSerialize($va)] = 0;
                 } else {
-                    $result[$data[$k - 1]] = $va;
+                    $result[$this->unSerialize($data[$k - 1])] = $va;
                 }
+            }
+        }else{
+            $result = [];
+            foreach ($data as $k => $va) {
+                $result[$k]  =$this->unSerialize($va);
             }
         }
         return $result;
@@ -1531,15 +1560,19 @@ class Redis
             return false;
         }
         $data = $recv->getData();
-        $result = $data;
         if ($withScores == true) {
             $result = [];
             foreach ($data as $k => $va) {
                 if ($k % 2 == 0) {
-                    $result[$va] = 0;
+                    $result[$this->unSerialize($va)] = 0;
                 } else {
-                    $result[$data[$k - 1]] = $va;
+                    $result[$this->unSerialize($data[$k - 1])] = $va;
                 }
+            }
+        }else{
+            $result = [];
+            foreach ($data as $k => $va) {
+                $result[$k]  =$this->unSerialize($va);
             }
         }
         return $result;
@@ -1547,6 +1580,7 @@ class Redis
 
     public function zRevRank($key, $member)
     {
+        $member = $this->serialize($member);
         $data = [Command::ZREVRANK, $key, $member];
         if (!$this->sendCommand($data)) {
             return false;
@@ -1560,6 +1594,7 @@ class Redis
 
     public function zScore($key, $member)
     {
+        $member = $this->serialize($member);
         $data = [Command::ZSCORE, $key, $member];
         if (!$this->sendCommand($data)) {
             return false;
