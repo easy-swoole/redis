@@ -87,7 +87,7 @@ class RedisTest extends TestCase
         $this->assertEquals(0, $this->redis->exists($key));
 
         $redis->set($key, 123);
-        $data = $redis->keys("{$key}*");
+        $data = $redis->keys("{$key}");
         $this->assertEquals($key, $data[0]);
 
         $redis->select(1);
@@ -1459,7 +1459,6 @@ class RedisTest extends TestCase
         $this->assertTrue(!!$data);
 
     }
-
 
     /**
      * geohash测试
