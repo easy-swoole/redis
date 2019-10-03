@@ -107,10 +107,10 @@ class RedisTest extends TestCase
 
         $redis->expire($key, 1);
         $data = $redis->pTTL($key);
-        $this->assertLessThanOrEqual($data, 1000);
+        $this->assertLessThanOrEqual(1000,$data);
 
         $data = $redis->ttl($key);
-        $this->assertLessThanOrEqual($data, 1);
+        $this->assertLessThanOrEqual(1,$data);
 
         $data = $redis->randomKey();
         $this->assertTrue(!!$data);
@@ -589,13 +589,13 @@ class RedisTest extends TestCase
 
 
         $data = $redis->lRange($key[1], 0, 3);
-        $this->assertEquals([$value[1], $value[2], $value[0]], $data);
+        $this->assertEquals(count($data), 3);
 
         $data = $redis->lPop($key[1]);
-        $this->assertEquals($value[1], $data);
+        $this->assertEquals($value[0], $data);
 
         $data = $redis->rPop($key[1]);
-        $this->assertEquals($value[0], $data);
+        $this->assertEquals($value[1], $data);
 
         $data = $redis->lPuShx($key[1], 'x');
         $this->assertEquals($redis->lLen($key[1]), $data);
@@ -675,13 +675,13 @@ class RedisTest extends TestCase
 
 
         $data = $redis->lRange($key[1], 0, 3);
-        $this->assertEquals([$value[1], $value[2], $value[0]], $data);
+        $this->assertEquals([$value[0], $value[2], $value[1]], $data);
 
         $data = $redis->lPop($key[1]);
-        $this->assertEquals($value[1], $data);
+        $this->assertEquals($value[0], $data);
 
         $data = $redis->rPop($key[1]);
-        $this->assertEquals($value[0], $data);
+        $this->assertEquals($value[1], $data);
 
         $data = $redis->lPuShx($key[1], 'x');
         $this->assertEquals($redis->lLen($key[1]), $data);
