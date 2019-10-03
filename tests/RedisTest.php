@@ -1461,6 +1461,12 @@ class RedisTest extends TestCase
     }
 
 
+    /**
+     * geohash测试
+     * testGeohash
+     * @author tioncico
+     * Time: 下午6:11
+     */
     function testGeohash(){
         $redis = $this->redis;
         $key='testGeohash';
