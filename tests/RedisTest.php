@@ -1285,7 +1285,13 @@ class RedisTest extends TestCase
 
     }
 
-    function testWatch()
+    /**
+     * 事务测试
+     * testTransaction
+     * @author tioncico
+     * Time: 下午5:40
+     */
+    function testTransaction()
     {
         $this->assertEquals(1, 1);
 
@@ -1316,6 +1322,12 @@ class RedisTest extends TestCase
 //        $data = $redis->watch();
     }
 
+    /**
+     * 脚本执行测试
+     * testScript
+     * @author tioncico
+     * Time: 下午5:41
+     */
     function testScript()
     {
         $this->assertEquals(1, 1);
@@ -1341,6 +1353,12 @@ class RedisTest extends TestCase
 //        $this->assertEquals(1,$data);
     }
 
+    /**
+     * 服务器命令测试
+     * testServer
+     * @author tioncico
+     * Time: 下午5:41
+     */
     function testServer()
     {
 
@@ -1439,6 +1457,32 @@ class RedisTest extends TestCase
 
         $data = $redis->slowLog('get', 'a');
         $this->assertTrue(!!$data);
+
+    }
+
+
+    function testGeohash(){
+        $redis = $this->redis;
+        $key='testGeohash';
+
+        $redis->del($key);
+        $data = $redis->geoAdd($key,'118.6197800000','24.88849','user1','118.6197800000','24.88859','user2','114.8197800000','25.88849','user3','118.8197800000','22.88849','user4');
+        $this->assertEquals(4, $data);
+
+        $data = $redis->geoDist($key,'user1','user2');
+        $this->assertGreaterThan(10, $data);
+
+        $data = $redis->geoHash($key,'user1','user2');
+        $this->assertIsArray($data);
+
+        $data = $redis->geoPos($key,'user1','user2');
+        $this->assertIsArray($data);
+
+        $data = $redis->geoRadius($key,'118.6197800000','24.88849',100,'m',false,false,false,'desc');
+        $this->assertEquals(['user2','user1'], $data);
+
+        $data = $redis->geoRadiusByMember($key,'user1',100,'m',false,false,false,'desc');
+        $this->assertEquals(['user2','user1'], $data);
 
     }
 

@@ -188,4 +188,5 @@ class CommandConst
     const GEOPOS = 'GEOPOS';
     const GEORADIUS = 'GEORADIUS';
     const GEORADIUSBYMEMBER = 'GEORADIUSBYMEMBER';
+
 }

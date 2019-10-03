@@ -2326,7 +2326,7 @@ class Redis
         return $recv->getData();
     }
 
-    public function save():bool
+    public function save(): bool
     {
         $data = [Command::SAVE];
         if (!$this->sendCommand($data)) {
@@ -2342,19 +2342,6 @@ class Redis
     public function shutdown()
     {
         $data = [Command::SHUTDOWN];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
-
-    public function slaveOf($host, $port)
-    {
-        $data = [Command::SLAVEOF, $host, $port];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -2391,6 +2378,136 @@ class Redis
         return $recv->getData();
     }
     ######################服务器操作方法######################
+
+    ######################geohash操作方法######################
+    public function geoAdd($key, $longitude, $latitude, $name, ...$data)
+    {
+        $command = array_merge([Command::GEOADD, $key, $longitude, $latitude, $name,], $data);
+        $data = [Command::GEOADD];
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function geoDist($key, $location1, $location2, $unit = 'm')
+    {
+        $data = [Command::GEODIST, $key, $location1, $location2, $unit];
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function geoHash($key, $location, ...$locations)
+    {
+        $command = array_merge([Command::GEOHASH, $key, $location,], $locations);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function geoPos($key, $location1, ...$locations)
+    {
+        $command = array_merge([Command::GEOPOS, $key, $location1,], $locations);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function geoRadius($key, $longitude, $latitude, $radius, $unit = 'm', $withCoord = false, $withDist = false, $withHash = false, $count = null, $sort = null, $storeKey = null, $storeDistKey = null)
+    {
+//        GEORADIUS key longitude latitude radius m|km|ft|mi [WITHCOORD] [WITHDIST] [WITHHASH] [COUNT count] [ASC|DESC] [STORE key] [STOREDIST key]
+
+        $data = [Command::GEORADIUS, $key, $longitude, $latitude, $radius, $unit];
+        if ($withCoord === true) {
+            $data[] = 'WITHCOORD';
+        }
+        if ($withDist === true) {
+            $data[] = 'WITHDIST';
+        }
+        if ($withHash === true) {
+            $data[] = 'WITHHASH';
+        }
+        if ($count !== null) {
+            $data[] = $count;
+        }
+        if ($sort !== null) {
+            $data[] = $sort;
+        }
+        if ($storeKey !== null) {
+            $data[] = $storeKey;
+        }
+        if ($storeDistKey !== null) {
+            $data[] = $storeDistKey;
+        }
+
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
+    public function geoRadiusByMember($key, $location, $radius, $unit = 'm', $withCoord = false, $withDist = false, $withHash = false, $count = null, $sort = null, $storeKey = null, $storeDistKey = null)
+    {
+        $data = [Command::GEORADIUSBYMEMBER, $key, $location, $radius, $unit];
+        if ($withCoord === true) {
+            $data[] = 'WITHCOORD';
+        }
+        if ($withDist === true) {
+            $data[] = 'WITHDIST';
+        }
+        if ($withHash === true) {
+            $data[] = 'WITHHASH';
+        }
+        if ($count !== null) {
+            $data[] = $count;
+        }
+        if ($sort !== null) {
+            $data[] = $sort;
+        }
+        if ($storeKey !== null) {
+            $data[] = $storeKey;
+        }
+        if ($storeDistKey !== null) {
+            $data[] = $storeDistKey;
+        }
+
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        if (!$this->sendCommand($data)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+    ######################geohash操作方法######################
 
 
     ###################### 发送接收tcp流数据 ######################
