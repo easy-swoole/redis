@@ -164,6 +164,7 @@ class CommandConst
     const CLIENT = 'CLIENT';//关闭客户端连接
     const CLUSTER = 'CLUSTER';//获取集群节点的映射数组
     const COMMAND = 'COMMAND';//获取 Redis 命令详情数组
+    const COMMAND_COUNT = 'COMMAND COUNT';//获取 Redis 命令详情数组
     const TIME = 'TIME';//返回当前服务器时间
     const CONFIG = 'CONFIG';//获取指定配置参数的值
     const DBSIZE = 'DBSIZE';//返回当前数据库的 key 的数量

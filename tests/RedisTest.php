@@ -1254,7 +1254,7 @@ class RedisTest extends TestCase
                 $data = $redis->unsubscribe('test');
                 $this->assertTrue(!!$data);
                 $redis->subscribeStop();
-            }, 'test','test1','test2');
+            }, 'test', 'test1', 'test2');
         });
 
         go(function () {
@@ -1268,7 +1268,7 @@ class RedisTest extends TestCase
                 $data = $redis->unsubscribe('test');
                 $this->assertTrue(!!$data);
                 $redis->subscribeStop();
-            }, 'test','test1','test2');
+            }, 'test', 'test1', 'test2');
         });
 
         $redis = $this->redis;
@@ -1276,8 +1276,8 @@ class RedisTest extends TestCase
         $data = $redis->pubSub('CHANNELS');
         $this->assertTrue(!!$data);
         Coroutine::sleep(1);
-        $data = $redis->publish('test2','test');
-        $this->assertGreaterThan(0,$data);
+        $data = $redis->publish('test2', 'test');
+        $this->assertGreaterThan(0, $data);
 //
         $data = $redis->pUnSubscribe('test');
         $this->assertTrue(!!$data);
@@ -1339,6 +1339,107 @@ class RedisTest extends TestCase
 //
 //        $data = $redis->scriptLoad('a');
 //        $this->assertEquals(1,$data);
+    }
+
+    function testServer()
+    {
+
+        $redis = $this->redis;
+
+//        $data = $redis->bgRewriteAof();
+//        $this->assertEquals('Background append only file rewriting started', $data);
+//        Coroutine::sleep(1);
+//        $data = $redis->bgSave();
+//        $this->assertEquals('Background saving started', $data);
+//        $data = $redis->clientList();
+//        $this->assertIsArray($data);
+//        $data = $redis->clientKill($data[3]['addr']);
+//        $this->assertTrue($data);
+
+
+        $data = $redis->clientSetName('test');
+        $this->assertTrue($data);
+        $data = $redis->clientGetName();
+        $this->assertEquals('test', $data);
+
+//        $data = $redis->clientPause(1);
+//        $this->assertEquals(1, $data);
+
+        $data = $redis->command();
+        $this->assertIsArray($data);
+
+        $data = $redis->commandCount();
+        $this->assertGreaterThan(0, $data);
+
+        $data = $redis->commandGetKeys('MSET', 'a', 'b', 'c', 'd');
+        $this->assertEquals(['a', 'c'], $data);
+
+        $data = $redis->time();
+        $this->assertIsArray($data);
+
+        $data = $redis->commandInfo('get', 'set');
+        $this->assertIsArray($data);
+
+        $data = $redis->configGet('*max-*-entries*');
+        $this->assertIsArray($data);
+
+
+        $data = $redis->configSet('appendonly', 'yes');
+        $this->assertTrue($data);
+        $data = $redis->configRewrite();
+        $this->assertTrue($data);
+
+        $data = $redis->configResetStat();
+        $this->assertTrue($data);
+
+        $data = $redis->dBSize();
+        $this->assertGreaterThanOrEqual(0, $data);
+
+        $redis->set('a', 1);
+        $data = $redis->debugObject('a');
+        $this->assertIsString($data);
+
+        $data = $redis->flushAll();
+        $this->assertTrue($data);
+
+        $data = $redis->flushDb();
+        $this->assertTrue($data);
+
+        $data = $redis->info();
+        $this->assertIsArray($data);
+
+        $data = $redis->lastSave();
+        $this->assertNotFalse($data);
+
+        go(function () {
+            $redis = new Redis(new RedisConfig([
+                'host' => REDIS_HOST,
+                'port' => REDIS_PORT,
+                'auth' => REDIS_AUTH
+            ]));
+            $redis->monitor(function (Redis $redis, $data) {
+                $this->assertIsString($data);
+                $redis->set('a', 1);
+                $redis->monitorStop();
+            });
+        });
+
+        go(function () {
+            $redis = new Redis(new RedisConfig([
+                'host' => REDIS_HOST,
+                'port' => REDIS_PORT,
+                'auth' => REDIS_AUTH
+            ]));
+            Coroutine::sleep(1);
+            $redis->set('a', 1);
+        });
+
+        $data = $redis->save();
+        $this->assertEquals(1, $data);
+
+        $data = $redis->slowLog('get', 'a');
+        $this->assertTrue(!!$data);
+
     }
 
 }

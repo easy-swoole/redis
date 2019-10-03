@@ -25,6 +25,11 @@ class Redis
      */
     protected $subscribeStop = true;
 
+    /**
+     * @var bool 是否停止命令监听
+     */
+    protected $monitorStop = true;
+
 
     public function __construct(RedisConfig $config)
     {
@@ -60,6 +65,7 @@ class Redis
         $this->lastSocketErrno = 0;
         $this->lastSocketError = '';
         $this->subscribeStop = true;
+        $this->monitorStop = true;
         $this->errorMsg = '';
         $this->errorType = '';
     }
@@ -1943,7 +1949,6 @@ class Redis
     ######################脚本操作方法(待测试)######################
 
 
-
 ######################服务器操作方法######################
 
     public function bgReWriteAof()
@@ -1972,9 +1977,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function clientKill($ip,$id)
+    public function clientKill($data): bool
     {
-        $data = [Command::CLIENT,$ip,$id];
+        $data = [Command::CLIENT, 'kill', $data];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1982,12 +1987,12 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return true;
     }
 
     public function clientList()
     {
-        $data = [Command::CLIENT];
+        $data = [Command::CLIENT, 'list'];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -1995,12 +2000,25 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        $result = [];
+        foreach (explode(PHP_EOL, $data) as $clientKey => $value) {
+            if (empty($value)) {
+                continue;
+            }
+            $arr = explode(' ', $value);
+            $result[$clientKey] = [];
+            foreach ($arr as $kv) {
+                $kvArr = explode('=', $kv);
+                $result[$clientKey][$kvArr[0]] = $kvArr[1];
+            }
+        }
+        return $result;
     }
 
     public function clientGetName()
     {
-        $data = [Command::CLIENT];
+        $data = [Command::CLIENT, 'GETNAME'];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -2011,9 +2029,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function clientPause($PAUSE,$timeout)
+    public function clientPause($timeout): bool
     {
-        $data = [Command::CLIENT,$PAUSE,$timeout];
+        $data = [Command::CLIENT, 'PAUSE', $timeout];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -2021,12 +2039,12 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return true;
     }
 
-    public function clientSetName($connectionName)
+    public function clientSetName($connectionName): bool
     {
-        $data = [Command::CLIENT, $connectionName];
+        $data = [Command::CLIENT, 'SETNAME', $connectionName];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -2034,20 +2052,7 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
-    }
-
-    public function clusterSlots()
-    {
-        $data = [Command::CLUSTER];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
+        return true;
     }
 
     public function command()
@@ -2065,7 +2070,7 @@ class Redis
 
     public function commandCount()
     {
-        $data = [Command::COMMAND];
+        $data = [Command::COMMAND, 'COUNT'];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -2076,10 +2081,10 @@ class Redis
         return $recv->getData();
     }
 
-    public function commandGetKeys()
+    public function commandGetKeys(...$data)
     {
-        $data = [Command::COMMAND];
-        if (!$this->sendCommand($data)) {
+        $command = array_merge([Command::COMMAND, 'GETKEYS'], $data);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -2102,10 +2107,10 @@ class Redis
         return $recv->getData();
     }
 
-    public function commandInfo($commandName,$commandName1)
+    public function commandInfo($commandName, ...$commandNames)
     {
-        $data = [Command::COMMAND,$commandName,$commandName1];
-        if (!$this->sendCommand($data)) {
+        $command = array_merge([Command::COMMAND, 'INFO', $commandName,], $commandNames);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
@@ -2117,7 +2122,7 @@ class Redis
 
     public function configGet($parameter)
     {
-        $data = [Command::CONFIG,$parameter];
+        $data = [Command::CONFIG, 'GET', $parameter];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -2128,9 +2133,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function configRewrite()
+    public function configRewrite(): bool
     {
-        $data = [Command::CONFIG];
+        $data = [Command::CONFIG, 'REWRITE'];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -2138,12 +2143,12 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return true;
     }
 
-    public function configSet($parameter,$value)
+    public function configSet($parameter, $value): bool
     {
-        $data = [Command::CONFIG,$parameter,$value];
+        $data = [Command::CONFIG, 'SET', $parameter, $value];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -2151,12 +2156,12 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return true;
     }
 
-    public function configResetsTat()
+    public function configResetStat(): bool
     {
-        $data = [Command::CONFIG];
+        $data = [Command::CONFIG, 'RESETSTAT'];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -2164,7 +2169,7 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return true;
     }
 
     public function dBSize()
@@ -2182,7 +2187,7 @@ class Redis
 
     public function debugObject($key)
     {
-        $data = [Command::DEBUG, $key];
+        $data = [Command::DEBUG, 'OBJECT', $key];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -2195,7 +2200,7 @@ class Redis
 
     public function debugSegfault()
     {
-        $data = [Command::DEBUG ];
+        $data = [Command::DEBUG, 'SEGFAULT'];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -2206,7 +2211,7 @@ class Redis
         return $recv->getData();
     }
 
-    public function flushAll()
+    public function flushAll(): bool
     {
         $data = [Command::FLUSHALL];
         if (!$this->sendCommand($data)) {
@@ -2216,10 +2221,10 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return true;
     }
 
-    public function flushDb()
+    public function flushDb(): bool
     {
         $data = [Command::FLUSHDB];
         if (!$this->sendCommand($data)) {
@@ -2229,12 +2234,15 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return true;
     }
 
-    public function info($section)
+    public function info($section = null)
     {
-        $data = [Command::INFO, $section];
+        $data = [Command::INFO];
+        if ($section != null) {
+            $data[] = $section;
+        }
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -2242,7 +2250,25 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $data = $recv->getData();
+        $result = [];
+        foreach (explode('# ', $data) as $value) {
+            if (empty($value)) {
+                continue;
+            }
+            $arr = explode("\r\n", $value);
+            $sectionKey = array_shift($arr);
+            $result[$sectionKey] = [];
+            foreach ($arr as $kv) {
+                if (empty($kv)) {
+                    continue;
+                }
+                $kvArr = explode(':', $kv);
+                $result[$sectionKey][$kvArr[0]] = $kvArr[1];
+            }
+        }
+
+        return $result;
     }
 
     public function lastSave()
@@ -2258,7 +2284,7 @@ class Redis
         return $recv->getData();
     }
 
-    public function monitor()
+    public function monitor(callable $callback)
     {
         $data = [Command::MONITOR];
         if (!$this->sendCommand($data)) {
@@ -2268,7 +2294,23 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        $recv = $this->recv(-1);
+        if ($recv === null) {
+            return false;
+        }
+        $this->monitorStop = false;
+        while ($this->monitorStop == false) {
+            $recv = $this->recv(-1);
+            if ($recv === null) {
+                return false;
+            }
+            call_user_func($callback, $this, $recv->getData());
+        }
+    }
+
+    public function monitorStop(): void
+    {
+        $this->monitorStop = true;
     }
 
     public function role()
@@ -2284,7 +2326,7 @@ class Redis
         return $recv->getData();
     }
 
-    public function save()
+    public function save():bool
     {
         $data = [Command::SAVE];
         if (!$this->sendCommand($data)) {
@@ -2294,12 +2336,12 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return true;
     }
 
-    public function shutdown($noSave,$save)
+    public function shutdown()
     {
-        $data = [Command::SHUTDOWN,$noSave,$save];
+        $data = [Command::SHUTDOWN];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -2310,9 +2352,9 @@ class Redis
         return $recv->getData();
     }
 
-    public function slaveOf($host,$port)
+    public function slaveOf($host, $port)
     {
-        $data = [Command::SLAVEOF, $host,$port];
+        $data = [Command::SLAVEOF, $host, $port];
         if (!$this->sendCommand($data)) {
             return false;
         }
@@ -2323,10 +2365,10 @@ class Redis
         return $recv->getData();
     }
 
-    public function slowLog($subcommand,$argument)
+    public function slowLog($subCommand, ...$argument)
     {
-        $data = [Command::SLOWLOG,$subcommand,$argument];
-        if (!$this->sendCommand($data)) {
+        $command = array_merge([Command::SLOWLOG, $subCommand,], $argument);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
