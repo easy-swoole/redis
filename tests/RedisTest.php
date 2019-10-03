@@ -1346,15 +1346,15 @@ class RedisTest extends TestCase
 
         $redis = $this->redis;
 
-//        $data = $redis->bgRewriteAof();
-//        $this->assertEquals('Background append only file rewriting started', $data);
-//        Coroutine::sleep(1);
-//        $data = $redis->bgSave();
-//        $this->assertEquals('Background saving started', $data);
-//        $data = $redis->clientList();
-//        $this->assertIsArray($data);
-//        $data = $redis->clientKill($data[3]['addr']);
-//        $this->assertTrue($data);
+        $data = $redis->bgRewriteAof();
+        $this->assertEquals('Background append only file rewriting started', $data);
+        Coroutine::sleep(1);
+        $data = $redis->bgSave();
+        $this->assertEquals('Background saving started', $data);
+        $data = $redis->clientList();
+        $this->assertIsArray($data);
+        $data = $redis->clientKill($data[0]['addr']);
+        $this->assertTrue($data);
 
 
         $data = $redis->clientSetName('test');
@@ -1362,8 +1362,8 @@ class RedisTest extends TestCase
         $data = $redis->clientGetName();
         $this->assertEquals('test', $data);
 
-//        $data = $redis->clientPause(1);
-//        $this->assertEquals(1, $data);
+        $data = $redis->clientPause(1);
+        $this->assertEquals(1, $data);
 
         $data = $redis->command();
         $this->assertIsArray($data);
