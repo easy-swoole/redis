@@ -233,7 +233,11 @@ class Client
                 $str = substr($str, 0, -2);
                 $op = substr($str, 0, 1);
                 $response = $this->opHandel($op, $str, $timeout);
-                $arr[] = $response->getData();
+                if ($response->getStatus()!=$response::STATUS_OK){
+                    $arr[] = false;
+                }else{
+                    $arr[] = $response->getData();
+                }
             }
             $result->setStatus($result::STATUS_OK);
             $result->setData($arr);

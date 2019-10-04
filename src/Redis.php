@@ -1871,7 +1871,7 @@ class Redis
     public function watch($key, ...$keys): bool
     {
         $handelClass = new \EasySwoole\Redis\CommandHandel\Watch($this);
-        $command = $handelClass->getCommand($key, $keys);
+        $command = $handelClass->getCommand($key, ...$keys);
 
         if (!$this->sendCommand($command)) {
             return false;
@@ -2613,7 +2613,9 @@ class Redis
 
     public function setTransaction(?RedisTransaction $transaction): void
     {
-        $this->transaction = $transaction;
+        if (!$this->getTransaction() instanceof  RedisTransaction){
+            $this->transaction = $transaction;
+        }
     }
 
 }

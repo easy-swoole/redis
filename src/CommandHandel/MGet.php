@@ -16,7 +16,6 @@ class MGet extends AbstractCommandHandel
 
 		$command = [CommandConst::MGET,$keys];
 		$commandData = array_merge($command,$data);
-//		var_dump($commandData);
 		return $commandData;
 	}
 

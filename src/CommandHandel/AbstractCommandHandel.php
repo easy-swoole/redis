@@ -11,6 +11,7 @@ namespace EasySwoole\Redis\CommandHandel;
 
 use EasySwoole\Redis\Config\RedisConfig;
 use EasySwoole\Redis\Redis;
+use EasySwoole\Redis\RedisTransaction;
 use EasySwoole\Redis\Response;
 
 Abstract class AbstractCommandHandel
@@ -30,9 +31,14 @@ Abstract class AbstractCommandHandel
 
     function getData(Response $recv)
     {
-        if ($this->redis->getTransaction()->isTransaction()==true){
+        //开启了事务
+        if ($this->redis->getTransaction() instanceof RedisTransaction && $this->redis->getTransaction()->isTransaction() == true) {
             $this->redis->getTransaction()->addCommand($this->commandName);
+            if (!in_array(strtolower($this->commandName), RedisTransaction::TRANSACTION_COMMAND)) {
+                return 'QUEUED';
+            }
         }
+
         return $this->handelRecv($recv);
     }
 
