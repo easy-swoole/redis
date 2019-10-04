@@ -14,11 +14,8 @@ class ClientKill extends AbstractCommandHandel
 	{
 		$data=array_shift($data);
 
-
-
-
-		$command = [CommandConst::CLIENTKILL,$data];
-		$commandData = array_merge($command,$data);
+		$command = [CommandConst::CLIENT,'KILL',$data];
+		$commandData = array_merge($command);
 		return $commandData;
 	}
 

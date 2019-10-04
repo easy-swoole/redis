@@ -1,4 +1,5 @@
 <?php
+
 namespace EasySwoole\Redis\CommandHandel;
 
 use EasySwoole\Redis\CommandConst;
@@ -7,35 +8,32 @@ use EasySwoole\Redis\Response;
 
 class Subscribe extends AbstractCommandHandel
 {
-	public $commandName = 'Subscribe';
+    public $commandName = 'Subscribe';
+    protected $callback;
 
 
-	public function getCommand(...$data)
-	{
-		$callback=array_shift($data);
-		$channel=array_shift($data);
-		$channels=array_shift($data);
+    public function getCommand(...$data)
+    {
+        $callback = array_shift($data);
+        $channel = array_shift($data);
+        $this->callback = $callback;
+        $command = [CommandConst::SUBSCRIBE, $channel];
+        $commandData = array_merge($command, $data);
+        return $commandData;
+    }
 
 
-		        $command = array_merge([Command::SUBSCRIBE, $channel], $channels);
-
-		$command = [CommandConst::SUBSCRIBE,$callback,$channel,$channels];
-		$commandData = array_merge($command,$data);
-		return $commandData;
-	}
-
-
-	public function getData(Response $recv)
-	{
-		$this->subscribeStop = false;
-		        while ($this->subscribeStop == false) {
-		            $recv = $this->recv(-1);
-		            if ($recv === null) {
-		                return false;
-		            }
-		            if ($recv->getData()[0] == 'message') {
-		                call_user_func($callback, $this, $recv->getData()[1], $recv->getData()[2]);
-		            }
-		        }
-	}
+    public function getData(Response $recv)
+    {
+        $this->redis->setSubscribeStop(false);
+        while ($this->redis->isSubscribeStop() == false) {
+            $recv = $this->redis->recv(-1);
+            if ($recv === null) {
+                return false;
+            }
+            if ($recv->getData()[0] == 'message') {
+                call_user_func($this->callback, $this->redis, $recv->getData()[1], $recv->getData()[2]);
+            }
+        }
+    }
 }

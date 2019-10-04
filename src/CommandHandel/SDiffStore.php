@@ -1,4 +1,5 @@
 <?php
+
 namespace EasySwoole\Redis\CommandHandel;
 
 use EasySwoole\Redis\CommandConst;
@@ -7,25 +8,21 @@ use EasySwoole\Redis\Response;
 
 class SDiffStore extends AbstractCommandHandel
 {
-	public $commandName = 'SDiffStore';
+    public $commandName = 'SDiffStore';
 
 
-	public function getCommand(...$data)
-	{
-		$destination=array_shift($data);
-		$keys=array_shift($data);
+    public function getCommand(...$data)
+    {
+        $destination = array_shift($data);
+
+        $command = [CommandConst::SDIFFSTORE, $destination];
+        $commandData = array_merge($command, $data);
+        return $commandData;
+    }
 
 
-		        $command = array_merge([Command::SDIFFSTORE, $destination], $keys);
-
-		$command = [CommandConst::SDIFFSTORE,$destination,$keys];
-		$commandData = array_merge($command,$data);
-		return $commandData;
-	}
-
-
-	public function getData(Response $recv)
-	{
-		return $recv->getData();
-	}
+    public function getData(Response $recv)
+    {
+        return $recv->getData();
+    }
 }

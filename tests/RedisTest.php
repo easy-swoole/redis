@@ -1253,7 +1253,7 @@ class RedisTest extends TestCase
                 $this->assertEquals('test', $str);
                 $data = $redis->unsubscribe('test');
                 $this->assertTrue(!!$data);
-                $redis->subscribeStop();
+                $redis->setSubscribeStop(true);
             }, 'test', 'test1', 'test2');
         });
 
@@ -1267,14 +1267,14 @@ class RedisTest extends TestCase
                 $this->assertEquals('test', $str);
                 $data = $redis->unsubscribe('test');
                 $this->assertTrue(!!$data);
-                $redis->subscribeStop();
+                $redis->setSubscribeStop(true);
             }, 'test', 'test1', 'test2');
         });
 
         $redis = $this->redis;
 
         $data = $redis->pubSub('CHANNELS');
-        $this->assertTrue(!!$data);
+        $this->assertIsArray($data);
         Coroutine::sleep(1);
         $data = $redis->publish('test2', 'test');
         $this->assertGreaterThan(0, $data);
@@ -1373,7 +1373,6 @@ class RedisTest extends TestCase
         $this->assertIsArray($data);
         $data = $redis->clientKill($data[0]['addr']);
         $this->assertTrue($data);
-
 
         $data = $redis->clientSetName('test');
         $this->assertTrue($data);

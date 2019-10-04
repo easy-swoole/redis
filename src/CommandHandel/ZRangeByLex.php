@@ -15,12 +15,8 @@ class ZRangeByLex extends AbstractCommandHandel
 		$key=array_shift($data);
 		$min=array_shift($data);
 		$max=array_shift($data);
-		$data=array_shift($data);
 
-
-		        $command = array_merge([Command::ZRANGEBYLEX, $key, $min, $max], $data);
-
-		$command = [CommandConst::ZRANGEBYLEX,$key,$min,$max,$data];
+		$command = [CommandConst::ZRANGEBYLEX,$key,$min,$max];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

@@ -13,12 +13,8 @@ class PUnSubscribe extends AbstractCommandHandel
 	public function getCommand(...$data)
 	{
 		$pattern=array_shift($data);
-		$patterns=array_shift($data);
 
-
-		        $command = array_merge([Command::PUNSUBSCRIBE, $pattern], $patterns);
-
-		$command = [CommandConst::PUNSUBSCRIBE,$pattern,$patterns];
+		$command = [CommandConst::PUNSUBSCRIBE,$pattern];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

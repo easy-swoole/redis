@@ -13,12 +13,9 @@ class Unsubscribe extends AbstractCommandHandel
 	public function getCommand(...$data)
 	{
 		$channel=array_shift($data);
-		$channels=array_shift($data);
 
 
-		        $command = array_merge([Command::UNSUBSCRIBE, $channel], $channels);
-
-		$command = [CommandConst::UNSUBSCRIBE,$channel,$channels];
+		$command = [CommandConst::UNSUBSCRIBE,$channel];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

@@ -14,11 +14,8 @@ class ClientSetName extends AbstractCommandHandel
 	{
 		$connectionName=array_shift($data);
 
-
-
-
-		$command = [CommandConst::CLIENTSETNAME,$connectionName];
-		$commandData = array_merge($command,$data);
+		$command = [CommandConst::CLIENT,'SETNAME',$connectionName];
+		$commandData = array_merge($command);
 		return $commandData;
 	}
 

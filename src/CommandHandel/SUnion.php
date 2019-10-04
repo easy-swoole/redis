@@ -13,12 +13,8 @@ class SUnion extends AbstractCommandHandel
 	public function getCommand(...$data)
 	{
 		$key1=array_shift($data);
-		$keys=array_shift($data);
 
-
-		        $command = array_merge([Command::SUNION, $key1], $keys);
-
-		$command = [CommandConst::SUNION,$key1,$keys];
+		$command = [CommandConst::SUNION,$key1];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

@@ -15,12 +15,9 @@ class ZUnionStore extends AbstractCommandHandel
 		$destination=array_shift($data);
 		$keyNum=array_shift($data);
 		$key=array_shift($data);
-		$data=array_shift($data);
 
 
-		        $command = array_merge([Command::ZUNIONSTORE, $destination, $keyNum, $key], $data);
-
-		$command = [CommandConst::ZUNIONSTORE,$destination,$keyNum,$key,$data];
+		$command = [CommandConst::ZUNIONSTORE,$destination,$keyNum,$key];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

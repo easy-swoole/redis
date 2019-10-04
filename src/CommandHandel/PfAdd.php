@@ -13,12 +13,9 @@ class PfAdd extends AbstractCommandHandel
 	public function getCommand(...$data)
 	{
 		$key=array_shift($data);
-		$data=array_shift($data);
 
 
-		        $command = array_merge([Command::PFADD, $key], $data);
-
-		$command = [CommandConst::PFADD,$key,$data];
+		$command = [CommandConst::PFADD,$key];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

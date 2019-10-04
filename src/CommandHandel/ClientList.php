@@ -13,8 +13,7 @@ class ClientList extends AbstractCommandHandel
 	public function getCommand(...$data)
 	{
 		
-
-		$command = [CommandConst::CLIENTLIST];
+		$command = [CommandConst::CLIENT,'LIST'];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

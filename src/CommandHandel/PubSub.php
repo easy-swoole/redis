@@ -13,12 +13,9 @@ class PubSub extends AbstractCommandHandel
 	public function getCommand(...$data)
 	{
 		$subCommand=array_shift($data);
-		$arguments=array_shift($data);
 
 
-		        $command = array_merge([Command::PUBSUB, $subCommand,], $arguments);
-
-		$command = [CommandConst::PUBSUB,$subCommand,$arguments];
+		$command = [CommandConst::PUBSUB,$subCommand];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}
