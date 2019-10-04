@@ -14,10 +14,7 @@ class ClientPause extends AbstractCommandHandel
 	{
 		$timeout=array_shift($data);
 
-
-		        
-
-		$command = [CommandConst::CLIENTPAUSE,$timeout];
+		$command = [CommandConst::CLIENT,'PAUSE',$timeout];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

@@ -15,9 +15,7 @@ class DebugObject extends AbstractCommandHandel
 		$key=array_shift($data);
 
 
-		        
-
-		$command = [CommandConst::DEBUGOBJECT,$key];
+		$command = [CommandConst::DEBUG,'OBJECT',$key];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

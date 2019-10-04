@@ -14,7 +14,7 @@ class ConfigResetStat extends AbstractCommandHandel
 	{
 		
 
-		$command = [CommandConst::CONFIGRESETSTAT];
+		$command = [CommandConst::CONFIG,'RESETSTAT'];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

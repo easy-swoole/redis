@@ -14,12 +14,8 @@ class GeoPos extends AbstractCommandHandel
 	{
 		$key=array_shift($data);
 		$location1=array_shift($data);
-		$locations=array_shift($data);
 
-
-		        $command = array_merge([Command::GEOPOS, $key, $location1,], $locations);
-
-		$command = [CommandConst::GEOPOS,$key,$location1,$locations];
+		$command = [CommandConst::GEOPOS,$key,$location1];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

@@ -13,12 +13,8 @@ class CommandInfo extends AbstractCommandHandel
 	public function getCommand(...$data)
 	{
 		$commandName=array_shift($data);
-		$commandNames=array_shift($data);
 
-
-		        $command = array_merge([Command::COMMAND, 'INFO', $commandName,], $commandNames);
-
-		$command = [CommandConst::COMMANDINFO,$commandName,$commandNames];
+		$command = [CommandConst::COMMAND, 'INFO',$commandName];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

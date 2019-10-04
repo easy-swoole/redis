@@ -14,12 +14,8 @@ class GeoHash extends AbstractCommandHandel
 	{
 		$key=array_shift($data);
 		$location=array_shift($data);
-		$locations=array_shift($data);
 
-
-		        $command = array_merge([Command::GEOHASH, $key, $location,], $locations);
-
-		$command = [CommandConst::GEOHASH,$key,$location,$locations];
+		$command = [CommandConst::GEOHASH,$key,$location];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

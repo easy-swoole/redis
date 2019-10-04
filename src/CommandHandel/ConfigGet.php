@@ -15,9 +15,7 @@ class ConfigGet extends AbstractCommandHandel
 		$parameter=array_shift($data);
 
 
-		        
-
-		$command = [CommandConst::CONFIGGET,$parameter];
+		$command = [CommandConst::CONFIG,'GET',$parameter];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

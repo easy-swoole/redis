@@ -12,12 +12,9 @@ class CommandGetKeys extends AbstractCommandHandel
 
 	public function getCommand(...$data)
 	{
-		$data=array_shift($data);
 
 
-		        $command = array_merge([Command::COMMAND, 'GETKEYS'], $data);
-
-		$command = [CommandConst::COMMANDGETKEYS,$data];
+		$command = [CommandConst::COMMAND,'GETKEYS'];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

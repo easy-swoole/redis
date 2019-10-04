@@ -14,7 +14,7 @@ class CommandCount extends AbstractCommandHandel
 	{
 		
 
-		$command = [CommandConst::COMMANDCOUNT];
+		$command = [CommandConst::COMMAND,'COUNT'];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

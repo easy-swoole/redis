@@ -16,13 +16,8 @@ class GeoAdd extends AbstractCommandHandel
 		$longitude=array_shift($data);
 		$latitude=array_shift($data);
 		$name=array_shift($data);
-		$data=array_shift($data);
 
-
-		        $command = array_merge([Command::GEOADD, $key, $longitude, $latitude, $name,], $data);
-		        
-
-		$command = [CommandConst::GEOADD,$key,$longitude,$latitude,$name,$data];
+		$command = [CommandConst::GEOADD,$key,$longitude,$latitude,$name];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

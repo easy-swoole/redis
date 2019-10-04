@@ -14,7 +14,7 @@ class ClientGetName extends AbstractCommandHandel
 	{
 		
 
-		$command = [CommandConst::CLIENTGETNAME];
+		$command = [CommandConst::CLIENT,'GETNAME'];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}
