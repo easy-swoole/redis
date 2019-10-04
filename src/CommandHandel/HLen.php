@@ -10,7 +10,7 @@ class HLen extends AbstractCommandHandel
 	public $commandName = 'HLen';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 
@@ -23,7 +23,7 @@ class HLen extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

@@ -10,7 +10,7 @@ class MGet extends AbstractCommandHandel
 	public $commandName = 'MGet';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$keys=array_shift($data);
 
@@ -21,7 +21,7 @@ class MGet extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		$data = $recv->getData();
 		        foreach ($data as $key => $value) {

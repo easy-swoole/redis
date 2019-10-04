@@ -10,7 +10,7 @@ class CommandInfo extends AbstractCommandHandel
 	public $commandName = 'CommandInfo';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$commandName=array_shift($data);
 
@@ -20,7 +20,7 @@ class CommandInfo extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

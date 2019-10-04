@@ -11,7 +11,7 @@ class LPush extends AbstractCommandHandel
     public $commandName = 'LPush';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $key = array_shift($data);
         foreach ($data as $k=>$value){
@@ -24,7 +24,7 @@ class LPush extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         return $recv->getData();
     }

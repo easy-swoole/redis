@@ -11,7 +11,7 @@ class MSetNx extends AbstractCommandHandel
     public $commandName = 'MSetNx';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $data = array_shift($data);
         $kvData = [];
@@ -25,7 +25,7 @@ class MSetNx extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         return $recv->getData();
     }

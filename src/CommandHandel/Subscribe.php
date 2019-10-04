@@ -12,7 +12,7 @@ class Subscribe extends AbstractCommandHandel
     protected $callback;
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $callback = array_shift($data);
         $channel = array_shift($data);
@@ -23,7 +23,7 @@ class Subscribe extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         $this->redis->setSubscribeStop(false);
         while ($this->redis->isSubscribeStop() == false) {

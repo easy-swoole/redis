@@ -10,7 +10,7 @@ class GetSet extends AbstractCommandHandel
 	public $commandName = 'GetSet';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		$value=array_shift($data);
@@ -25,7 +25,7 @@ class GetSet extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		$data = $recv->getData();
 		        return $this->unSerialize($data);

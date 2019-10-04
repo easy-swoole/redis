@@ -11,7 +11,7 @@ class RPush extends AbstractCommandHandel
     public $commandName = 'RPush';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $key = array_shift($data);
 
@@ -24,7 +24,7 @@ class RPush extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         return $recv->getData();
     }

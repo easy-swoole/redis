@@ -15,25 +15,40 @@ use EasySwoole\Redis\Response;
 
 Abstract class AbstractCommandHandel
 {
-    protected  $commandName;
+    protected $commandName;
     protected $redis;
+
     function __construct(Redis $redis)
     {
         $this->redis = $redis;
     }
 
-    abstract function getCommand(...$data);
+    function getCommand(...$data)
+    {
+        return $this->handelCommandData(...$data);
+    }
 
-    abstract function getData(Response $recv);
+    function getData(Response $recv)
+    {
+        if ($this->redis->getTransaction()->isTransaction()==true){
+            $this->redis->getTransaction()->addCommand($this->commandName);
+        }
+        return $this->handelRecv($recv);
+    }
+
+    abstract function handelCommandData(...$data);
+
+    abstract function handelRecv(Response $recv);
 
     /**
      * @return mixed
      */
-    public  function getCommandName()
+    public function getCommandName()
     {
         return $this->commandName;
     }
-    protected  function serialize($val)
+
+    protected function serialize($val)
     {
         switch ($this->redis->getConfig()->getSerialize()) {
             case RedisConfig::SERIALIZE_PHP:

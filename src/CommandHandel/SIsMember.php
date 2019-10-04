@@ -10,7 +10,7 @@ class SIsMember extends AbstractCommandHandel
 	public $commandName = 'SIsMember';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		$member=array_shift($data);
@@ -25,7 +25,7 @@ class SIsMember extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

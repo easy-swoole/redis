@@ -11,7 +11,7 @@ class ZAdd extends AbstractCommandHandel
     public $commandName = 'ZAdd';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $key = array_shift($data);
         $score1 = array_shift($data);
@@ -33,7 +33,7 @@ class ZAdd extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         return $recv->getData();
     }

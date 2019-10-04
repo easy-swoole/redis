@@ -10,7 +10,7 @@ class Exists extends AbstractCommandHandel
 	public $commandName = 'Exists';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 
@@ -23,7 +23,7 @@ class Exists extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

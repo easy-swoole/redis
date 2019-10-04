@@ -10,7 +10,7 @@ class PUnSubscribe extends AbstractCommandHandel
 	public $commandName = 'PUnSubscribe';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$pattern=array_shift($data);
 
@@ -20,7 +20,7 @@ class PUnSubscribe extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

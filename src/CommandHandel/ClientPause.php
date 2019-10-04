@@ -10,7 +10,7 @@ class ClientPause extends AbstractCommandHandel
 	public $commandName = 'ClientPause';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$timeout=array_shift($data);
 
@@ -20,7 +20,7 @@ class ClientPause extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return true;
 	}

@@ -10,7 +10,7 @@ class Echo extends AbstractCommandHandel
 	public static $commandName = 'Echo';
 
 
-	public static function getCommand(...$data)
+	public static function handelCommandData(...$data)
 	{
 		$str=array_shift($data);
 
@@ -23,7 +23,7 @@ class Echo extends AbstractCommandHandel
 	}
 
 
-	public static function getData(Redis $redis, Response $recv)
+	public static function handelRecv(Redis $redis, Response $recv)
 	{
 		if ($recv === null) {
 		            return false;

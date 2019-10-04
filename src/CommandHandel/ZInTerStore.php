@@ -11,7 +11,7 @@ class ZInTerStore extends AbstractCommandHandel
     public $commandName = 'ZInTerStore';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $destination = array_shift($data);
         $numKeys = array_shift($data);
@@ -23,7 +23,7 @@ class ZInTerStore extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         return $recv->getData();
     }

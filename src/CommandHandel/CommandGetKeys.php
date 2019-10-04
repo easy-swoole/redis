@@ -10,7 +10,7 @@ class CommandGetKeys extends AbstractCommandHandel
 	public $commandName = 'CommandGetKeys';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 
 
@@ -20,7 +20,7 @@ class CommandGetKeys extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

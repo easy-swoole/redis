@@ -10,7 +10,7 @@ class RPop extends AbstractCommandHandel
 	public $commandName = 'RPop';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 
@@ -23,7 +23,7 @@ class RPop extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		$data = $recv->getData();
 		        return $this->unSerialize($data);

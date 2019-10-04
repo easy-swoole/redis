@@ -10,7 +10,7 @@ class ZUnionStore extends AbstractCommandHandel
 	public $commandName = 'ZUnionStore';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$destination=array_shift($data);
 		$keyNum=array_shift($data);
@@ -23,7 +23,7 @@ class ZUnionStore extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

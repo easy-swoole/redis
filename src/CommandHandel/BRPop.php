@@ -10,7 +10,7 @@ class BRPop extends AbstractCommandHandel
 	public $commandName = 'BRPop';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key1=array_shift($data);
 
@@ -20,7 +20,7 @@ class BRPop extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return [$recv->getData()[0] => $this->unSerialize($recv->getData()[1])];
 	}

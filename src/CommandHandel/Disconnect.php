@@ -10,7 +10,7 @@ class Disconnect extends AbstractCommandHandel
 	public static $commandName = 'Disconnect';
 
 
-	public static function getCommand(...$data)
+	public static function handelCommandData(...$data)
 	{
 		$command = [CommandConst::DISCONNECT];
 		$commandData = array_merge($command,$data);
@@ -18,7 +18,7 @@ class Disconnect extends AbstractCommandHandel
 	}
 
 
-	public static function getData(Redis $redis, Response $recv)
+	public static function handelRecv(Redis $redis, Response $recv)
 	{
 	}
 }

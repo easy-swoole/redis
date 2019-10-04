@@ -10,7 +10,7 @@ class GeoPos extends AbstractCommandHandel
 	public $commandName = 'GeoPos';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		$location1=array_shift($data);
@@ -21,7 +21,7 @@ class GeoPos extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

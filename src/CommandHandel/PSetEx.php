@@ -10,7 +10,7 @@ class PSetEx extends AbstractCommandHandel
 	public $commandName = 'PSetEx';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		$expireTime=array_shift($data);
@@ -26,7 +26,7 @@ class PSetEx extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return true;
 	}

@@ -11,7 +11,7 @@ class PSubscribe extends AbstractCommandHandel
     public $commandName = 'PSubscribe';
     protected $callback;
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $callback = array_shift($data);
         $pattern = array_shift($data);
@@ -22,7 +22,7 @@ class PSubscribe extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         $this->redis->setSubscribeStop(false);
         while ($this->redis->isSubscribeStop() == false) {

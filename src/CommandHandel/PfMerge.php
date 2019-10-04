@@ -10,7 +10,7 @@ class PfMerge extends AbstractCommandHandel
 	public $commandName = 'PfMerge';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$deStKey=array_shift($data);
 		$sourceKey=array_shift($data);
@@ -22,7 +22,7 @@ class PfMerge extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return true;
 	}

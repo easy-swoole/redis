@@ -11,7 +11,7 @@ class SDiffStore extends AbstractCommandHandel
     public $commandName = 'SDiffStore';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $destination = array_shift($data);
 
@@ -21,7 +21,7 @@ class SDiffStore extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         return $recv->getData();
     }

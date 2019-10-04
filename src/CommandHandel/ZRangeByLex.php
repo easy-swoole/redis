@@ -10,7 +10,7 @@ class ZRangeByLex extends AbstractCommandHandel
 	public $commandName = 'ZRangeByLex';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		$min=array_shift($data);
@@ -22,7 +22,7 @@ class ZRangeByLex extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		$data = $recv->getData();
 		        foreach ($data as $key => $va) {

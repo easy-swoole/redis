@@ -10,7 +10,7 @@ class GeoDist extends AbstractCommandHandel
 	public $commandName = 'GeoDist';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		$location1=array_shift($data);
@@ -26,7 +26,7 @@ class GeoDist extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

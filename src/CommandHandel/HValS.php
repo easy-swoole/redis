@@ -11,7 +11,7 @@ class HValS extends AbstractCommandHandel
     public $commandName = 'HValS';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $key = array_shift($data);
 
@@ -21,7 +21,7 @@ class HValS extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         $data = $recv->getData();
         foreach ($data as $key => $value) {

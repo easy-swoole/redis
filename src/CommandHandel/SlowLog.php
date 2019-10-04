@@ -11,7 +11,7 @@ class SlowLog extends AbstractCommandHandel
     public $commandName = 'SlowLog';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $subCommand = array_shift($data);
 
@@ -21,7 +21,7 @@ class SlowLog extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         return $recv->getData();
     }

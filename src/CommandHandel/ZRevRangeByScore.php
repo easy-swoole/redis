@@ -12,7 +12,7 @@ class ZRevRangeByScore extends AbstractCommandHandel
     protected $withScores = false;
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $key = array_shift($data);
         $max = array_shift($data);
@@ -29,7 +29,7 @@ class ZRevRangeByScore extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         $data = $recv->getData();
         if ($this->withScores == true) {

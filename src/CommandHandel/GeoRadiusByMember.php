@@ -11,7 +11,7 @@ class GeoRadiusByMember extends AbstractCommandHandel
     public $commandName = 'GeoRadiusByMember';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $key = array_shift($data);
         $location = array_shift($data);
@@ -56,7 +56,7 @@ class GeoRadiusByMember extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         return $recv->getData();
     }

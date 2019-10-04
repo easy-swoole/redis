@@ -10,7 +10,7 @@ class GeoAdd extends AbstractCommandHandel
 	public $commandName = 'GeoAdd';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		$longitude=array_shift($data);
@@ -23,7 +23,7 @@ class GeoAdd extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

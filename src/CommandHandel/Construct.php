@@ -10,7 +10,7 @@ class Construct extends AbstractCommandHandel
 	public static $commandName = 'Construct';
 
 
-	public static function getCommand(...$data)
+	public static function handelCommandData(...$data)
 	{
 		$config=array_shift($data);
 
@@ -21,7 +21,7 @@ class Construct extends AbstractCommandHandel
 	}
 
 
-	public static function getData(Redis $redis, Response $recv)
+	public static function handelRecv(Redis $redis, Response $recv)
 	{
 		$this->config = $config;
 	}

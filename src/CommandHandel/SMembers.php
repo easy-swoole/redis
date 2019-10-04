@@ -10,7 +10,7 @@ class SMembers extends AbstractCommandHandel
 	public $commandName = 'SMembers';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 
@@ -23,7 +23,7 @@ class SMembers extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		$data = $recv->getData();
 		        foreach ($data as $key => $value) {

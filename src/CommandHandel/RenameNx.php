@@ -10,7 +10,7 @@ class RenameNx extends AbstractCommandHandel
 	public $commandName = 'RenameNx';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		$new_key=array_shift($data);
@@ -24,7 +24,7 @@ class RenameNx extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

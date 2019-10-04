@@ -10,7 +10,7 @@ class Move extends AbstractCommandHandel
 	public $commandName = 'Move';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		$db=array_shift($data);
@@ -24,7 +24,7 @@ class Move extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

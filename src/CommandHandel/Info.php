@@ -10,7 +10,7 @@ class Info extends AbstractCommandHandel
 	public $commandName = 'Info';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$section=array_shift($data);
 
@@ -26,7 +26,7 @@ class Info extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		$data = $recv->getData();
 		        $result = [];

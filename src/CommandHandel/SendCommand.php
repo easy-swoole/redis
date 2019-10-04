@@ -10,7 +10,7 @@ class SendCommand extends AbstractCommandHandel
 	public static $commandName = 'SendCommand';
 
 
-	public static function getCommand(...$data)
+	public static function handelCommandData(...$data)
 	{
 		$com=array_shift($data);
 
@@ -21,7 +21,7 @@ class SendCommand extends AbstractCommandHandel
 	}
 
 
-	public static function getData(Redis $redis, Response $recv)
+	public static function handelRecv(Redis $redis, Response $recv)
 	{
 	}
 }

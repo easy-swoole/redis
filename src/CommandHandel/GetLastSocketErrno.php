@@ -10,7 +10,7 @@ class GetLastSocketErrno extends AbstractCommandHandel
 	public static $commandName = 'GetLastSocketErrno';
 
 
-	public static function getCommand(...$data)
+	public static function handelCommandData(...$data)
 	{
 		$command = [CommandConst::GETLASTSOCKETERRNO];
 		$commandData = array_merge($command,$data);
@@ -18,7 +18,7 @@ class GetLastSocketErrno extends AbstractCommandHandel
 	}
 
 
-	public static function getData(Redis $redis, Response $recv)
+	public static function handelRecv(Redis $redis, Response $recv)
 	{
 	}
 }

@@ -10,7 +10,7 @@ class LastSave extends AbstractCommandHandel
 	public $commandName = 'LastSave';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		
 
@@ -20,7 +20,7 @@ class LastSave extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

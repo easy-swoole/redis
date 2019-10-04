@@ -10,7 +10,7 @@ class Recv extends AbstractCommandHandel
 	public static $commandName = 'Recv';
 
 
-	public static function getCommand(...$data)
+	public static function handelCommandData(...$data)
 	{
 		$timeout=array_shift($data);
 
@@ -21,7 +21,7 @@ class Recv extends AbstractCommandHandel
 	}
 
 
-	public static function getData(Redis $redis, Response $recv)
+	public static function handelRecv(Redis $redis, Response $recv)
 	{
 	}
 }

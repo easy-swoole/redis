@@ -11,7 +11,7 @@ class Monitor extends AbstractCommandHandel
     public $commandName = 'Monitor';
     protected $callback;
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $callback = array_shift($data);
         $this->callback = $callback;
@@ -21,7 +21,7 @@ class Monitor extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         $this->redis->setMonitorStop(false);
         while ($this->redis->isMonitorStop() == false) {

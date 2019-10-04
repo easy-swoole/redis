@@ -10,7 +10,7 @@ class LTrim extends AbstractCommandHandel
 	public $commandName = 'LTrim';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		$start=array_shift($data);
@@ -25,7 +25,7 @@ class LTrim extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return true;
 	}

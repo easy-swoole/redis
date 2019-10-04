@@ -10,7 +10,7 @@ class FlushAll extends AbstractCommandHandel
 	public $commandName = 'FlushAll';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		
 
@@ -20,7 +20,7 @@ class FlushAll extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return true;
 	}

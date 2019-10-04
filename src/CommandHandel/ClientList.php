@@ -10,7 +10,7 @@ class ClientList extends AbstractCommandHandel
 	public $commandName = 'ClientList';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		
 		$command = [CommandConst::CLIENT,'LIST'];
@@ -19,7 +19,7 @@ class ClientList extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		$data = $recv->getData();
 		        $result = [];

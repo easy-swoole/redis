@@ -10,7 +10,7 @@ class ConfigGet extends AbstractCommandHandel
 	public $commandName = 'ConfigGet';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$parameter=array_shift($data);
 
@@ -21,7 +21,7 @@ class ConfigGet extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

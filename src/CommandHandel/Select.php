@@ -10,7 +10,7 @@ class Select extends AbstractCommandHandel
 	public $commandName = 'Select';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$db=array_shift($data);
 
@@ -23,7 +23,7 @@ class Select extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return true;
 	}

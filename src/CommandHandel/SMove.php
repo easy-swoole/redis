@@ -10,7 +10,7 @@ class SMove extends AbstractCommandHandel
 	public $commandName = 'SMove';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$source=array_shift($data);
 		$destination=array_shift($data);
@@ -26,7 +26,7 @@ class SMove extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

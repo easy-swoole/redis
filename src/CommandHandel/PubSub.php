@@ -10,7 +10,7 @@ class PubSub extends AbstractCommandHandel
 	public $commandName = 'PubSub';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$subCommand=array_shift($data);
 
@@ -21,7 +21,7 @@ class PubSub extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

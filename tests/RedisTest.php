@@ -1295,31 +1295,31 @@ class RedisTest extends TestCase
     {
         $this->assertEquals(1, 1);
 
-//        $redis = $this->redis;
-//
-//        $data = $redis->multi();
-//        $this->assertTrue($data);
-//        $data = $redis->set('a', 1);
-//        var_dump($data);
-//        $data = $redis->set('b', 1);
-//        var_dump($data);
-//        $data = $redis->set('c', 1);
-//        var_dump($data);
-//        $data = $redis->get('a', 1);
-//        var_dump($data);
-//        $data = $redis->get('b', 1);
-//        var_dump($data);
-//        $data = $redis->get('c', 1);
-//        var_dump($data);
-//        $data = $redis->exec();
-//        var_dump($data);
-//        $this->assertEquals(1, 1);
+        $redis = $this->redis;
 
-//        $data = $redis->discard();
-//        $this->assertEquals(1, $data);
-//        $data = $redis->unwatch();
-//        $this->assertEquals(1, $data);
-//        $data = $redis->watch();
+        $data = $redis->multi();
+        $this->assertTrue($data);
+        $data = $redis->set('a', 1);
+        var_dump($data);
+        $data = $redis->set('b', 1);
+        var_dump($data);
+        $data = $redis->set('c', 1);
+        var_dump($data);
+        $data = $redis->get('a', 1);
+        var_dump($data);
+        $data = $redis->get('b', 1);
+        var_dump($data);
+        $data = $redis->get('c', 1);
+        var_dump($data);
+        $data = $redis->exec();
+        var_dump($data);
+        $this->assertEquals(1, 1);
+
+        $data = $redis->discard();
+        $this->assertEquals(1, $data);
+        $data = $redis->unwatch();
+        $this->assertEquals(1, $data);
+        $data = $redis->watch();
     }
 
     /**

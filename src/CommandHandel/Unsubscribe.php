@@ -10,7 +10,7 @@ class Unsubscribe extends AbstractCommandHandel
 	public $commandName = 'Unsubscribe';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$channel=array_shift($data);
 
@@ -21,7 +21,7 @@ class Unsubscribe extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

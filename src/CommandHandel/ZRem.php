@@ -11,7 +11,7 @@ class ZRem extends AbstractCommandHandel
     public $commandName = 'ZRem';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $key = array_shift($data);
         $member = array_shift($data);
@@ -28,7 +28,7 @@ class ZRem extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         return $recv->getData();
     }

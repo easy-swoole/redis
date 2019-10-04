@@ -11,7 +11,7 @@ class LInsert extends AbstractCommandHandel
     public $commandName = 'LInsert';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $key = array_shift($data);
         $isBefore = array_shift($data);
@@ -26,7 +26,7 @@ class LInsert extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         return $recv->getData();
     }

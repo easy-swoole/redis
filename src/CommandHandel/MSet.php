@@ -10,7 +10,7 @@ class MSet extends AbstractCommandHandel
 	public $commandName = 'MSet';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$data=array_shift($data);
         $kvData = [];
@@ -24,7 +24,7 @@ class MSet extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return true;
 	}

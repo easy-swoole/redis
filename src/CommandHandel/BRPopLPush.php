@@ -10,7 +10,7 @@ class BRPopLPush extends AbstractCommandHandel
 	public $commandName = 'BRPopLPush';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$source=array_shift($data);
 		$destination=array_shift($data);
@@ -25,7 +25,7 @@ class BRPopLPush extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		$data = $recv->getData();
 		        return $this->unSerialize($data);

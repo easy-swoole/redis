@@ -10,7 +10,7 @@ class SetEx extends AbstractCommandHandel
 	public $commandName = 'SetEx';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		$expireTime=array_shift($data);
@@ -26,7 +26,7 @@ class SetEx extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return true;
 	}

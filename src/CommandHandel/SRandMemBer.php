@@ -11,7 +11,7 @@ class SRandMemBer extends AbstractCommandHandel
     public $commandName = 'SRandMemBer';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $key = array_shift($data);
         $count = array_shift($data);
@@ -25,7 +25,7 @@ class SRandMemBer extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         $data = $recv->getData();
         foreach ($data as $key => $value) {

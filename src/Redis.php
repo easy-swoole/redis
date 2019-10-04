@@ -30,6 +30,7 @@ class Redis
      */
     protected $monitorStop = true;
 
+    protected $transaction = null;
 
     public function __construct(RedisConfig $config)
     {
@@ -1807,70 +1808,80 @@ class Redis
 
     ######################事务操作方法(待测试)######################
 
-    /* public function discard():bool
-     {
-         $data = [Command::DISCARD];
-         if (!$this->sendCommand($data)) {
-             return false;
-         }
-         $recv = $this->recv();
-         if ($recv === null) {
-             return false;
-         }
-         return true;
-     }
+    public function discard(): bool
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Discard($this);
+        $command = $handelClass->getCommand();
 
-     public function exec()
-     {
-         $data = [Command::EXEC];
-         if (!$this->sendCommand($data)) {
-             return false;
-         }
-         $recv = $this->recv();
-         if ($recv === null) {
-             return false;
-         }
-         return $recv->getData();
-     }
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
 
-     public function multi():bool
-     {
-         $data = [Command::MULTI];
-         if (!$this->sendCommand($data)) {
-             return false;
-         }
-         $recv = $this->recv();
-         if ($recv === null) {
-             return false;
-         }
-         return true;
-     }
+    public function exec()
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Exec($this);
+        $command = $handelClass->getCommand();
 
-     public function unWatch():bool
-     {
-         $data = [Command::UNWATCH];
-         if (!$this->sendCommand($data)) {
-             return false;
-         }
-         $recv = $this->recv();
-         if ($recv === null) {
-             return false;
-         }
-         return true;
-     }
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
 
-     public function watch($key,...$keys):bool
-     {
-         $command = array_merge([Command::WATCH, $key], $keys);
-         if (!$this->sendCommand($command)) {
-             return false;
-         }
-         $recv = $this->recv();
-         if ($recv === null) {
-             return false;
-         }
-         return true;
-     }*/
+    public function multi(): bool
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Multi($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function unWatch(): bool
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\UnWatch($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function watch($key, ...$keys): bool
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Watch($this);
+        $command = $handelClass->getCommand($key, $keys);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
     ######################事务操作方法(待测试)######################
 
 
@@ -2594,4 +2605,15 @@ class Redis
     {
         return $this->config;
     }
+
+    public function getTransaction():?RedisTransaction
+    {
+        return $this->transaction;
+    }
+
+    public function setTransaction(?RedisTransaction $transaction): void
+    {
+        $this->transaction = $transaction;
+    }
+
 }

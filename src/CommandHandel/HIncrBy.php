@@ -10,7 +10,7 @@ class HIncrBy extends AbstractCommandHandel
 	public $commandName = 'HIncrBy';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		$field=array_shift($data);
@@ -25,7 +25,7 @@ class HIncrBy extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

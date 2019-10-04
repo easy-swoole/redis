@@ -10,7 +10,7 @@ class Publish extends AbstractCommandHandel
 	public $commandName = 'Publish';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$channel=array_shift($data);
 		$message=array_shift($data);
@@ -24,7 +24,7 @@ class Publish extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

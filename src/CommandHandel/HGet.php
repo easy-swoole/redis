@@ -10,7 +10,7 @@ class HGet extends AbstractCommandHandel
 	public $commandName = 'HGet';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		$field=array_shift($data);
@@ -24,7 +24,7 @@ class HGet extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		$data = $recv->getData();
 		        return $this->unSerialize($data);

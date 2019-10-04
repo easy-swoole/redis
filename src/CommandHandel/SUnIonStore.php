@@ -10,7 +10,7 @@ class SUnIonStore extends AbstractCommandHandel
 	public $commandName = 'SUnIonStore';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$destination=array_shift($data);
 		$key1=array_shift($data);
@@ -21,7 +21,7 @@ class SUnIonStore extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

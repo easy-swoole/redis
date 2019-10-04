@@ -10,7 +10,7 @@ class Keys extends AbstractCommandHandel
 	public $commandName = 'Keys';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$pattern=array_shift($data);
 
@@ -23,7 +23,7 @@ class Keys extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

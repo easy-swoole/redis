@@ -10,7 +10,7 @@ class ConfigRewrite extends AbstractCommandHandel
 	public $commandName = 'ConfigRewrite';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$command = [CommandConst::CONFIG,'REWRITE'];
 		$commandData = array_merge($command,$data);
@@ -18,7 +18,7 @@ class ConfigRewrite extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return true;
 	}

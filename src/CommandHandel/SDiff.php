@@ -11,7 +11,7 @@ class SDiff extends AbstractCommandHandel
     public $commandName = 'SDiff';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $key1 = array_shift($data);
 
@@ -21,7 +21,7 @@ class SDiff extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         $data = $recv->getData();
         foreach ($data as $key => $value) {

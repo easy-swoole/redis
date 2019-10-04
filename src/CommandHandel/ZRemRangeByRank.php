@@ -10,7 +10,7 @@ class ZRemRangeByRank extends AbstractCommandHandel
 	public $commandName = 'ZRemRangeByRank';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		$start=array_shift($data);
@@ -25,7 +25,7 @@ class ZRemRangeByRank extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

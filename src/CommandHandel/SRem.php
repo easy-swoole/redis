@@ -11,7 +11,7 @@ class SRem extends AbstractCommandHandel
     public $commandName = 'SRem';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $key = array_shift($data);
         $member1 = array_shift($data);
@@ -27,7 +27,7 @@ class SRem extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         return $recv->getData();
     }

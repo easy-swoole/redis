@@ -11,7 +11,7 @@ class Set extends AbstractCommandHandel
     public $commandName = 'Set';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $key = array_shift($data);
         $val = array_shift($data);
@@ -26,7 +26,7 @@ class Set extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         return true;
     }

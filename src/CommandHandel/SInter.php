@@ -10,7 +10,7 @@ class SInter extends AbstractCommandHandel
 	public $commandName = 'SInter';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key1=array_shift($data);
 
@@ -20,7 +20,7 @@ class SInter extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		$data = $recv->getData();
 		        foreach ($data as $key => $value) {

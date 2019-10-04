@@ -10,7 +10,7 @@ class LPuShx extends AbstractCommandHandel
 	public $commandName = 'LPuShx';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		$value=array_shift($data);
@@ -25,7 +25,7 @@ class LPuShx extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

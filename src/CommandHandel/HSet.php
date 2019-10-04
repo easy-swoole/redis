@@ -10,7 +10,7 @@ class HSet extends AbstractCommandHandel
 	public $commandName = 'HSet';
 
 
-	public function getCommand(...$data)
+	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		$field=array_shift($data);
@@ -26,7 +26,7 @@ class HSet extends AbstractCommandHandel
 	}
 
 
-	public function getData(Response $recv)
+	public function handelRecv(Response $recv)
 	{
 		return $recv->getData();
 	}

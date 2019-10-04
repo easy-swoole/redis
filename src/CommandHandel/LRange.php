@@ -11,7 +11,7 @@ class LRange extends AbstractCommandHandel
     public $commandName = 'LRange';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $key = array_shift($data);
         $start = array_shift($data);
@@ -24,7 +24,7 @@ class LRange extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         $data = $recv->getData();
         foreach ($data as $key => $va) {

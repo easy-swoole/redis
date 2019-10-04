@@ -11,7 +11,7 @@ class LPop extends AbstractCommandHandel
     public $commandName = 'LPop';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $key = array_shift($data);
 
@@ -21,7 +21,7 @@ class LPop extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         $data = $recv->getData();
         return $this->unSerialize($data);

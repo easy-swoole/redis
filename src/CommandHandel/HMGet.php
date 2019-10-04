@@ -11,7 +11,7 @@ class HMGet extends AbstractCommandHandel
     public $commandName = 'HMGet';
 
 
-    public function getCommand(...$data)
+    public function handelCommandData(...$data)
     {
         $key = array_shift($data);
         $field = array_shift($data);
@@ -22,7 +22,7 @@ class HMGet extends AbstractCommandHandel
     }
 
 
-    public function getData(Response $recv)
+    public function handelRecv(Response $recv)
     {
         $data = $recv->getData();
         foreach ($data as $key => $value) {
