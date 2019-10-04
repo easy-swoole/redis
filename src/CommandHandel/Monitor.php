@@ -29,7 +29,7 @@ class Monitor extends AbstractCommandHandel
             if ($recv === null) {
                 return false;
             }
-            call_user_func($this->callback, $this, $recv->getData());
+            call_user_func($this->callback, $this->redis, $recv->getData());
         }
     }
 }

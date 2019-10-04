@@ -17,7 +17,6 @@ class SlowLog extends AbstractCommandHandel
 
         $command = [CommandConst::SLOWLOG, $subCommand];
         $commandData = array_merge($command, $data);
-        var_dump($commandData);
         return $commandData;
     }
 
