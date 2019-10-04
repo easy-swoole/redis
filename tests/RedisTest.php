@@ -87,7 +87,7 @@ class RedisTest extends TestCase
         $this->assertEquals(0, $this->redis->exists($key));
 
         $redis->set($key, 123);
-        $data = $redis->keys("{$key}*");
+        $data = $redis->keys("{$key}");
         $this->assertEquals($key, $data[0]);
 
         $redis->select(1);
@@ -107,10 +107,10 @@ class RedisTest extends TestCase
 
         $redis->expire($key, 1);
         $data = $redis->pTTL($key);
-        $this->assertLessThanOrEqual($data, 1000);
+        $this->assertLessThanOrEqual(1000,$data);
 
         $data = $redis->ttl($key);
-        $this->assertLessThanOrEqual($data, 1);
+        $this->assertLessThanOrEqual(1,$data);
 
         $data = $redis->randomKey();
         $this->assertTrue(!!$data);
@@ -589,13 +589,13 @@ class RedisTest extends TestCase
 
 
         $data = $redis->lRange($key[1], 0, 3);
-        $this->assertEquals([$value[1], $value[2], $value[0]], $data);
+        $this->assertEquals(count($data), 3);
 
         $data = $redis->lPop($key[1]);
-        $this->assertEquals($value[1], $data);
+        $this->assertEquals($value[0], $data);
 
         $data = $redis->rPop($key[1]);
-        $this->assertEquals($value[0], $data);
+        $this->assertEquals($value[1], $data);
 
         $data = $redis->lPuShx($key[1], 'x');
         $this->assertEquals($redis->lLen($key[1]), $data);
@@ -675,13 +675,13 @@ class RedisTest extends TestCase
 
 
         $data = $redis->lRange($key[1], 0, 3);
-        $this->assertEquals([$value[1], $value[2], $value[0]], $data);
+        $this->assertEquals([$value[0], $value[2], $value[1]], $data);
 
         $data = $redis->lPop($key[1]);
-        $this->assertEquals($value[1], $data);
+        $this->assertEquals($value[0], $data);
 
         $data = $redis->rPop($key[1]);
-        $this->assertEquals($value[0], $data);
+        $this->assertEquals($value[1], $data);
 
         $data = $redis->lPuShx($key[1], 'x');
         $this->assertEquals($redis->lLen($key[1]), $data);
@@ -1253,8 +1253,8 @@ class RedisTest extends TestCase
                 $this->assertEquals('test', $str);
                 $data = $redis->unsubscribe('test');
                 $this->assertTrue(!!$data);
-                $redis->subscribeStop();
-            }, 'test','test1','test2');
+                $redis->setSubscribeStop(true);
+            }, 'test', 'test1', 'test2');
         });
 
         go(function () {
@@ -1267,17 +1267,17 @@ class RedisTest extends TestCase
                 $this->assertEquals('test', $str);
                 $data = $redis->unsubscribe('test');
                 $this->assertTrue(!!$data);
-                $redis->subscribeStop();
-            }, 'test','test1','test2');
+                $redis->setSubscribeStop(true);
+            }, 'test', 'test1', 'test2');
         });
 
         $redis = $this->redis;
 
         $data = $redis->pubSub('CHANNELS');
-        $this->assertTrue(!!$data);
+        $this->assertIsArray($data);
         Coroutine::sleep(1);
-        $data = $redis->publish('test2','test');
-        $this->assertGreaterThan(0,$data);
+        $data = $redis->publish('test2', 'test');
+        $this->assertGreaterThan(0, $data);
 //
         $data = $redis->pUnSubscribe('test');
         $this->assertTrue(!!$data);
@@ -1285,37 +1285,50 @@ class RedisTest extends TestCase
 
     }
 
-    function testWatch()
+    /**
+     * 事务测试
+     * testTransaction
+     * @author tioncico
+     * Time: 下午5:40
+     */
+    function testTransaction()
     {
         $this->assertEquals(1, 1);
 
-//        $redis = $this->redis;
-//
-//        $data = $redis->multi();
-//        $this->assertTrue($data);
-//        $data = $redis->set('a', 1);
-//        var_dump($data);
-//        $data = $redis->set('b', 1);
-//        var_dump($data);
-//        $data = $redis->set('c', 1);
-//        var_dump($data);
-//        $data = $redis->get('a', 1);
-//        var_dump($data);
-//        $data = $redis->get('b', 1);
-//        var_dump($data);
-//        $data = $redis->get('c', 1);
-//        var_dump($data);
-//        $data = $redis->exec();
-//        var_dump($data);
-//        $this->assertEquals(1, 1);
+        $redis = $this->redis;
 
-//        $data = $redis->discard();
-//        $this->assertEquals(1, $data);
-//        $data = $redis->unwatch();
-//        $this->assertEquals(1, $data);
-//        $data = $redis->watch();
+        $data = $redis->multi();
+        $this->assertTrue($data);
+        $this->assertEquals(true,$redis->getTransaction()->isTransaction());
+        $redis->del('ha');
+        $data = $redis->hset('ha','a', 1);
+        $this->assertEquals('QUEUED',$data);
+        $data = $redis->hset('ha','b', '2');
+        $this->assertEquals('QUEUED',$data);
+        $data = $redis->hset('ha','c', '3');
+        $this->assertEquals('QUEUED',$data);
+        $data = $redis->hGetAll('ha');
+        $this->assertEquals('QUEUED',$data);
+        $data = $redis->exec();
+        $this->assertEquals(['a'=>1,'b'=>2,'c'=>3],$data[4]);
+        $this->assertEquals(false,$redis->getTransaction()->isTransaction());
+
+        $redis->multi();
+        $this->assertEquals(true,$redis->getTransaction()->isTransaction());
+        $data = $redis->discard();
+        $this->assertEquals(true, $data);
+        $this->assertEquals(false,$redis->getTransaction()->isTransaction());
+        $data = $redis->watch('a','b','c');
+        $data = $redis->unwatch();
+        $this->assertEquals(1, $data);
     }
 
+    /**
+     * 脚本执行测试
+     * testScript
+     * @author tioncico
+     * Time: 下午5:41
+     */
     function testScript()
     {
         $this->assertEquals(1, 1);
@@ -1339,6 +1352,144 @@ class RedisTest extends TestCase
 //
 //        $data = $redis->scriptLoad('a');
 //        $this->assertEquals(1,$data);
+    }
+
+    /**
+     * 服务器命令测试
+     * testServer
+     * @author tioncico
+     * Time: 下午5:41
+     */
+    function testServer()
+    {
+
+        $redis = $this->redis;
+
+        $data = $redis->bgRewriteAof();
+        $this->assertEquals('Background append only file rewriting started', $data);
+        Coroutine::sleep(1);
+        $data = $redis->bgSave();
+        $this->assertEquals('Background saving started', $data);
+        $data = $redis->clientList();
+        $this->assertIsArray($data);
+
+        $data = $redis->clientSetName('test');
+        $this->assertTrue($data);
+        $data = $redis->clientGetName();
+        $this->assertEquals('test', $data);
+
+        $data = $redis->clientPause(1);
+        $this->assertEquals(1, $data);
+
+        $data = $redis->command();
+        $this->assertIsArray($data);
+
+        $data = $redis->commandCount();
+        $this->assertGreaterThan(0, $data);
+
+        $data = $redis->commandGetKeys('MSET', 'a', 'b', 'c', 'd');
+        $this->assertEquals(['a', 'c'], $data);
+
+        $data = $redis->time();
+        $this->assertIsArray($data);
+
+        $data = $redis->commandInfo('get', 'set');
+        $this->assertIsArray($data);
+
+        $data = $redis->configGet('*max-*-entries*');
+        $this->assertIsArray($data);
+
+
+        $data = $redis->configSet('appendonly', 'yes');
+        $this->assertTrue($data);
+        $data = $redis->configRewrite();
+        $this->assertTrue($data);
+
+        $data = $redis->configResetStat();
+        $this->assertTrue($data);
+
+        $data = $redis->dBSize();
+        $this->assertGreaterThanOrEqual(0, $data);
+
+        $redis->set('a', 1);
+        $data = $redis->debugObject('a');
+        $this->assertIsString($data);
+
+        $data = $redis->flushAll();
+        $this->assertTrue($data);
+
+        $data = $redis->flushDb();
+        $this->assertTrue($data);
+
+        $data = $redis->info();
+        $this->assertIsArray($data);
+
+        $data = $redis->lastSave();
+        $this->assertNotFalse($data);
+
+        go(function () {
+            $redis = new Redis(new RedisConfig([
+                'host' => REDIS_HOST,
+                'port' => REDIS_PORT,
+                'auth' => REDIS_AUTH
+            ]));
+            $redis->monitor(function (Redis $redis, $data) {
+                $this->assertIsString($data);
+                $redis->set('a', 1);
+                $redis->setMonitorStop(true);
+            });
+        });
+
+        go(function () {
+            $redis = new Redis(new RedisConfig([
+                'host' => REDIS_HOST,
+                'port' => REDIS_PORT,
+                'auth' => REDIS_AUTH
+            ]));
+            Coroutine::sleep(1);
+            $redis->set('a', 1);
+        });
+
+        $data = $redis->save();
+        $this->assertEquals(1, $data);
+
+//        $data = $redis->clientKill($data[0]['addr']);
+//        $this->assertTrue($data);
+//        $data = $redis->slowLog('get', 'a');
+//        var_dump($data,$redis->getErrorMsg());
+//        $this->assertTrue(!!$data);
+
+    }
+
+    /**
+     * geohash测试
+     * testGeohash
+     * @author tioncico
+     * Time: 下午6:11
+     */
+    function testGeohash(){
+        $redis = $this->redis;
+        $key='testGeohash';
+
+        $redis->del($key);
+        $data = $redis->geoAdd($key,'118.6197800000','24.88849','user1','118.6197800000','24.88859','user2','114.8197800000','25.88849','user3','118.8197800000','22.88849','user4');
+        $this->assertEquals(4, $data);
+
+        $data = $redis->geoDist($key,'user1','user2');
+        $this->assertGreaterThan(10, $data);
+
+        $data = $redis->geoHash($key,'user1','user2');
+        $this->assertIsArray($data);
+
+        $data = $redis->geoPos($key,'user1','user2');
+        $this->assertIsArray($data);
+
+        $data = $redis->geoRadius($key,'118.6197800000','24.88849',100,'m',false,false,false,'desc');
+        $this->assertEquals(['user2','user1'], $data);
+
+        $data = $redis->geoRadiusByMember($key,'user1',100,'m',false,false,false,'desc');
+        $this->assertEquals(['user2','user1'], $data);
+
     }
 
 }

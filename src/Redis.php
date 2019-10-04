@@ -25,6 +25,12 @@ class Redis
      */
     protected $subscribeStop = true;
 
+    /**
+     * @var bool 是否停止命令监听
+     */
+    protected $monitorStop = true;
+
+    protected $transaction = null;
 
     public function __construct(RedisConfig $config)
     {
@@ -60,21 +66,24 @@ class Redis
         $this->lastSocketErrno = 0;
         $this->lastSocketError = '';
         $this->subscribeStop = true;
+        $this->monitorStop = true;
         $this->errorMsg = '';
         $this->errorType = '';
     }
 
     public function auth($password): bool
     {
-        $data = [Command::AUTH, $password];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Auth($this);
+        $command = $handelClass->getCommand($password);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return true;
+        return $handelClass->getData($recv);
     }
 
     public function echo($str)
@@ -92,28 +101,32 @@ class Redis
 
     public function ping()
     {
-        $data = [Command::PING];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Ping($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function select($db): bool
     {
-        $data = [Command::SELECT, $db];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Select($this);
+        $command = $handelClass->getCommand($db);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return true;
+        return $handelClass->getData($recv);
     }
 
     ######################服务器连接方法######################
@@ -122,184 +135,212 @@ class Redis
 
     public function del($key)
     {
-        $data = [Command::DEL, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Del($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function dump($key)
     {
-        $data = [Command::DUMP, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Dump($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function exists($key)
     {
-        $data = [Command::EXISTS, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Exists($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function expire($key, $expireTime = 60)
     {
-        $data = [Command::EXPIRE, $key, $expireTime];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Expire($this);
+        $command = $handelClass->getCommand($key, $expireTime);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function expireAt($key, $expireTime)
     {
-        $data = [Command::EXPIREAT, $key, $expireTime];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ExpireAt($this);
+        $command = $handelClass->getCommand($key, $expireTime);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function keys($pattern)
     {
-        $data = [Command::KEYS, $pattern];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Keys($this);
+        $command = $handelClass->getCommand($pattern);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function move($key, $db)
     {
-        $data = [Command::MOVE, $key, $db];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Move($this);
+        $command = $handelClass->getCommand($key, $db);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function persist($key)
     {
-        $data = [Command::PERSIST, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Persist($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function pTTL($key)
     {
-        $data = [Command::PTTL, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\PTTL($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function ttl($key)
     {
-        $data = [Command::TTL, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Ttl($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function randomKey()
     {
-        $data = [Command::RANDOMKEY];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\RandomKey($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function rename($key, $new_key): bool
     {
-        $data = [Command::RENAME, $key, $new_key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Rename($this);
+        $command = $handelClass->getCommand($key, $new_key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return true;
+        return $handelClass->getData($recv);
     }
 
     public function renameNx($key, $new_key)
     {
-        $data = [Command::RENAMENX, $key, $new_key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\RenameNx($this);
+        $command = $handelClass->getCommand($key, $new_key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function type($key)
     {
-        $data = [Command::TYPE, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Type($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     ######################key操作方法######################
@@ -309,11 +350,9 @@ class Redis
 
     public function set($key, $val, $expireTime = null): bool
     {
-        $val = $this->serialize($val);
-        $command = [Command::SET, $key, $val];
-        if ($expireTime != null && $expireTime > 0) {
-            $command[] = 'EX ' . $expireTime;
-        }
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Set($this);
+        $command = $handelClass->getCommand($key, $val, $expireTime);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -321,67 +360,74 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return true;
+        return $handelClass->getData($recv);
     }
 
     public function get($key)
     {
-        $data = [Command::GET, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Get($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        $data = $recv->getData();
-        return $this->unserialize($data);
+        return $handelClass->getData($recv);
     }
 
     public function getRange($key, $start, $end)
     {
-        $data = [Command::GETRANGE, $key, $start, $end];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\GetRange($this);
+        $command = $handelClass->getCommand($key, $start, $end);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function getSet($key, $value)
     {
-        $value = $this->serialize($value);
-        $data = [Command::GETSET, $key, $value];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\GetSet($this);
+        $command = $handelClass->getCommand($key, $value);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        $data = $recv->getData();
-        return $this->unserialize($data);
+        return $handelClass->getData($recv);
     }
 
     public function getBit($key, $offset)
     {
-        $data = [Command::GETBIT, $key, $offset];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\GetBit($this);
+        $command = $handelClass->getCommand($key, $offset);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function mGet(...$keys)
     {
-        $command = array_merge([Command::MGET], $keys);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\MGet($this);
+        $command = $handelClass->getCommand(...$keys);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -389,87 +435,89 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        $data = $recv->getData();
-        foreach ($data as $key => $value) {
-            $data[$key] = $this->unSerialize($value);
-        }
-
-        return $data;
+        return $handelClass->getData($recv);
     }
 
     public function setBit($key, $offset, $value)
     {
-        $data = [Command::SETBIT, $key, $offset, $value];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SetBit($this);
+        $command = $handelClass->getCommand($key, $offset, $value);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function setEx($key, $expireTime, $value): bool
     {
-        $value = $this->serialize($value);
-        $data = [Command::SETEX, $key, $expireTime, $value];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SetEx($this);
+        $command = $handelClass->getCommand($key, $expireTime, $value);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return true;
+        return $handelClass->getData($recv);
     }
 
     public function setNx($key, $value)
     {
-        $data = [Command::SETNX, $key, $value];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SetNx($this);
+        $command = $handelClass->getCommand($key, $value);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function setRange($key, $offset, $value)
     {
-        $data = [Command::SETRANGE, $key, $offset, $value];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SetRange($this);
+        $command = $handelClass->getCommand($key, $offset, $value);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function strLen($key)
     {
-        $data = [Command::STRLEN, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\StrLen($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function mSet($data): bool
     {
-        $command = [Command::MSET];
-        foreach ($data as $key => $value) {
-            $command[] = $key;
-            $command[] = $this->serialize($value);
-        }
+        $handelClass = new \EasySwoole\Redis\CommandHandel\MSet($this);
+
+        $command = $handelClass->getCommand($data);
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -477,16 +525,14 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return true;
+        return $handelClass->getData($recv);
     }
 
     public function mSetNx($data)
     {
-        $command = [Command::MSETNX];
-        foreach ($data as $key => $value) {
-            $command[] = $key;
-            $command[] = $this->serialize($value);
-        }
+        $handelClass = new \EasySwoole\Redis\CommandHandel\MSetNx($this);
+        $command = $handelClass->getCommand($data);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -494,99 +540,112 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function pSetEx($key, $expireTime, $value)
     {
-        $value = $this->serialize($value);
-        $data = [Command::PSETEX, $key, $expireTime, $value];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\PSetEx($this);
+        $command = $handelClass->getCommand($key, $expireTime, $value);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return true;
+        return $handelClass->getData($recv);
     }
 
     public function incr($key)
     {
-        $data = [Command::INCR, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Incr($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function incrBy($key, $value)
     {
-        $data = [Command::INCRBY, $key, $value];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\IncrBy($this);
+        $command = $handelClass->getCommand($key, $value);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function incrByFloat($key, $value)
     {
-        $data = [Command::INCRBYFLOAT, $key, $value];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\IncrByFloat($this);
+        $command = $handelClass->getCommand($key, $value);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function decr($key)
     {
-        $data = [Command::DECR, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Decr($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function decrBy($key, $value)
     {
-        $data = [Command::DECRBY, $key, $value];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\DecrBy($this);
+        $command = $handelClass->getCommand($key, $value);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function appEnd($key, $value)
     {
-        $data = [Command::APPEND, $key, $value];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\AppEnd($this);
+        $command = $handelClass->getCommand($key, $value);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     ######################字符串方法######################
@@ -596,7 +655,9 @@ class Redis
 
     public function hDel($key, ...$field)
     {
-        $command = array_merge([Command::HDEL, $key], $field);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\HDel($this);
+        $command = $handelClass->getCommand($key, ...$field);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -604,116 +665,119 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function hExists($key, $field)
     {
-        $data = [Command::HEXISTS, $key, $field];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\HExists($this);
+        $command = $handelClass->getCommand($key, $field);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function hGet($key, $field)
     {
-        $data = [Command::HGET, $key, $field];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\HGet($this);
+        $command = $handelClass->getCommand($key, $field);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-
-        $data = $recv->getData();
-        return $this->unserialize($data);
+        return $handelClass->getData($recv);
     }
 
     public function hGetAll($key)
     {
-        $data = [Command::HGETALL, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\HGetAll($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        $result = [];
-        $data = $recv->getData();
-        $dataCount = count($data);
-        for ($i = 0; $i < $dataCount / 2; $i++) {
-            $result[$data[$i * 2]] = $this->unserialize($data[$i * 2 + 1]);
-        }
-        return $result;
+        return $handelClass->getData($recv);
     }
 
     public function hSet($key, $field, $value)
     {
-        $value = $this->serialize($value);
-        $data = [Command::HSET, $key, $field, $value];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\HSet($this);
+        $command = $handelClass->getCommand($key, $field, $value);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function hValS($key)
     {
-        $data = [Command::HVALS, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\HValS($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        $data = $recv->getData();
-        foreach ($data as $key => $value) {
-            $data[$key] = $this->unSerialize($value);
-        }
-        return $data;
+        return $handelClass->getData($recv);
     }
 
     public function hKeys($key)
     {
-        $data = [Command::HKEYS, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\HKeys($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function hLen($key)
     {
-        $data = [Command::HLEN, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\HLen($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function hMGet($key, ...$field)
     {
-        $command = array_merge([Command::HMGET, $key], $field);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\HMGet($this);
+        $command = $handelClass->getCommand($key, ...$field);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -721,21 +785,14 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        $data = $recv->getData();
-        foreach ($data as $key => $value) {
-            $data[$key] = $this->unSerialize($value);
-        }
-
-        return $data;
+        return $handelClass->getData($recv);
     }
 
     public function hMSet($key, $data): bool
     {
-        $command = [Command::HMSET, $key];
-        foreach ($data as $key => $value) {
-            $command[] = $key;
-            $command[] = $this->serialize($value);
-        }
+        $handelClass = new \EasySwoole\Redis\CommandHandel\HMSet($this);
+        $command = $handelClass->getCommand($key, $data);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -743,47 +800,52 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return true;
+        return $handelClass->getData($recv);
     }
 
     public function hIncrBy($key, $field, $increment)
     {
-        $data = [Command::HINCRBY, $key, $field, $increment];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\HIncrBy($this);
+        $command = $handelClass->getCommand($key, $field, $increment);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function hIncrByFloat($key, $field, $increment)
     {
-        $data = [Command::HINCRBYFLOAT, $key, $field, $increment];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\HIncrByFloat($this);
+        $command = $handelClass->getCommand($key, $field, $increment);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function hSetNx($key, $field, $value)
     {
-        $value = $this->serialize($value);
-        $data = [Command::HSETNX, $key, $field, $value];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\HSetNx($this);
+        $command = $handelClass->getCommand($key, $field, $value);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
 //    public function hScan($key, $iterator, $pattern = '', $count = 0)
@@ -805,7 +867,9 @@ class Redis
 
     public function bLPop($key1, ...$data)
     {
-        $command = array_merge([Command::BLPOP, $key1], $data);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\BLPop($this);
+        $command = $handelClass->getCommand($key1, ...$data);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -813,12 +877,14 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return [$recv->getData()[0] => $this->unSerialize($recv->getData()[1])];
+        return $handelClass->getData($recv);
     }
 
     public function bRPop($key1, ...$data)
     {
-        $command = array_merge([Command::BLPOP, $key1], $data);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\BRPop($this);
+        $command = $handelClass->getCommand($key1, ...$data);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -826,85 +892,89 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return [$recv->getData()[0] => $this->unSerialize($recv->getData()[1])];
+        return $handelClass->getData($recv);
     }
 
     public function bRPopLPush($source, $destination, $timeout)
     {
-        $data = [Command::BRPOPLPUSH, $source, $destination, $timeout];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\BRPopLPush($this);
+        $command = $handelClass->getCommand($source, $destination, $timeout);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        $data = $recv->getData();
-        return $this->unserialize($data);
+        return $handelClass->getData($recv);
     }
 
     public function lIndex($key, $index)
     {
-        $data = [Command::LINDEX, $key, $index];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\LIndex($this);
+        $command = $handelClass->getCommand($key, $index);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        $data = $recv->getData();
-        return $this->unSerialize($data);
+        return $handelClass->getData($recv);
     }
 
     public function lInsert($key, bool $isBefore, $pivot, $value)
     {
-        $value = $this->serialize($value);
-        $pivot = $this->serialize($pivot);
-        $data = [Command::LINSERT, $key, $isBefore == true ? 'BEFORE' : 'AFTER', $pivot, $value];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\LInsert($this);
+        $command = $handelClass->getCommand($key, $isBefore == true ? 'BEFORE' : 'AFTER', $pivot, $value);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function lLen($key)
     {
-        $data = [Command::LLEN, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\LLen($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function lPop($key)
     {
-        $data = [Command::LPOP, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\LPop($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        $data = $recv->getData();
-        return $this->unserialize($data);
+        return $handelClass->getData($recv);
     }
 
     public function lPush($key, ...$data)
     {
-        foreach ($data as $k => $va) {
-            $data[$k] = $this->serialize($va);
-        }
-        $command = array_merge([Command::LPUSH, $key], $data);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\LPush($this);
+        $command = $handelClass->getCommand($key, ...$data);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -912,116 +982,14 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function lPuShx($key, $value)
     {
-        $value = $this->serialize($value);
-        $data = [Command::LPUSHX, $key, $value];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
+        $handelClass = new \EasySwoole\Redis\CommandHandel\LPuShx($this);
+        $command = $handelClass->getCommand($key, $value);
 
-    public function lRange($key, $start, $stop)
-    {
-        $data = [Command::LRANGE, $key, $start, $stop];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        $data = $recv->getData();
-        foreach ($data as $key => $va) {
-            $data[$key] = $this->unSerialize($va);
-        }
-
-        return $data;
-    }
-
-    public function lRem($key, $count, $value)
-    {
-        $value = $this->serialize($value);
-        $data = [Command::LREM, $key, $count, $value];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
-
-    public function lSet($key, $index, $value): bool
-    {
-        $value = $this->serialize($value);
-        $data = [Command::LSET, $key, $index, $value];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return true;
-    }
-
-    public function lTrim($key, $start, $stop): bool
-    {
-        $data = [Command::LTRIM, $key, $start, $stop];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return true;
-    }
-
-    public function rPop($key)
-    {
-        $data = [Command::RPOP, $key];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        $data = $recv->getData();
-        return $this->unserialize($data);
-    }
-
-    public function rPopLPush($source, $destination)
-    {
-        $data = [Command::RPOPLPUSH, $source, $destination];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        $data = $recv->getData();
-        return $this->unserialize($data);
-    }
-
-    public function rPush($key, ...$data)
-    {
-        foreach ($data as $k => $va) {
-            $data[$k] = $this->serialize($va);
-        }
-        $command = array_merge([Command::LPUSH, $key], $data);
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1029,31 +997,136 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function rPuShx($key, $value)
+    public function lRange($key, $start, $stop)
     {
-        $value = $this->serialize($value);
-        $data = [Command::RPUSHX, $key, $value];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\LRange($this);
+        $command = $handelClass->getCommand($key, $start, $stop);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
+    }
+
+    public function lRem($key, $count, $value)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\LRem($this);
+        $command = $handelClass->getCommand($key, $count, $value);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function lSet($key, $index, $value): bool
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\LSet($this);
+        $command = $handelClass->getCommand($key, $index, $value);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function lTrim($key, $start, $stop): bool
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\LTrim($this);
+        $command = $handelClass->getCommand($key, $start, $stop);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function rPop($key)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\RPop($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function rPopLPush($source, $destination)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\RPopLPush($this);
+        $command = $handelClass->getCommand($source, $destination);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function rPush($key, ...$data)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\RPush($this);
+        $command = $handelClass->getCommand($key, ...$data);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function rPuShx($key, $value)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\RPuShx($this);
+        $command = $handelClass->getCommand($key, $value);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
     }
     ######################列表操作方法######################
 
     ######################集合操作方法######################
     public function sAdd($key, ...$data)
     {
-        foreach ($data as $k => $va) {
-            $data[$k] = $this->serialize($va);
-        }
-        $command = array_merge([Command::SADD, $key], $data);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SAdd($this);
+        $command = $handelClass->getCommand($key, $data);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1061,25 +1134,29 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function sCard($key)
     {
-        $data = [Command::SCARD, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SCard($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function sDiff($key1, ...$keys)
     {
-        $command = array_merge([Command::SDIFF, $key1], $keys);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SDiff($this);
+        $command = $handelClass->getCommand($key1, ...$keys);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1087,16 +1164,14 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        $data = $recv->getData();
-        foreach ($data as $key => $value) {
-            $data[$key] = $this->unSerialize($value);
-        }
-        return $data;
+        return $handelClass->getData($recv);
     }
 
     public function sDiffStore($destination, ...$keys)
     {
-        $command = array_merge([Command::SDIFFSTORE, $destination], $keys);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SDiffStore($this);
+        $command = $handelClass->getCommand($destination, ...$keys);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1104,12 +1179,14 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function sInter($key1, ...$keys)
     {
-        $command = array_merge([Command::SINTER, $key1], $keys);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SInter($this);
+        $command = $handelClass->getCommand($key1, ...$keys);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1117,16 +1194,14 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        $data = $recv->getData();
-        foreach ($data as $key => $value) {
-            $data[$key] = $this->unSerialize($value);
-        }
-        return $data;
+        return $handelClass->getData($recv);
     }
 
     public function sInterStore($destination, ...$keys)
     {
-        $command = array_merge([Command::SINTERSTORE, $destination], $keys);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SInterStore($this);
+        $command = $handelClass->getCommand($destination, ...$keys);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1134,96 +1209,89 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function sIsMember($key, $member)
     {
-        $member = $this->serialize($member);
-        $data = [Command::SISMEMBER, $key, $member];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SIsMember($this);
+        $command = $handelClass->getCommand($key, $member);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function sMembers($key)
     {
-        $data = [Command::SMEMBERS, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SMembers($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        $data = $recv->getData();
-        foreach ($data as $key => $value) {
-            $data[$key] = $this->unSerialize($value);
-        }
-        return $data;
+        return $handelClass->getData($recv);
     }
 
     public function sMove($source, $destination, $member)
     {
-        $member = $this->serialize($member);
-        $data = [Command::SMOVE, $source, $destination, $member];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SMove($this);
+        $command = $handelClass->getCommand($source, $destination, $member);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function sPop($key)
     {
-        $data = [Command::SPOP, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SPop($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        $data = $recv->getData();
-        $data = $this->unSerialize($data);
-        return $data;
+        return $handelClass->getData($recv);
     }
 
     public function sRandMemBer($key, $count = null)
     {
-        $data = [Command::SRANDMEMBER, $key];
-        if ($count !== null) {
-            $data[] = $count;
-        }
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SRandMemBer($this);
+        $command = $handelClass->getCommand($key, $count);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        $data = $recv->getData();
-        foreach ($data as $key => $value) {
-            $data[$key] = $this->unSerialize($value);
-        }
-        return $data;
+        return $handelClass->getData($recv);
     }
 
     public function sRem($key, $member1, ...$members)
     {
-        $member1 = $this->serialize($member1);
-        foreach ($members as $k => $va) {
-            $members[$k] = $this->serialize($va);
-        }
-        $command = array_merge([Command::SREM, $key, $member1], $members);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SRem($this);
+        $command = $handelClass->getCommand($key, $member1, ...$members);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1231,12 +1299,14 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function sUnion($key1, ...$keys)
     {
-        $command = array_merge([Command::SUNION, $key1], $keys);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SUnion($this);
+        $command = $handelClass->getCommand($key1, ...$keys);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1244,16 +1314,14 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        $data = $recv->getData();
-        foreach ($data as $key => $value) {
-            $data[$key] = $this->unSerialize($value);
-        }
-        return $data;
+        return $handelClass->getData($recv);
     }
 
     public function sUnIomStore($destination, $key1, ...$keys)
     {
-        $command = array_merge([Command::SUNIONSTORE, $destination, $key1], $keys);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SUnIonStore($this);
+        $command = $handelClass->getCommand($destination, $key1, ...$keys);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1261,7 +1329,7 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     /*    public function sScan($key,$cursor,$pattern,$count)
@@ -1282,14 +1350,9 @@ class Redis
     ######################有序集合操作方法######################
     public function zAdd($key, $score1, $member1, ...$data)
     {
-        $member1 = $this->serialize($member1);
-        foreach ($data as $k => $va) {
-            if ($k % 2 != 0) {
-                $data[$k] = $this->serialize($va);
-            }
-        }
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZAdd($this);
+        $command = $handelClass->getCommand($key, $score1, $member1, ...$data);
 
-        $command = array_merge([Command::ZADD, $key, $score1, $member1], $data);
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1297,51 +1360,59 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function zCard($key)
     {
-        $data = [Command::ZCARD, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZCard($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function zCount($key, $min, $max)
     {
-        $data = [Command::ZCOUNT, $key, $min, $max];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZCount($this);
+        $command = $handelClass->getCommand($key, $min, $max);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function zInCrBy($key, $increment, $member)
     {
-        $data = [Command::ZINCRBY, $key, $increment, $member];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZInCrBy($this);
+        $command = $handelClass->getCommand($key, $increment, $member);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function zInTerStore($destination, $numKeys, $key, ...$data)
     {
-        $command = array_merge([Command::ZINTERSTORE, $destination, $numKeys, $key,], $data);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZInTerStore($this);
+        $command = $handelClass->getCommand($destination, $numKeys, $key, ...$data);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1349,58 +1420,44 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function zLexCount($key, $min, $max)
     {
-        $data = [Command::ZLEXCOUNT, $key, $min, $max];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZLexCount($this);
+        $command = $handelClass->getCommand($key, $min, $max);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function zRange($key, $start, $stop, $withScores = false)
     {
-        $data = [Command::ZRANGE, $key, $start, $stop];
-        if ($withScores == true) {
-            $data[] = 'WITHSCORES';
-        }
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRange($this);
+        $command = $handelClass->getCommand($key, $start, $stop, $withScores);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        $data = $recv->getData();
-        if ($withScores == true) {
-            $result = [];
-            foreach ($data as $k => $va) {
-                if ($k % 2 == 0) {
-                    $result[$this->unSerialize($va)] = 0;
-                } else {
-                    $result[$this->unSerialize($data[$k - 1])] = $va;
-                }
-            }
-        } else {
-            $result = [];
-            foreach ($data as $k => $va) {
-                $result[$k] = $this->unSerialize($va);
-            }
-        }
-
-        return $result;
+        return $handelClass->getData($recv);
     }
 
     public function zRangeByLex($key, $min, $max, ...$data)
     {
-        $command = array_merge([Command::ZRANGEBYLEX, $key, $min, $max], $data);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRangeByLex($this);
+        $command = $handelClass->getCommand($key, $min, $max, ...$data);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1408,21 +1465,13 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        $data = $recv->getData();
-        foreach ($data as $key => $va) {
-            $data[$key] = $this->unSerialize($va);
-        }
-
-        return $data;
+        return $handelClass->getData($recv);
     }
 
     public function zRangeByScore($key, $min, $max, $withScores = false, ...$data)
     {
-        if ($withScores == true) {
-            $command = array_merge([Command::ZRANGEBYSCORE, $key, $min, $max, 'WITHSCORES'], $data);
-        } else {
-            $command = array_merge([Command::ZRANGEBYSCORE, $key, $min, $max], $data);
-        }
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRangeByScore($this);
+        $command = $handelClass->getCommand($key, $min, $max, $withScores, ...$data);
 
         if (!$this->sendCommand($command)) {
             return false;
@@ -1431,47 +1480,29 @@ class Redis
         if ($recv === null) {
             return false;
         }
-
-        $data = $recv->getData();
-        if ($withScores == true) {
-            $result = [];
-            foreach ($data as $k => $va) {
-                if ($k % 2 == 0) {
-                    $result[$this->unSerialize($va)] = 0;
-                } else {
-                    $result[$this->unSerialize($data[$k - 1])] = $va;
-                }
-            }
-        } else {
-            $result = [];
-            foreach ($data as $k => $va) {
-                $result[$k] = $this->unSerialize($va);
-            }
-        }
-        return $result;
+        return $handelClass->getData($recv);
     }
 
     public function zRank($key, $member)
     {
-        $member = $this->serialize($member);
-        $data = [Command::ZRANK, $key, $member];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRank($this);
+        $command = $handelClass->getCommand($key, $member);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function zRem($key, $member, ...$members)
     {
-        $member = $this->serialize($member);
-        foreach ($members as $k => $va) {
-            $members[$k] = $this->serialize($va);
-        }
-        $command = array_merge([Command::ZREM, $key, $member], $members);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRem($this);
+        $command = $handelClass->getCommand($key, $member, ...$members);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1479,143 +1510,14 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function zRemRangeByLex($key, $min, $max)
     {
-        $data = [Command::ZREMRANGEBYLEX, $key, $min, $max];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRemRangeByLex($this);
+        $command = $handelClass->getCommand($key, $min, $max);
 
-    public function zRemRangeByRank($key, $start, $stop)
-    {
-        $data = [Command::ZREMRANGEBYRANK, $key, $start, $stop];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
-
-    public function zRemRangeByScore($key, $min, $max)
-    {
-        $data = [Command::ZREMRANGEBYSCORE, $key, $min, $max];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
-
-    public function zRevRange($key, $start, $stop, $withScores = false)
-    {
-        $data = [Command::ZREVRANGE, $key, $start, $stop];
-        if ($withScores == true) {
-            $data[] = 'WITHSCORES';
-        }
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        $data = $recv->getData();
-        if ($withScores == true) {
-            $result = [];
-            foreach ($data as $k => $va) {
-                if ($k % 2 == 0) {
-                    $result[$this->unSerialize($va)] = 0;
-                } else {
-                    $result[$this->unSerialize($data[$k - 1])] = $va;
-                }
-            }
-        } else {
-            $result = [];
-            foreach ($data as $k => $va) {
-                $result[$k] = $this->unSerialize($va);
-            }
-        }
-        return $result;
-    }
-
-    public function zRevRangeByScore($key, $max, $min, $withScores = false)
-    {
-        $data = [Command::ZREVRANGEBYSCORE, $key, $max, $min];
-        if ($withScores == true) {
-            $data[] = 'WITHSCORES';
-        }
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        $data = $recv->getData();
-        if ($withScores == true) {
-            $result = [];
-            foreach ($data as $k => $va) {
-                if ($k % 2 == 0) {
-                    $result[$this->unSerialize($va)] = 0;
-                } else {
-                    $result[$this->unSerialize($data[$k - 1])] = $va;
-                }
-            }
-        } else {
-            $result = [];
-            foreach ($data as $k => $va) {
-                $result[$k] = $this->unSerialize($va);
-            }
-        }
-        return $result;
-    }
-
-    public function zRevRank($key, $member)
-    {
-        $member = $this->serialize($member);
-        $data = [Command::ZREVRANK, $key, $member];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
-
-    public function zScore($key, $member)
-    {
-        $member = $this->serialize($member);
-        $data = [Command::ZSCORE, $key, $member];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
-
-    public function zUnionStore($destination, $keyNum, $key, ...$data)
-    {
-        $command = array_merge([Command::ZUNIONSTORE, $destination, $keyNum, $key], $data);
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1623,7 +1525,112 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
+    }
+
+    public function zRemRangeByRank($key, $start, $stop)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRemRangeByRank($this);
+        $command = $handelClass->getCommand($key, $start, $stop);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function zRemRangeByScore($key, $min, $max)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRemRangeByScore($this);
+        $command = $handelClass->getCommand($key, $min, $max);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function zRevRange($key, $start, $stop, $withScores = false)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRevRange($this);
+        $command = $handelClass->getCommand($key, $start, $stop, $withScores);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function zRevRangeByScore($key, $max, $min, $withScores = false)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRevRangeByScore($this);
+        $command = $handelClass->getCommand($key, $max, $min, $withScores);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function zRevRank($key, $member)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRevRank($this);
+        $command = $handelClass->getCommand($key, $member);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function zScore($key, $member)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZScore($this);
+        $command = $handelClass->getCommand($key, $member);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function zUnionStore($destination, $keyNum, $key, ...$data)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ZUnionStore($this);
+        $command = $handelClass->getCommand($destination, $keyNum, $key, ...$data);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
     }
 
     /*public function zScan($key, $cursor, $pattern, $count)
@@ -1644,7 +1651,9 @@ class Redis
 
     public function pfAdd($key, ...$data)
     {
-        $command = array_merge([Command::PFADD, $key], $data);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\PfAdd($this);
+        $command = $handelClass->getCommand($key, ...$data);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1652,12 +1661,14 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function pfCount($key, ...$keys)
     {
-        $command = array_merge([Command::PFCOUNT, $key], $keys);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\PfCount($this);
+        $command = $handelClass->getCommand($key, ...$keys);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1665,12 +1676,14 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function pfMerge($deStKey, $sourceKey, ...$sourceKeys)
     {
-        $command = array_merge([Command::PFMERGE, $deStKey, $sourceKey], $sourceKeys);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\PfMerge($this);
+        $command = $handelClass->getCommand($deStKey, $sourceKey, ...$sourceKeys);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1678,7 +1691,7 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return true;
+        return $handelClass->getData($recv);
     }
 
     ######################HyperLogLog操作方法######################
@@ -1687,29 +1700,24 @@ class Redis
 
     public function pSubscribe($callback, $pattern, ...$patterns)
     {
-        $command = array_merge([Command::PSUBSCRIBE, $pattern], $patterns);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\PSubscribe($this);
+        $command = $handelClass->getCommand($callback, $pattern, ...$patterns);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
-        $recv = $this->recv(-1);
+        $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        $this->subscribeStop = false;
-        while ($this->subscribeStop == false) {
-            $recv = $this->recv(-1);
-            if ($recv === null) {
-                return false;
-            }
-            if ($recv->getData()[0] == 'pmessage') {
-                call_user_func($callback, $this, $recv->getData()[2], $recv->getData()[3]);
-            }
-        }
+        return $handelClass->getData($recv);
     }
 
     public function pubSub($subCommand, ...$arguments)
     {
-        $command = array_merge([Command::PUBSUB, $subCommand,], $arguments);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\PubSub($this);
+        $command = $handelClass->getCommand($subCommand, ...$arguments);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1717,25 +1725,29 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function publish($channel, $message)
     {
-        $data = [Command::PUBLISH, $channel, $message];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Publish($this);
+        $command = $handelClass->getCommand($channel, $message);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function pUnSubscribe($pattern, ...$patterns)
     {
-        $command = array_merge([Command::PUNSUBSCRIBE, $pattern], $patterns);
+        $handelClass = new \EasySwoole\Redis\CommandHandel\PUnSubscribe($this);
+        $command = $handelClass->getCommand($pattern, ...$patterns);
+
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1743,34 +1755,14 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function subscribe($callback, $channel, ...$channels)
     {
-        $command = array_merge([Command::SUBSCRIBE, $channel], $channels);
-        if (!$this->sendCommand($command)) {
-            return false;
-        }
-        $recv = $this->recv(-1);
-        if ($recv === null) {
-            return false;
-        }
-        $this->subscribeStop = false;
-        while ($this->subscribeStop == false) {
-            $recv = $this->recv(-1);
-            if ($recv === null) {
-                return false;
-            }
-            if ($recv->getData()[0] == 'message') {
-                call_user_func($callback, $this, $recv->getData()[1], $recv->getData()[2]);
-            }
-        }
-    }
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Subscribe($this);
+        $command = $handelClass->getCommand($callback, $channel, ...$channels);
 
-    public function unsubscribe($channel, ...$channels)
-    {
-        $command = array_merge([Command::UNSUBSCRIBE, $channel], $channels);
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1778,83 +1770,118 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function subscribeStop(): void
+    public function unsubscribe($channel, ...$channels)
     {
-        $this->subscribeStop = true;
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Unsubscribe($this);
+        $command = $handelClass->getCommand($channel, ...$channels);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
     }
 
+    /**
+     * @param bool $subscribeStop
+     */
+    public function setSubscribeStop(bool $subscribeStop): void
+    {
+        $this->subscribeStop = $subscribeStop;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSubscribeStop(): bool
+    {
+        return $this->subscribeStop;
+    }
 
     ######################发布订阅操作方法(待测试)######################
 
     ######################事务操作方法(待测试)######################
 
-    /* public function discard():bool
-     {
-         $data = [Command::DISCARD];
-         if (!$this->sendCommand($data)) {
-             return false;
-         }
-         $recv = $this->recv();
-         if ($recv === null) {
-             return false;
-         }
-         return true;
-     }
+    public function discard(): bool
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Discard($this);
+        $command = $handelClass->getCommand();
 
-     public function exec()
-     {
-         $data = [Command::EXEC];
-         if (!$this->sendCommand($data)) {
-             return false;
-         }
-         $recv = $this->recv();
-         if ($recv === null) {
-             return false;
-         }
-         return $recv->getData();
-     }
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
 
-     public function multi():bool
-     {
-         $data = [Command::MULTI];
-         if (!$this->sendCommand($data)) {
-             return false;
-         }
-         $recv = $this->recv();
-         if ($recv === null) {
-             return false;
-         }
-         return true;
-     }
+    public function exec()
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Exec($this);
+        $command = $handelClass->getCommand();
 
-     public function unWatch():bool
-     {
-         $data = [Command::UNWATCH];
-         if (!$this->sendCommand($data)) {
-             return false;
-         }
-         $recv = $this->recv();
-         if ($recv === null) {
-             return false;
-         }
-         return true;
-     }
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
 
-     public function watch($key,...$keys):bool
-     {
-         $command = array_merge([Command::WATCH, $key], $keys);
-         if (!$this->sendCommand($command)) {
-             return false;
-         }
-         $recv = $this->recv();
-         if ($recv === null) {
-             return false;
-         }
-         return true;
-     }*/
+    public function multi(): bool
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Multi($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function unWatch(): bool
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\UnWatch($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function watch($key, ...$keys): bool
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Watch($this);
+        $command = $handelClass->getCommand($key, ...$keys);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
     ######################事务操作方法(待测试)######################
 
 
@@ -1943,412 +1970,552 @@ class Redis
     ######################脚本操作方法(待测试)######################
 
 
-
 ######################服务器操作方法######################
 
     public function bgReWriteAof()
     {
-        $data = [Command::BGREWRITEAOF];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\BgReWriteAof($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function bgSave()
     {
-        $data = [Command::BGSAVE];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\BgSave($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function clientKill($ip,$id)
+    public function clientKill($data): bool
     {
-        $data = [Command::CLIENT,$ip,$id];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ClientKill($this);
+        $command = $handelClass->getCommand($data);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function clientList()
     {
-        $data = [Command::CLIENT];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ClientList($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function clientGetName()
     {
-        $data = [Command::CLIENT];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ClientGetName($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function clientPause($PAUSE,$timeout)
+    public function clientPause($timeout): bool
     {
-        $data = [Command::CLIENT,$PAUSE,$timeout];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ClientPause($this);
+        $command = $handelClass->getCommand($timeout);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function clientSetName($connectionName)
+    public function clientSetName($connectionName): bool
     {
-        $data = [Command::CLIENT, $connectionName];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ClientSetName($this);
+        $command = $handelClass->getCommand($connectionName);
 
-    public function clusterSlots()
-    {
-        $data = [Command::CLUSTER];
-        if (!$this->sendCommand($data)) {
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function command()
     {
-        $data = [Command::COMMAND];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Command($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function commandCount()
     {
-        $data = [Command::COMMAND];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\CommandCount($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function commandGetKeys()
+    public function commandGetKeys(...$data)
     {
-        $data = [Command::COMMAND];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\CommandGetKeys($this);
+        $command = $handelClass->getCommand(...$data);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function time()
     {
-        $data = [Command::TIME];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Time($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function commandInfo($commandName,$commandName1)
+    public function commandInfo($commandName, ...$commandNames)
     {
-        $data = [Command::COMMAND,$commandName,$commandName1];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\CommandInfo($this);
+        $command = $handelClass->getCommand($commandName, ...$commandNames);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function configGet($parameter)
     {
-        $data = [Command::CONFIG,$parameter];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ConfigGet($this);
+        $command = $handelClass->getCommand($parameter);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function configRewrite()
+    public function configRewrite(): bool
     {
-        $data = [Command::CONFIG];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ConfigRewrite($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function configSet($parameter,$value)
+    public function configSet($parameter, $value): bool
     {
-        $data = [Command::CONFIG,$parameter,$value];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ConfigSet($this);
+        $command = $handelClass->getCommand($parameter, $value);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function configResetsTat()
+    public function configResetStat(): bool
     {
-        $data = [Command::CONFIG];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\ConfigResetStat($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function dBSize()
     {
-        $data = [Command::DBSIZE];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\DBSize($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function debugObject($key)
     {
-        $data = [Command::DEBUG, $key];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\DebugObject($this);
+        $command = $handelClass->getCommand($key);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function debugSegfault()
     {
-        $data = [Command::DEBUG ];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\DebugSegfault($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function flushAll()
+    public function flushAll(): bool
     {
-        $data = [Command::FLUSHALL];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\FlushAll($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function flushDb()
+    public function flushDb(): bool
     {
-        $data = [Command::FLUSHDB];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\FlushDb($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function info($section)
+    public function info($section = null)
     {
-        $data = [Command::INFO, $section];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Info($this);
+        $command = $handelClass->getCommand($section);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function lastSave()
     {
-        $data = [Command::LASTSAVE];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\LastSave($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function monitor()
+    public function monitor(callable $callback)
     {
-        $data = [Command::MONITOR];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Monitor($this);
+        $command = $handelClass->getCommand($callback);
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
+
+    /**
+     * @return bool
+     */
+    public function isMonitorStop(): bool
+    {
+        return $this->monitorStop;
+    }
+
+    /**
+     * @param bool $monitorStop
+     */
+    public function setMonitorStop(bool $monitorStop): void
+    {
+        $this->monitorStop = $monitorStop;
+    }
+
 
     public function role()
     {
-        $data = [Command::ROLE];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Role($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function save()
+    public function save(): bool
     {
-        $data = [Command::SAVE];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Save($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function shutdown($noSave,$save)
+    public function shutdown()
     {
-        $data = [Command::SHUTDOWN,$noSave,$save];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\Shutdown($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
-    public function slaveOf($host,$port)
+    public function slowLog($subCommand, ...$argument)
     {
-        $data = [Command::SLAVEOF, $host,$port];
-        if (!$this->sendCommand($data)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $recv->getData();
-    }
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SlowLog($this);
+        $command = $handelClass->getCommand($subCommand, ...$argument);
 
-    public function slowLog($subcommand,$argument)
-    {
-        $data = [Command::SLOWLOG,$subcommand,$argument];
-        if (!$this->sendCommand($data)) {
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
 
     public function SYNC()
     {
-        $data = [Command::SYNC];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\SYNC($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
+        return $handelClass->getData($recv);
     }
     ######################服务器操作方法######################
+
+    ######################geohash操作方法######################
+    public function geoAdd($key, $longitude, $latitude, $name, ...$data)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\GeoAdd($this);
+        $command = $handelClass->getCommand($key, $longitude, $latitude, $name, ...$data);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function geoDist($key, $location1, $location2, $unit = 'm')
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\GeoDist($this);
+        $command = $handelClass->getCommand($key, $location1, $location2, $unit);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function geoHash($key, $location, ...$locations)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\GeoHash($this);
+        $command = $handelClass->getCommand($key, $location, ...$locations);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function geoPos($key, $location1, ...$locations)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\GeoPos($this);
+        $command = $handelClass->getCommand($key, $location1, ...$locations);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function geoRadius($key, $longitude, $latitude, $radius, $unit = 'm', $withCoord = false, $withDist = false, $withHash = false, $count = null, $sort = null, $storeKey = null, $storeDistKey = null)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\GeoRadius($this);
+        $command = $handelClass->getCommand($key, $longitude, $latitude, $radius, $unit, $withCoord, $withDist, $withHash, $count, $sort, $storeKey, $storeDistKey);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function geoRadiusByMember($key, $location, $radius, $unit = 'm', $withCoord = false, $withDist = false, $withHash = false, $count = null, $sort = null, $storeKey = null, $storeDistKey = null)
+    {
+        $handelClass = new \EasySwoole\Redis\CommandHandel\GeoRadiusByMember($this);
+        $command = $handelClass->getCommand($key, $location, $radius, $unit, $withCoord, $withDist, $withHash, $count, $sort, $storeKey, $storeDistKey);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+    ######################geohash操作方法######################
 
 
     ###################### 发送接收tcp流数据 ######################
@@ -2370,7 +2537,7 @@ class Redis
         throw new RedisException("connect to redis host {$this->config->getHost()}:{$this->config->getPort()} fail after retry {$this->tryConnectTimes} times");
     }
 
-    protected function recv($timeout = null): ?Response
+    public function recv($timeout = null): ?Response
     {
         $recv = $this->client->recv($timeout ?? $this->config->getTimeout());
         if ($recv->getStatus() == $recv::STATUS_ERR) {
@@ -2424,56 +2591,31 @@ class Redis
     function disconnect()
     {
         if ($this->isConnected) {
-            $this->client->close();
             $this->isConnected = false;
             $this->lastSocketError = $this->client->socketError();
             $this->lastSocketErrno = $this->client->socketErrno();
+            $this->client->close();
         }
     }
 
-    protected function serialize($val)
+    /**
+     * @return RedisConfig
+     */
+    public function getConfig(): RedisConfig
     {
-        switch ($this->config->getSerialize()) {
-            case RedisConfig::SERIALIZE_PHP:
-                {
-                    return serialize($val);
-                    break;
-                }
-
-            case RedisConfig::SERIALIZE_JSON:
-                {
-                    return json_encode($val, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-                    break;
-                }
-            default:
-            case RedisConfig::SERIALIZE_NONE:
-                {
-                    return $val;
-                    break;
-                }
-        }
+        return $this->config;
     }
 
-    protected function unSerialize($val)
+    public function getTransaction():?RedisTransaction
     {
-        switch ($this->config->getSerialize()) {
-            case RedisConfig::SERIALIZE_PHP:
-                {
-                    return unserialize($val);
-                    break;
-                }
+        return $this->transaction;
+    }
 
-            case RedisConfig::SERIALIZE_JSON:
-                {
-                    return json_decode($val, true);
-                    break;
-                }
-            default:
-            case RedisConfig::SERIALIZE_NONE:
-                {
-                    return $val;
-                    break;
-                }
+    public function setTransaction(?RedisTransaction $transaction): void
+    {
+        if (!$this->getTransaction() instanceof  RedisTransaction){
+            $this->transaction = $transaction;
         }
     }
+
 }
