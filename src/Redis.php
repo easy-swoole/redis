@@ -4,6 +4,106 @@
 namespace EasySwoole\Redis;
 
 
+use EasySwoole\Redis\CommandHandel\AppEnd;
+use EasySwoole\Redis\CommandHandel\Auth;
+use EasySwoole\Redis\CommandHandel\BLPop;
+use EasySwoole\Redis\CommandHandel\BRPop;
+use EasySwoole\Redis\CommandHandel\BRPopLPush;
+use EasySwoole\Redis\CommandHandel\Decr;
+use EasySwoole\Redis\CommandHandel\DecrBy;
+use EasySwoole\Redis\CommandHandel\Del;
+use EasySwoole\Redis\CommandHandel\Dump;
+use EasySwoole\Redis\CommandHandel\Exists;
+use EasySwoole\Redis\CommandHandel\Expire;
+use EasySwoole\Redis\CommandHandel\ExpireAt;
+use EasySwoole\Redis\CommandHandel\Get;
+use EasySwoole\Redis\CommandHandel\GetBit;
+use EasySwoole\Redis\CommandHandel\GetRange;
+use EasySwoole\Redis\CommandHandel\GetSet;
+use EasySwoole\Redis\CommandHandel\HDel;
+use EasySwoole\Redis\CommandHandel\HExists;
+use EasySwoole\Redis\CommandHandel\HGet;
+use EasySwoole\Redis\CommandHandel\HGetAll;
+use EasySwoole\Redis\CommandHandel\HIncrBy;
+use EasySwoole\Redis\CommandHandel\HIncrByFloat;
+use EasySwoole\Redis\CommandHandel\HKeys;
+use EasySwoole\Redis\CommandHandel\HLen;
+use EasySwoole\Redis\CommandHandel\HMGet;
+use EasySwoole\Redis\CommandHandel\HMSet;
+use EasySwoole\Redis\CommandHandel\HSet;
+use EasySwoole\Redis\CommandHandel\HSetNx;
+use EasySwoole\Redis\CommandHandel\HValS;
+use EasySwoole\Redis\CommandHandel\Incr;
+use EasySwoole\Redis\CommandHandel\IncrBy;
+use EasySwoole\Redis\CommandHandel\IncrByFloat;
+use EasySwoole\Redis\CommandHandel\Keys;
+use EasySwoole\Redis\CommandHandel\LIndex;
+use EasySwoole\Redis\CommandHandel\LInsert;
+use EasySwoole\Redis\CommandHandel\LLen;
+use EasySwoole\Redis\CommandHandel\LPop;
+use EasySwoole\Redis\CommandHandel\LPush;
+use EasySwoole\Redis\CommandHandel\LPuShx;
+use EasySwoole\Redis\CommandHandel\LRange;
+use EasySwoole\Redis\CommandHandel\LRem;
+use EasySwoole\Redis\CommandHandel\LSet;
+use EasySwoole\Redis\CommandHandel\LTrim;
+use EasySwoole\Redis\CommandHandel\MGet;
+use EasySwoole\Redis\CommandHandel\Move;
+use EasySwoole\Redis\CommandHandel\MSet;
+use EasySwoole\Redis\CommandHandel\MSetNx;
+use EasySwoole\Redis\CommandHandel\Persist;
+use EasySwoole\Redis\CommandHandel\Ping;
+use EasySwoole\Redis\CommandHandel\PSetEx;
+use EasySwoole\Redis\CommandHandel\PTTL;
+use EasySwoole\Redis\CommandHandel\RandomKey;
+use EasySwoole\Redis\CommandHandel\Rename;
+use EasySwoole\Redis\CommandHandel\RenameNx;
+use EasySwoole\Redis\CommandHandel\RPop;
+use EasySwoole\Redis\CommandHandel\RPopLPush;
+use EasySwoole\Redis\CommandHandel\RPush;
+use EasySwoole\Redis\CommandHandel\RPuShx;
+use EasySwoole\Redis\CommandHandel\SAdd;
+use EasySwoole\Redis\CommandHandel\SCard;
+use EasySwoole\Redis\CommandHandel\SDiff;
+use EasySwoole\Redis\CommandHandel\SDiffStore;
+use EasySwoole\Redis\CommandHandel\Select;
+use EasySwoole\Redis\CommandHandel\Set;
+use EasySwoole\Redis\CommandHandel\SetBit;
+use EasySwoole\Redis\CommandHandel\SetEx;
+use EasySwoole\Redis\CommandHandel\SetNx;
+use EasySwoole\Redis\CommandHandel\SetRange;
+use EasySwoole\Redis\CommandHandel\SInter;
+use EasySwoole\Redis\CommandHandel\SInterStore;
+use EasySwoole\Redis\CommandHandel\SIsMember;
+use EasySwoole\Redis\CommandHandel\SMembers;
+use EasySwoole\Redis\CommandHandel\SMove;
+use EasySwoole\Redis\CommandHandel\SPop;
+use EasySwoole\Redis\CommandHandel\SRandMemBer;
+use EasySwoole\Redis\CommandHandel\SRem;
+use EasySwoole\Redis\CommandHandel\StrLen;
+use EasySwoole\Redis\CommandHandel\SUnion;
+use EasySwoole\Redis\CommandHandel\SUnIonStore;
+use EasySwoole\Redis\CommandHandel\Ttl;
+use EasySwoole\Redis\CommandHandel\Type;
+use EasySwoole\Redis\CommandHandel\ZAdd;
+use EasySwoole\Redis\CommandHandel\ZCard;
+use EasySwoole\Redis\CommandHandel\ZCount;
+use EasySwoole\Redis\CommandHandel\ZInCrBy;
+use EasySwoole\Redis\CommandHandel\ZInTerStore;
+use EasySwoole\Redis\CommandHandel\ZLexCount;
+use EasySwoole\Redis\CommandHandel\ZRange;
+use EasySwoole\Redis\CommandHandel\ZRangeByLex;
+use EasySwoole\Redis\CommandHandel\ZRangeByScore;
+use EasySwoole\Redis\CommandHandel\ZRank;
+use EasySwoole\Redis\CommandHandel\ZRem;
+use EasySwoole\Redis\CommandHandel\ZRemRangeByLex;
+use EasySwoole\Redis\CommandHandel\ZRemRangeByRank;
+use EasySwoole\Redis\CommandHandel\ZRemRangeByScore;
+use EasySwoole\Redis\CommandHandel\ZRevRange;
+use EasySwoole\Redis\CommandHandel\ZRevRangeByScore;
+use EasySwoole\Redis\CommandHandel\ZRevRank;
+use EasySwoole\Redis\CommandHandel\ZScore;
+use EasySwoole\Redis\CommandHandel\ZUnionStore;
 use EasySwoole\Redis\Config\RedisConfig;
 use EasySwoole\Redis\Exception\RedisException;
 use EasySwoole\Redis\CommandConst as Command;
@@ -73,7 +173,7 @@ class Redis
 
     public function auth($password): bool
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Auth($this);
+        $handelClass = new Auth($this);
         $command = $handelClass->getCommand($password);
 
         if (!$this->sendCommand($command)) {
@@ -101,7 +201,7 @@ class Redis
 
     public function ping()
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Ping($this);
+        $handelClass = new Ping($this);
         $command = $handelClass->getCommand();
 
         if (!$this->sendCommand($command)) {
@@ -116,7 +216,7 @@ class Redis
 
     public function select($db): bool
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Select($this);
+        $handelClass = new Select($this);
         $command = $handelClass->getCommand($db);
 
         if (!$this->sendCommand($command)) {
@@ -135,7 +235,7 @@ class Redis
 
     public function del($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Del($this);
+        $handelClass = new Del($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -150,7 +250,7 @@ class Redis
 
     public function dump($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Dump($this);
+        $handelClass = new Dump($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -165,7 +265,7 @@ class Redis
 
     public function exists($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Exists($this);
+        $handelClass = new Exists($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -180,7 +280,7 @@ class Redis
 
     public function expire($key, $expireTime = 60)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Expire($this);
+        $handelClass = new Expire($this);
         $command = $handelClass->getCommand($key, $expireTime);
 
         if (!$this->sendCommand($command)) {
@@ -195,7 +295,7 @@ class Redis
 
     public function expireAt($key, $expireTime)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ExpireAt($this);
+        $handelClass = new ExpireAt($this);
         $command = $handelClass->getCommand($key, $expireTime);
 
         if (!$this->sendCommand($command)) {
@@ -210,7 +310,7 @@ class Redis
 
     public function keys($pattern)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Keys($this);
+        $handelClass = new Keys($this);
         $command = $handelClass->getCommand($pattern);
 
         if (!$this->sendCommand($command)) {
@@ -225,7 +325,7 @@ class Redis
 
     public function move($key, $db)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Move($this);
+        $handelClass = new Move($this);
         $command = $handelClass->getCommand($key, $db);
 
         if (!$this->sendCommand($command)) {
@@ -240,7 +340,7 @@ class Redis
 
     public function persist($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Persist($this);
+        $handelClass = new Persist($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -255,7 +355,7 @@ class Redis
 
     public function pTTL($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\PTTL($this);
+        $handelClass = new PTTL($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -270,7 +370,7 @@ class Redis
 
     public function ttl($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Ttl($this);
+        $handelClass = new Ttl($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -285,7 +385,7 @@ class Redis
 
     public function randomKey()
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\RandomKey($this);
+        $handelClass = new RandomKey($this);
         $command = $handelClass->getCommand();
 
         if (!$this->sendCommand($command)) {
@@ -300,7 +400,7 @@ class Redis
 
     public function rename($key, $new_key): bool
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Rename($this);
+        $handelClass = new Rename($this);
         $command = $handelClass->getCommand($key, $new_key);
 
         if (!$this->sendCommand($command)) {
@@ -315,7 +415,7 @@ class Redis
 
     public function renameNx($key, $new_key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\RenameNx($this);
+        $handelClass = new RenameNx($this);
         $command = $handelClass->getCommand($key, $new_key);
 
         if (!$this->sendCommand($command)) {
@@ -330,7 +430,7 @@ class Redis
 
     public function type($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Type($this);
+        $handelClass = new Type($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -350,7 +450,7 @@ class Redis
 
     public function set($key, $val, $expireTime = null): bool
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Set($this);
+        $handelClass = new Set($this);
         $command = $handelClass->getCommand($key, $val, $expireTime);
 
         if (!$this->sendCommand($command)) {
@@ -365,7 +465,7 @@ class Redis
 
     public function get($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Get($this);
+        $handelClass = new Get($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -380,7 +480,7 @@ class Redis
 
     public function getRange($key, $start, $end)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\GetRange($this);
+        $handelClass = new GetRange($this);
         $command = $handelClass->getCommand($key, $start, $end);
 
         if (!$this->sendCommand($command)) {
@@ -395,7 +495,7 @@ class Redis
 
     public function getSet($key, $value)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\GetSet($this);
+        $handelClass = new GetSet($this);
         $command = $handelClass->getCommand($key, $value);
 
         if (!$this->sendCommand($command)) {
@@ -410,7 +510,7 @@ class Redis
 
     public function getBit($key, $offset)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\GetBit($this);
+        $handelClass = new GetBit($this);
         $command = $handelClass->getCommand($key, $offset);
 
         if (!$this->sendCommand($command)) {
@@ -425,7 +525,7 @@ class Redis
 
     public function mGet(...$keys)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\MGet($this);
+        $handelClass = new MGet($this);
         $command = $handelClass->getCommand(...$keys);
 
         if (!$this->sendCommand($command)) {
@@ -440,7 +540,7 @@ class Redis
 
     public function setBit($key, $offset, $value)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SetBit($this);
+        $handelClass = new SetBit($this);
         $command = $handelClass->getCommand($key, $offset, $value);
 
         if (!$this->sendCommand($command)) {
@@ -455,7 +555,7 @@ class Redis
 
     public function setEx($key, $expireTime, $value): bool
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SetEx($this);
+        $handelClass = new SetEx($this);
         $command = $handelClass->getCommand($key, $expireTime, $value);
 
         if (!$this->sendCommand($command)) {
@@ -470,7 +570,7 @@ class Redis
 
     public function setNx($key, $value)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SetNx($this);
+        $handelClass = new SetNx($this);
         $command = $handelClass->getCommand($key, $value);
 
         if (!$this->sendCommand($command)) {
@@ -485,7 +585,7 @@ class Redis
 
     public function setRange($key, $offset, $value)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SetRange($this);
+        $handelClass = new SetRange($this);
         $command = $handelClass->getCommand($key, $offset, $value);
 
         if (!$this->sendCommand($command)) {
@@ -500,7 +600,7 @@ class Redis
 
     public function strLen($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\StrLen($this);
+        $handelClass = new StrLen($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -515,7 +615,7 @@ class Redis
 
     public function mSet($data): bool
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\MSet($this);
+        $handelClass = new MSet($this);
 
         $command = $handelClass->getCommand($data);
         if (!$this->sendCommand($command)) {
@@ -530,7 +630,7 @@ class Redis
 
     public function mSetNx($data)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\MSetNx($this);
+        $handelClass = new MSetNx($this);
         $command = $handelClass->getCommand($data);
 
         if (!$this->sendCommand($command)) {
@@ -545,7 +645,7 @@ class Redis
 
     public function pSetEx($key, $expireTime, $value)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\PSetEx($this);
+        $handelClass = new PSetEx($this);
         $command = $handelClass->getCommand($key, $expireTime, $value);
 
         if (!$this->sendCommand($command)) {
@@ -560,7 +660,7 @@ class Redis
 
     public function incr($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Incr($this);
+        $handelClass = new Incr($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -575,7 +675,7 @@ class Redis
 
     public function incrBy($key, $value)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\IncrBy($this);
+        $handelClass = new IncrBy($this);
         $command = $handelClass->getCommand($key, $value);
 
         if (!$this->sendCommand($command)) {
@@ -590,7 +690,7 @@ class Redis
 
     public function incrByFloat($key, $value)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\IncrByFloat($this);
+        $handelClass = new IncrByFloat($this);
         $command = $handelClass->getCommand($key, $value);
 
         if (!$this->sendCommand($command)) {
@@ -605,7 +705,7 @@ class Redis
 
     public function decr($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\Decr($this);
+        $handelClass = new Decr($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -620,7 +720,7 @@ class Redis
 
     public function decrBy($key, $value)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\DecrBy($this);
+        $handelClass = new DecrBy($this);
         $command = $handelClass->getCommand($key, $value);
 
         if (!$this->sendCommand($command)) {
@@ -635,7 +735,7 @@ class Redis
 
     public function appEnd($key, $value)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\AppEnd($this);
+        $handelClass = new AppEnd($this);
         $command = $handelClass->getCommand($key, $value);
 
         if (!$this->sendCommand($command)) {
@@ -655,7 +755,7 @@ class Redis
 
     public function hDel($key, ...$field)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\HDel($this);
+        $handelClass = new HDel($this);
         $command = $handelClass->getCommand($key, ...$field);
 
         if (!$this->sendCommand($command)) {
@@ -670,7 +770,7 @@ class Redis
 
     public function hExists($key, $field)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\HExists($this);
+        $handelClass = new HExists($this);
         $command = $handelClass->getCommand($key, $field);
 
         if (!$this->sendCommand($command)) {
@@ -685,7 +785,7 @@ class Redis
 
     public function hGet($key, $field)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\HGet($this);
+        $handelClass = new HGet($this);
         $command = $handelClass->getCommand($key, $field);
 
         if (!$this->sendCommand($command)) {
@@ -700,7 +800,7 @@ class Redis
 
     public function hGetAll($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\HGetAll($this);
+        $handelClass = new HGetAll($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -715,7 +815,7 @@ class Redis
 
     public function hSet($key, $field, $value)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\HSet($this);
+        $handelClass = new HSet($this);
         $command = $handelClass->getCommand($key, $field, $value);
 
         if (!$this->sendCommand($command)) {
@@ -730,7 +830,7 @@ class Redis
 
     public function hValS($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\HValS($this);
+        $handelClass = new HValS($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -745,7 +845,7 @@ class Redis
 
     public function hKeys($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\HKeys($this);
+        $handelClass = new HKeys($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -760,7 +860,7 @@ class Redis
 
     public function hLen($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\HLen($this);
+        $handelClass = new HLen($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -775,7 +875,7 @@ class Redis
 
     public function hMGet($key, ...$field)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\HMGet($this);
+        $handelClass = new HMGet($this);
         $command = $handelClass->getCommand($key, ...$field);
 
         if (!$this->sendCommand($command)) {
@@ -790,7 +890,7 @@ class Redis
 
     public function hMSet($key, $data): bool
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\HMSet($this);
+        $handelClass = new HMSet($this);
         $command = $handelClass->getCommand($key, $data);
 
         if (!$this->sendCommand($command)) {
@@ -805,7 +905,7 @@ class Redis
 
     public function hIncrBy($key, $field, $increment)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\HIncrBy($this);
+        $handelClass = new HIncrBy($this);
         $command = $handelClass->getCommand($key, $field, $increment);
 
         if (!$this->sendCommand($command)) {
@@ -820,7 +920,7 @@ class Redis
 
     public function hIncrByFloat($key, $field, $increment)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\HIncrByFloat($this);
+        $handelClass = new HIncrByFloat($this);
         $command = $handelClass->getCommand($key, $field, $increment);
 
         if (!$this->sendCommand($command)) {
@@ -835,7 +935,7 @@ class Redis
 
     public function hSetNx($key, $field, $value)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\HSetNx($this);
+        $handelClass = new HSetNx($this);
         $command = $handelClass->getCommand($key, $field, $value);
 
         if (!$this->sendCommand($command)) {
@@ -867,7 +967,7 @@ class Redis
 
     public function bLPop($key1, ...$data)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\BLPop($this);
+        $handelClass = new BLPop($this);
         $command = $handelClass->getCommand($key1, ...$data);
 
         if (!$this->sendCommand($command)) {
@@ -882,7 +982,7 @@ class Redis
 
     public function bRPop($key1, ...$data)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\BRPop($this);
+        $handelClass = new BRPop($this);
         $command = $handelClass->getCommand($key1, ...$data);
 
         if (!$this->sendCommand($command)) {
@@ -897,7 +997,7 @@ class Redis
 
     public function bRPopLPush($source, $destination, $timeout)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\BRPopLPush($this);
+        $handelClass = new BRPopLPush($this);
         $command = $handelClass->getCommand($source, $destination, $timeout);
 
         if (!$this->sendCommand($command)) {
@@ -912,7 +1012,7 @@ class Redis
 
     public function lIndex($key, $index)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\LIndex($this);
+        $handelClass = new LIndex($this);
         $command = $handelClass->getCommand($key, $index);
 
         if (!$this->sendCommand($command)) {
@@ -927,7 +1027,7 @@ class Redis
 
     public function lInsert($key, bool $isBefore, $pivot, $value)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\LInsert($this);
+        $handelClass = new LInsert($this);
         $command = $handelClass->getCommand($key, $isBefore == true ? 'BEFORE' : 'AFTER', $pivot, $value);
 
         if (!$this->sendCommand($command)) {
@@ -942,7 +1042,7 @@ class Redis
 
     public function lLen($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\LLen($this);
+        $handelClass = new LLen($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -957,7 +1057,7 @@ class Redis
 
     public function lPop($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\LPop($this);
+        $handelClass = new LPop($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -972,7 +1072,7 @@ class Redis
 
     public function lPush($key, ...$data)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\LPush($this);
+        $handelClass = new LPush($this);
         $command = $handelClass->getCommand($key, ...$data);
 
         if (!$this->sendCommand($command)) {
@@ -987,7 +1087,7 @@ class Redis
 
     public function lPuShx($key, $value)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\LPuShx($this);
+        $handelClass = new LPuShx($this);
         $command = $handelClass->getCommand($key, $value);
 
         if (!$this->sendCommand($command)) {
@@ -1002,7 +1102,7 @@ class Redis
 
     public function lRange($key, $start, $stop)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\LRange($this);
+        $handelClass = new LRange($this);
         $command = $handelClass->getCommand($key, $start, $stop);
 
         if (!$this->sendCommand($command)) {
@@ -1017,7 +1117,7 @@ class Redis
 
     public function lRem($key, $count, $value)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\LRem($this);
+        $handelClass = new LRem($this);
         $command = $handelClass->getCommand($key, $count, $value);
 
         if (!$this->sendCommand($command)) {
@@ -1032,7 +1132,7 @@ class Redis
 
     public function lSet($key, $index, $value): bool
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\LSet($this);
+        $handelClass = new LSet($this);
         $command = $handelClass->getCommand($key, $index, $value);
 
         if (!$this->sendCommand($command)) {
@@ -1047,7 +1147,7 @@ class Redis
 
     public function lTrim($key, $start, $stop): bool
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\LTrim($this);
+        $handelClass = new LTrim($this);
         $command = $handelClass->getCommand($key, $start, $stop);
 
         if (!$this->sendCommand($command)) {
@@ -1062,7 +1162,7 @@ class Redis
 
     public function rPop($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\RPop($this);
+        $handelClass = new RPop($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -1077,7 +1177,7 @@ class Redis
 
     public function rPopLPush($source, $destination)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\RPopLPush($this);
+        $handelClass = new RPopLPush($this);
         $command = $handelClass->getCommand($source, $destination);
 
         if (!$this->sendCommand($command)) {
@@ -1092,7 +1192,7 @@ class Redis
 
     public function rPush($key, ...$data)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\RPush($this);
+        $handelClass = new RPush($this);
         $command = $handelClass->getCommand($key, ...$data);
 
         if (!$this->sendCommand($command)) {
@@ -1107,7 +1207,7 @@ class Redis
 
     public function rPuShx($key, $value)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\RPuShx($this);
+        $handelClass = new RPuShx($this);
         $command = $handelClass->getCommand($key, $value);
 
         if (!$this->sendCommand($command)) {
@@ -1124,7 +1224,7 @@ class Redis
     ######################集合操作方法######################
     public function sAdd($key, ...$data)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SAdd($this);
+        $handelClass = new SAdd($this);
         $command = $handelClass->getCommand($key, $data);
 
         if (!$this->sendCommand($command)) {
@@ -1139,7 +1239,7 @@ class Redis
 
     public function sCard($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SCard($this);
+        $handelClass = new SCard($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -1154,7 +1254,7 @@ class Redis
 
     public function sDiff($key1, ...$keys)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SDiff($this);
+        $handelClass = new SDiff($this);
         $command = $handelClass->getCommand($key1, ...$keys);
 
         if (!$this->sendCommand($command)) {
@@ -1169,7 +1269,7 @@ class Redis
 
     public function sDiffStore($destination, ...$keys)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SDiffStore($this);
+        $handelClass = new SDiffStore($this);
         $command = $handelClass->getCommand($destination, ...$keys);
 
         if (!$this->sendCommand($command)) {
@@ -1184,7 +1284,7 @@ class Redis
 
     public function sInter($key1, ...$keys)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SInter($this);
+        $handelClass = new SInter($this);
         $command = $handelClass->getCommand($key1, ...$keys);
 
         if (!$this->sendCommand($command)) {
@@ -1199,7 +1299,7 @@ class Redis
 
     public function sInterStore($destination, ...$keys)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SInterStore($this);
+        $handelClass = new SInterStore($this);
         $command = $handelClass->getCommand($destination, ...$keys);
 
         if (!$this->sendCommand($command)) {
@@ -1214,7 +1314,7 @@ class Redis
 
     public function sIsMember($key, $member)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SIsMember($this);
+        $handelClass = new SIsMember($this);
         $command = $handelClass->getCommand($key, $member);
 
         if (!$this->sendCommand($command)) {
@@ -1229,7 +1329,7 @@ class Redis
 
     public function sMembers($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SMembers($this);
+        $handelClass = new SMembers($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -1244,7 +1344,7 @@ class Redis
 
     public function sMove($source, $destination, $member)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SMove($this);
+        $handelClass = new SMove($this);
         $command = $handelClass->getCommand($source, $destination, $member);
 
         if (!$this->sendCommand($command)) {
@@ -1259,7 +1359,7 @@ class Redis
 
     public function sPop($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SPop($this);
+        $handelClass = new SPop($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -1274,7 +1374,7 @@ class Redis
 
     public function sRandMemBer($key, $count = null)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SRandMemBer($this);
+        $handelClass = new SRandMemBer($this);
         $command = $handelClass->getCommand($key, $count);
 
         if (!$this->sendCommand($command)) {
@@ -1289,7 +1389,7 @@ class Redis
 
     public function sRem($key, $member1, ...$members)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SRem($this);
+        $handelClass = new SRem($this);
         $command = $handelClass->getCommand($key, $member1, ...$members);
 
         if (!$this->sendCommand($command)) {
@@ -1304,7 +1404,7 @@ class Redis
 
     public function sUnion($key1, ...$keys)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SUnion($this);
+        $handelClass = new SUnion($this);
         $command = $handelClass->getCommand($key1, ...$keys);
 
         if (!$this->sendCommand($command)) {
@@ -1317,9 +1417,9 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    public function sUnIomStore($destination, $key1, ...$keys)
+    public function sUnIonStore($destination, $key1, ...$keys)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\SUnIonStore($this);
+        $handelClass = new SUnIonStore($this);
         $command = $handelClass->getCommand($destination, $key1, ...$keys);
 
         if (!$this->sendCommand($command)) {
@@ -1350,7 +1450,7 @@ class Redis
     ######################有序集合操作方法######################
     public function zAdd($key, $score1, $member1, ...$data)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZAdd($this);
+        $handelClass = new ZAdd($this);
         $command = $handelClass->getCommand($key, $score1, $member1, ...$data);
 
         if (!$this->sendCommand($command)) {
@@ -1365,7 +1465,7 @@ class Redis
 
     public function zCard($key)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZCard($this);
+        $handelClass = new ZCard($this);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -1380,7 +1480,7 @@ class Redis
 
     public function zCount($key, $min, $max)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZCount($this);
+        $handelClass = new ZCount($this);
         $command = $handelClass->getCommand($key, $min, $max);
 
         if (!$this->sendCommand($command)) {
@@ -1395,7 +1495,7 @@ class Redis
 
     public function zInCrBy($key, $increment, $member)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZInCrBy($this);
+        $handelClass = new ZInCrBy($this);
         $command = $handelClass->getCommand($key, $increment, $member);
 
         if (!$this->sendCommand($command)) {
@@ -1410,7 +1510,7 @@ class Redis
 
     public function zInTerStore($destination, $numKeys, $key, ...$data)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZInTerStore($this);
+        $handelClass = new ZInTerStore($this);
         $command = $handelClass->getCommand($destination, $numKeys, $key, ...$data);
 
         if (!$this->sendCommand($command)) {
@@ -1425,7 +1525,7 @@ class Redis
 
     public function zLexCount($key, $min, $max)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZLexCount($this);
+        $handelClass = new ZLexCount($this);
         $command = $handelClass->getCommand($key, $min, $max);
 
         if (!$this->sendCommand($command)) {
@@ -1440,7 +1540,7 @@ class Redis
 
     public function zRange($key, $start, $stop, $withScores = false)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRange($this);
+        $handelClass = new ZRange($this);
         $command = $handelClass->getCommand($key, $start, $stop, $withScores);
 
         if (!$this->sendCommand($command)) {
@@ -1455,7 +1555,7 @@ class Redis
 
     public function zRangeByLex($key, $min, $max, ...$data)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRangeByLex($this);
+        $handelClass = new ZRangeByLex($this);
         $command = $handelClass->getCommand($key, $min, $max, ...$data);
 
         if (!$this->sendCommand($command)) {
@@ -1470,7 +1570,7 @@ class Redis
 
     public function zRangeByScore($key, $min, $max, $withScores = false, ...$data)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRangeByScore($this);
+        $handelClass = new ZRangeByScore($this);
         $command = $handelClass->getCommand($key, $min, $max, $withScores, ...$data);
 
         if (!$this->sendCommand($command)) {
@@ -1485,7 +1585,7 @@ class Redis
 
     public function zRank($key, $member)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRank($this);
+        $handelClass = new ZRank($this);
         $command = $handelClass->getCommand($key, $member);
 
         if (!$this->sendCommand($command)) {
@@ -1500,7 +1600,7 @@ class Redis
 
     public function zRem($key, $member, ...$members)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRem($this);
+        $handelClass = new ZRem($this);
         $command = $handelClass->getCommand($key, $member, ...$members);
 
         if (!$this->sendCommand($command)) {
@@ -1515,7 +1615,7 @@ class Redis
 
     public function zRemRangeByLex($key, $min, $max)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRemRangeByLex($this);
+        $handelClass = new ZRemRangeByLex($this);
         $command = $handelClass->getCommand($key, $min, $max);
 
         if (!$this->sendCommand($command)) {
@@ -1530,7 +1630,7 @@ class Redis
 
     public function zRemRangeByRank($key, $start, $stop)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRemRangeByRank($this);
+        $handelClass = new ZRemRangeByRank($this);
         $command = $handelClass->getCommand($key, $start, $stop);
 
         if (!$this->sendCommand($command)) {
@@ -1545,7 +1645,7 @@ class Redis
 
     public function zRemRangeByScore($key, $min, $max)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRemRangeByScore($this);
+        $handelClass = new ZRemRangeByScore($this);
         $command = $handelClass->getCommand($key, $min, $max);
 
         if (!$this->sendCommand($command)) {
@@ -1560,7 +1660,7 @@ class Redis
 
     public function zRevRange($key, $start, $stop, $withScores = false)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRevRange($this);
+        $handelClass = new ZRevRange($this);
         $command = $handelClass->getCommand($key, $start, $stop, $withScores);
 
         if (!$this->sendCommand($command)) {
@@ -1575,7 +1675,7 @@ class Redis
 
     public function zRevRangeByScore($key, $max, $min, $withScores = false)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRevRangeByScore($this);
+        $handelClass = new ZRevRangeByScore($this);
         $command = $handelClass->getCommand($key, $max, $min, $withScores);
 
         if (!$this->sendCommand($command)) {
@@ -1590,7 +1690,7 @@ class Redis
 
     public function zRevRank($key, $member)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZRevRank($this);
+        $handelClass = new ZRevRank($this);
         $command = $handelClass->getCommand($key, $member);
 
         if (!$this->sendCommand($command)) {
@@ -1605,7 +1705,7 @@ class Redis
 
     public function zScore($key, $member)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZScore($this);
+        $handelClass = new ZScore($this);
         $command = $handelClass->getCommand($key, $member);
 
         if (!$this->sendCommand($command)) {
@@ -1620,7 +1720,7 @@ class Redis
 
     public function zUnionStore($destination, $keyNum, $key, ...$data)
     {
-        $handelClass = new \EasySwoole\Redis\CommandHandel\ZUnionStore($this);
+        $handelClass = new ZUnionStore($this);
         $command = $handelClass->getCommand($destination, $keyNum, $key, ...$data);
 
         if (!$this->sendCommand($command)) {
