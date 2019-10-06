@@ -5,7 +5,7 @@ use EasySwoole\Redis\CommandConst;
 use EasySwoole\Redis\Redis;
 use EasySwoole\Redis\Response;
 
-class BgReWriteAof extends AbstractCommandHandel
+class BgRewriteAof extends AbstractCommandHandel
 {
 	public $commandName = 'BgReWriteAof';
 

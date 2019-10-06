@@ -791,7 +791,7 @@ class RedisTest extends TestCase
         $redis->sAdd($key[1], 1, 2, 3, 4);
         $redis->sAdd($key[2], 5);
         $redis->sAdd($key[3], 6, 7);
-        $data = $redis->sUnIomStore($key[4], $key[1], $key[2], $key[3]);
+        $data = $redis->sUnIonStore($key[4], $key[1], $key[2], $key[3]);
         $this->assertEquals(7, $data);
 //        $data = $redis->sScan('s', 'a', 's');
 //        $this->assertEquals(1, $data);
@@ -883,7 +883,7 @@ class RedisTest extends TestCase
         $redis->sAdd($key[1], 1, 2, 3, 4);
         $redis->sAdd($key[2], 5);
         $redis->sAdd($key[3], 6, 7);
-        $data = $redis->sUnIomStore($key[4], $key[1], $key[2], $key[3]);
+        $data = $redis->sUnIonStore($key[4], $key[1], $key[2], $key[3]);
         $this->assertEquals(7, $data);
 //        $data = $redis->sScan('s', 'a', 's');
 //        $this->assertEquals(1, $data);
