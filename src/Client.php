@@ -28,6 +28,7 @@ class Client
                 'package_eof'    => "\r\n",
             ]);
         }
+
         return $this->client->connect($this->host, $this->port, $timeout);
     }
 
