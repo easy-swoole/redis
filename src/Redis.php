@@ -12,7 +12,7 @@ use EasySwoole\Redis\CommandHandel\BLPop;
 use EasySwoole\Redis\CommandHandel\BRPop;
 use EasySwoole\Redis\CommandHandel\BRPopLPush;
 use EasySwoole\Redis\CommandHandel\ClientGetName;
-use EasySwoole\Redis\CommandHandel\ClientKill;
+use EasySwoole\Redis\CommandHandel\ClusterNodes;
 use EasySwoole\Redis\CommandHandel\ClientList;
 use EasySwoole\Redis\CommandHandel\ClientPause;
 use EasySwoole\Redis\CommandHandel\ClientSetName;
@@ -206,6 +206,16 @@ class Redis
             }
         }
         return $this->isConnected;
+    }
+
+    function disconnect()
+    {
+        if ($this->isConnected) {
+            $this->isConnected = false;
+            $this->lastSocketError = $this->client->socketError();
+            $this->lastSocketErrno = $this->client->socketErrno();
+            $this->client->close();
+        }
     }
 
     protected function reset()
@@ -2152,7 +2162,7 @@ class Redis
 
     public function clientKill($data): bool
     {
-        $handelClass = new ClientKill($this);
+        $handelClass = new ClusterNodes($this);
         $command = $handelClass->getCommand($data);
 
         if (!$this->sendCommand($command)) {
@@ -2736,14 +2746,36 @@ class Redis
         return $this->errorMsg;
     }
 
-    function disconnect()
+    /**
+     * @param mixed $lastSocketError
+     */
+    public function setLastSocketError($lastSocketError): void
     {
-        if ($this->isConnected) {
-            $this->isConnected = false;
-            $this->lastSocketError = $this->client->socketError();
-            $this->lastSocketErrno = $this->client->socketErrno();
-            $this->client->close();
-        }
+        $this->lastSocketError = $lastSocketError;
+    }
+
+    /**
+     * @param mixed $lastSocketErrno
+     */
+    public function setLastSocketErrno($lastSocketErrno): void
+    {
+        $this->lastSocketErrno = $lastSocketErrno;
+    }
+
+    /**
+     * @param mixed $errorType
+     */
+    public function setErrorType($errorType): void
+    {
+        $this->errorType = $errorType;
+    }
+
+    /**
+     * @param mixed $errorMsg
+     */
+    public function setErrorMsg($errorMsg): void
+    {
+        $this->errorMsg = $errorMsg;
     }
 
     /**

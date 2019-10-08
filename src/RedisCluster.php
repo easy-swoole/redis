@@ -4,6 +4,28 @@
 namespace EasySwoole\Redis;
 
 
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterAddSlots;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterCountFailureReports;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterCountKeySinSlot;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterDelSlots;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterFailOver;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterForget;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterGetKeySinSlot;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterInfo;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterKeySlot;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterMeet;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterNodes;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterReplicate;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterReset;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterSaveConfig;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterSetConfigEpoch;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterSetSlot;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterSlaves;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterSlots;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\Readonly;
+use EasySwoole\Redis\CommandHandel\ClusterCommand\Readwrite;
+use EasySwoole\Redis\CommandHandel\MGet;
+use EasySwoole\Redis\CommandHandel\MSet;
 use EasySwoole\Redis\Config\RedisClusterConfig;
 use EasySwoole\Redis\Exception\RedisClusterException;
 
@@ -26,9 +48,7 @@ class RedisCluster extends Redis
 
     protected $lastCommandLog = [];
 
-
     protected $errorClientList = [];
-
 
     public function __construct(RedisClusterConfig $config)
     {
@@ -55,7 +75,6 @@ class RedisCluster extends Redis
         return $client->isConnected();
     }
 
-
     function clientDisconnect(ClusterClient $client)
     {
         if ($client->isConnected()) {
@@ -65,9 +84,21 @@ class RedisCluster extends Redis
             $client->close();
         }
     }
+
+    public function connect(float $timeout = null): bool
+    {
+        $client = $this->getClient();
+        return $this->clientConnect($client, $timeout);
+    }
+
+    function disconnect()
+    {
+        $client = $this->getClient();
+        $this->clientDisconnect($client);
+    }
     ######################服务器连接方法######################
 
-    ######################集群类方法######################
+    ######################集群处理方法######################
     /**
      * 初始化节点
      * nodeInit
@@ -82,7 +113,7 @@ class RedisCluster extends Redis
         foreach ($serverList as $key => $server) {
             $host = $server[0];
             $port = $server[1];
-            $client = new Client($host, $port);
+            $client = new ClusterClient($host, $port);
             $this->clientConnect($client);
             $nodeList = $this->getServerNodesList($client);
             if ($nodeList === null) {
@@ -100,38 +131,24 @@ class RedisCluster extends Redis
     /**
      * 获取服务端节点列表
      * getServerNodesList
-     * @param Client $client
-     * @return array|null
-     * @author tioncico
-     * Time: 下午8:59
+     * @param ClusterClient $client
+     * @return bool|string
+     * @throws RedisClusterException
+     * @author Tioncico
+     * Time: 10:34
      */
-    protected function getServerNodesList(Client $client)
+    protected function getServerNodesList(ClusterClient $client)
     {
-        //获取节点信息
-        $client->sendCommand(['cluster', 'nodes']);
-        $recv = $client->recv();
-        if ($recv->getStatus() != 0) {
-            return null;
+        $handelClass = new ClusterNodes($this);
+        $command = $handelClass->getCommand();
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
         }
-        $list = explode(PHP_EOL, $recv->getData());
-        $nodeList = [];
-        foreach ($list as $serverData) {
-            $data = explode(' ', $serverData);
-            if (empty($data[0])) {
-                continue;
-            }
-            list($host, $port) = explode(':', explode('@', $data[1])[0]);
-            $node = [
-                'name'      => $data[0],
-                'host'      => $host,
-                'port'      => $port,
-                'flags'     => $data[2],
-                'connected' => $data[7],
-                'slot'      => isset($data[8]) ? explode('-', $data[8]) : [],
-            ];
-            $nodeList[$node['name']] = $node;
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
         }
-        return $nodeList;
+        return $handelClass->getData($recv);
     }
 
     protected function nodeListInit($nodeList)
@@ -141,7 +158,7 @@ class RedisCluster extends Redis
                 $this->nodeList[$node['name']] = $node;
             } else {
                 $this->nodeList[$node['name']] = $node;
-                $this->nodeClientList[$node['name']] = new Client($node['host'], $node['port']);
+                $this->nodeClientList[$node['name']] = new ClusterClient($node['host'], $node['port']);
             }
         }
     }
@@ -171,17 +188,26 @@ class RedisCluster extends Redis
      * @author Tioncico
      * Time: 16:39
      */
-    protected function getClient($nodeKey = null): Client
+    protected function getClient($nodeKey = null): ClusterClient
     {
         if ($nodeKey == null || !isset($this->nodeClientList[$nodeKey])) {
             foreach ($this->nodeClientList as $node) {
                 $client = $node;
+                break;
             }
         } else {
             $client = $this->nodeClientList[$nodeKey];
         }
-        $this->clientConnect($client);
         return $client;
+    }
+
+    protected function getClientBySlotId($slotId)
+    {
+        $nodeId = $this->getSlotNodeId($slotId);
+        if ($nodeId == null) {
+            throw new RedisClusterException('不存在节点:' . $nodeId);
+        }
+        return $this->getClient($nodeId);
     }
 
     /**
@@ -233,22 +259,373 @@ class RedisCluster extends Redis
     {
         return $this->nodeList;
     }
-    ######################集群类方法######################
+    ######################集群处理方法######################
+
+    ###################### redis集群方法 ######################
+
+    public function clusterNodes()
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterNodes($this);
+        $command = $handelClass->getCommand();
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterAddSlots($slot)
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterAddSlots($this);
+        $command = $handelClass->getCommand($slot);
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterCountFailureReports($nodeId)
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterCountFailureReports($this);
+        $command = $handelClass->getCommand($nodeId);
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterCountKeySinSlot($slot)
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterCountKeySinSlot($this);
+        $command = $handelClass->getCommand($slot);
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterDelSlots($slot)
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterDelSlots($this);
+        $command = $handelClass->getCommand($slot);
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterFailOver($slot)
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterFailOver($this);
+        $command = $handelClass->getCommand($slot);
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterForget($nodeId)
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterForget($this);
+        $command = $handelClass->getCommand($nodeId);
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterGetKeySinSlot($slot, $count)
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterGetKeySinSlot($this);
+        $command = $handelClass->getCommand($slot, $count);
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterInfo()
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterInfo($this);
+        $command = $handelClass->getCommand();
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterKeySlot($key)
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterKeySlot($this);
+        $command = $handelClass->getCommand($key);
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterMeet($ip, $port)
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterMeet($this);
+        $command = $handelClass->getCommand($ip, $port);
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterReplicate($nodeId)
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterReplicate($this);
+        $command = $handelClass->getCommand($nodeId);
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterReset($nodeId)
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterReset($this);
+        $command = $handelClass->getCommand($nodeId);
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterSaveConfig()
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterSaveConfig($this);
+        $command = $handelClass->getCommand();
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterSetConfigEpoch($configEpoch)
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterSetConfigEpoch($this);
+        $command = $handelClass->getCommand($configEpoch);
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterSetSlot($slot)
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterSetSlot($this);
+        $command = $handelClass->getCommand($slot);
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterSlaves($nodeId)
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterSlaves($this);
+        $command = $handelClass->getCommand($nodeId);
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function clusterSlots()
+    {
+        $client = $this->getClient();
+        $handelClass = new ClusterSlots($this);
+        $command = $handelClass->getCommand();
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function readonly()
+    {
+        $client = $this->getClient();
+        $handelClass = new Readonly($this);
+        $command = $handelClass->getCommand();
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function readwrite()
+    {
+        $client = $this->getClient();
+        $handelClass = new Readwrite($this);
+        $command = $handelClass->getCommand();
+        if (!$this->sendCommandByClient($command, $client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    ###################### redis集群方法 ######################
+
+    ###################### redis集群兼容方法 ######################
+    public function mSet($data): bool
+    {
+        $handelClass = new MSet($this);
+        foreach ($data as $k => $value) {
+            $kvData = [];
+            $kvData[$k] = $value;
+            $slotId = $this->clusterKeySlot($k);
+            $client = $this->getClientBySlotId($slotId);
+            $command = $handelClass->getCommand($kvData);
+            if (!$this->sendCommandByClient($command, $client)) {
+                continue;
+            }
+            $recv = $this->recvByClient($client);
+            if ($recv === null) {
+                continue;
+            }
+        }
+        return true;
+    }
+
+    public function mGet(...$keys)
+    {
+        $handelClass = new MGet($this);
+        $result = [];
+        foreach ($keys as $k => $value) {
+            $slotId = $this->clusterKeySlot($value);
+            $client = $this->getClientBySlotId($slotId);
+            $command = $handelClass->getCommand($value);
+            if (!$this->sendCommandByClient($command, $client)) {
+                $result[$k] = false;
+                continue;
+            }
+            $recv = $this->recvByClient($client);
+            if ($recv === null) {
+                $result[$k] = false;
+                continue;
+            }
+            $result[$k] = $handelClass->getData($recv)[0];
+        }
+        return $result;
+    }
+    ###################### redis集群兼容方法 ######################
 
     ###################### 发送接收tcp流数据 ######################
     protected function sendCommandByClient(array $commandList, ClusterClient $client): bool
     {
+        $client = $client;
         while ($this->tryConnectTimes <= $this->config->getReconnectTimes()) {
             if ($this->clientConnect($client)) {
                 if ($client->sendCommand($commandList)) {
                     $this->reset();
+                    array_push($this->lastCommandLog, $commandList);
                     return true;
                 }
             }
             //节点断线处理
             $this->tryConnectServerList();
-            $this->disconnect();
+            $this->clientDisconnect($client);
             $this->tryConnectTimes++;
+            $client = $this->getClient();
         }
         /*
          * 链接超过重连次数，应该抛出异常
@@ -256,28 +633,50 @@ class RedisCluster extends Redis
         throw new RedisClusterException("connect to redis host {$client->getHost()}:{$client->getPort()} fail after retry {$this->tryConnectTimes} times");
     }
 
-    protected function sendCommand(array $commandList, $nodeId = null): bool
+    protected function recvByClient(ClusterClient $client, $timeout = null)
     {
-        $client = $this->getClient($nodeId);
-        return $this->sendCommandByClient($commandList,$client);
+        $command = array_shift($this->lastCommandLog);
+        $result = $client->recv($timeout ?? $this->config->getTimeout());
+        //节点转移客户端处理
+        if ($result->getErrorType() == 'MOVED') {
+            $nodeId = $this->getMoveNodeId($result);
+            $client = $this->getClient($nodeId);
+            $this->clientConnect($client);
+            //只处理一次moved,如果出错则不再处理
+            $client->sendCommand($command);
+            $result = $client->recv($timeout ?? $this->config->getTimeout());
+        }
+        if ($result->getStatus() === $result::STATUS_TIMEOUT) {
+            //节点断线处理
+            $this->clientDisconnect($client);
+            $this->lastSocketErrno = $client->socketErrno();
+            $this->lastSocketError = $client->socketError();
+            return false;
+        }
+        if ($result->getStatus() == $result::STATUS_ERR) {
+            $this->errorType = $result->getErrorType();
+            $this->errorMsg = $result->getMsg();
+            //未登录
+            if ($this->errorType == 'NOAUTH') {
+                throw new RedisClusterException($result->getMsg());
+            }
+        }
+        return $result;
+    }
+
+    protected function sendCommand(array $com): bool
+    {
+        $client = $this->getClient();
+        return $this->sendCommandByClient($com, $client);
     }
 
     public function recv($timeout = null): ?Response
     {
-        $recv = $this->client->recv($timeout ?? $this->config->getTimeout());
-        if ($recv->getStatus() == $recv::STATUS_ERR) {
-            $this->errorType = $recv->getErrorType();
-            $this->errorMsg = $recv->getMsg();
-            //未登录
-            if ($this->errorType == 'NOAUTH') {
-                throw new RedisClusterException($recv->getMsg());
-            }
-        } elseif ($recv->getStatus() == $recv::STATUS_OK) {
-            return $recv;
-        } elseif ($recv->getStatus() == $recv::STATUS_TIMEOUT) {
-            $this->disconnect();
-        }
-        return null;
+        $client = $this->getClient();
+        return $this->recvByClient($client, $timeout);
     }
+
     ###################### 发送接收tcp流数据 ######################
+
+
 }

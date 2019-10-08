@@ -3,10 +3,7 @@
 
 namespace EasySwoole\Redis\Config;
 
-
-use EasySwoole\Spl\SplBean;
-
-class RedisClusterConfig extends SplBean
+class RedisClusterConfig extends RedisConfig
 {
     public const SERIALIZE_NONE = 0;
     public const SERIALIZE_PHP = 1;
@@ -21,6 +18,13 @@ class RedisClusterConfig extends SplBean
     protected $timeout = 3.0;
     protected $reconnectTimes = 3;
     protected $serialize = self::SERIALIZE_NONE;
+
+    public function __construct($serverList=[], array $data = null, $autoCreateProperty = false)
+    {
+        !empty($serverList)&&($this->serverList = $serverList);
+        parent::__construct($data, $autoCreateProperty);
+    }
+
 
     /**
      * @return array

@@ -9,7 +9,7 @@ class ClusterClient extends Client
     /**
      * @var $isConnected bool
      */
-    protected $isConnected;
+    protected $isConnected=false;
 
     /**
      * @return bool
