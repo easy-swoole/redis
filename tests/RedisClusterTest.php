@@ -37,7 +37,12 @@ class RedisClusterTest extends TestCase
             ['172.16.253.156', 9004],
         ];
         $this->redis = new RedisCluster(new RedisClusterConfig($serverList, [
-            'auth' => '',
+            'auth' => REDIS_AUTH,
+        ]));
+
+        $this->redisPHPSerialize = new RedisCluster(new RedisClusterConfig($serverList, [
+            'auth'      => REDIS_AUTH,
+            'serialize' => RedisConfig::SERIALIZE_PHP
         ]));
     }
 
@@ -72,7 +77,7 @@ class RedisClusterTest extends TestCase
         $data = $redis->clusterNodes();
         $this->assertIsArray($data);
         $data = $redis->clusterKeySlot('key1');
-        $this->assertGreaterThan(0,$data);
+        $this->assertGreaterThan(0, $data);
 
     }
 
@@ -116,7 +121,7 @@ class RedisClusterTest extends TestCase
         $data = $redis->move($key, 1);
 //        var_dump($data,$redis->recv());
         $this->assertEquals(false, $data);
-        $this->assertEquals('ERR MOVE is not allowed in cluster mode',$redis->getErrorMsg());
+        $this->assertEquals('ERR MOVE is not allowed in cluster mode', $redis->getErrorMsg());
         $data = $redis->exists($key);
         $this->assertEquals(0, $data);
         $redis->select(0);
@@ -150,7 +155,7 @@ class RedisClusterTest extends TestCase
         $redis->del($key);
         $data = $redis->type($key);
         $this->assertEquals('none', $data);
-        $redis->set($key.'new',1);
+        $redis->set($key . 'new', 1);
         $data = $redis->type($key . 'new');
         $this->assertEquals('string', $data);
     }
@@ -261,17 +266,17 @@ class RedisClusterTest extends TestCase
             "{$field[0]}" => $value[0],
             "{$field[1]}" => $value[1],
         ]);
-        $this->assertEquals([1,0], $data);
+        $this->assertEquals([1, 0], $data);
         $this->assertEquals($value[1], $redis->get($field[1]));
         $redis->del($field[1]);
         $data = $redis->mSetNx([
             "{$field[0]}" => $value[0] + 1,
             "{$field[1]}" => $value[1] + 1,
         ]);
-        $this->assertEquals([0,1], $data);
+        $this->assertEquals([0, 1], $data);
         $this->assertEquals($value[1] + 1, $redis->get($field[1]));
 
-        $redis->set($field[0],$value[0]);
+        $redis->set($field[0], $value[0]);
         $data = $redis->setRange($field[0], 1, 1);
         $this->assertEquals(2, $data);
         $this->assertEquals('1' . $value[0], $redis->get($field[0]));

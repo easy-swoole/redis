@@ -68,7 +68,7 @@ class RedisCluster extends Redis
         }
         $client->setIsConnected($client->connect($timeout));
         if ($client->isConnected() && !empty($this->config->getAuth())) {
-            if (!$this->auth($this->config->getAuth())) {
+            if (!$this->clientAuth($client,$this->config->getAuth())) {
                 $client->setIsConnected(false);
                 throw new RedisClusterException("auth to redis host {$this->config->getHost()}:{$this->config->getPort()} fail");
             }
@@ -260,6 +260,22 @@ class RedisCluster extends Redis
     {
         return $this->nodeList;
     }
+
+    public function clientAuth(ClusterClient $client,$password): bool
+    {
+        $handelClass = new Auth($this);
+        $command = $handelClass->getCommand($password);
+
+        if (!$this->sendCommandByClient($command,$client)) {
+            return false;
+        }
+        $recv = $this->recvByClient($client);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
     ######################集群处理方法######################
 
     ###################### redis集群方法 ######################
