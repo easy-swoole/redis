@@ -937,7 +937,7 @@ class RedisTest extends TestCase
         $redis->del($key[1]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
         $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
-        $data = $redis->zInTerStore($key[2], 2, $key[0], $key[1]);
+        $data = $redis->zInTerStore($key[2], [$key[0], $key[1]],[1,2]);
         $this->assertEquals(1, $data);
 
         $data = $redis->zLexCount($key[0], '-', '+');
@@ -1093,7 +1093,7 @@ class RedisTest extends TestCase
         $redis->del($key[1]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
         $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
-        $data = $redis->zInTerStore($key[2], 2, $key[0], $key[1]);
+        $data = $redis->zInTerStore($key[2], 2, [$key[0], $key[1]]);
         $this->assertEquals(1, $data);
 
         $data = $redis->zLexCount($key[0], '-', '+');

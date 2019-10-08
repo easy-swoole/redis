@@ -1566,11 +1566,11 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    public function zInTerStore($destination, $numKeys, $key, ...$data)
+    public function zInTerStore($destination, array $keys, array $weights=[], $aggregate='SUM')
     {
         $handelClass = new ZInTerStore($this);
-        $command = $handelClass->getCommand($destination, $numKeys, $key, ...$data);
-
+        $command = $handelClass->getCommand($destination, $keys, $weights, $aggregate);
+var_dump($command);
         if (!$this->sendCommand($command)) {
             return false;
         }
