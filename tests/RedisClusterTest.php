@@ -261,20 +261,20 @@ class RedisClusterTest extends TestCase
             "{$field[0]}" => $value[0],
             "{$field[1]}" => $value[1],
         ]);
-        $this->assertEquals(0, $data);
+        $this->assertEquals([1,0], $data);
         $this->assertEquals($value[1], $redis->get($field[1]));
         $redis->del($field[1]);
         $data = $redis->mSetNx([
             "{$field[0]}" => $value[0] + 1,
             "{$field[1]}" => $value[1] + 1,
         ]);
-        $this->assertEquals(1, $data);
-        $this->assertEquals($value[0] + 1, $redis->get($field[0]));
+        $this->assertEquals([0,1], $data);
+        $this->assertEquals($value[1] + 1, $redis->get($field[1]));
 
-
+        $redis->set($field[0],$value[0]);
         $data = $redis->setRange($field[0], 1, 1);
         $this->assertEquals(2, $data);
-        $this->assertEquals('2' . $value[0], $redis->get($field[0]));
+        $this->assertEquals('1' . $value[0], $redis->get($field[0]));
 
         $data = $redis->strLen($field[0]);
         $this->assertEquals(2, $data);
@@ -284,7 +284,7 @@ class RedisClusterTest extends TestCase
         $this->assertEquals(1.1, $data);
         $data = $redis->appEnd($field[0], '1');
         $this->assertEquals($redis->strLen($field[0]), $data);
-        $this->assertEquals('2' . $value[0] . '1', $redis->get($field[0]));
+        $this->assertEquals('1' . $value[0] . '1', $redis->get($field[0]));
     }
 
     /**

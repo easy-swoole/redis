@@ -26,6 +26,7 @@ use EasySwoole\Redis\CommandHandel\ClusterCommand\Readonly;
 use EasySwoole\Redis\CommandHandel\ClusterCommand\Readwrite;
 use EasySwoole\Redis\CommandHandel\MGet;
 use EasySwoole\Redis\CommandHandel\MSet;
+use EasySwoole\Redis\CommandHandel\MSetNx;
 use EasySwoole\Redis\Config\RedisClusterConfig;
 use EasySwoole\Redis\Exception\RedisClusterException;
 
@@ -604,6 +605,31 @@ class RedisCluster extends Redis
                 continue;
             }
             $result[$k] = $handelClass->getData($recv)[0];
+        }
+        return $result;
+    }
+
+    public function mSetNx($data)
+    {
+        $handelClass = new MSetNx($this);
+        $result = [];
+        foreach ($data as $k => $value) {
+            $slotId = $this->clusterKeySlot($k);
+            $client = $this->getClientBySlotId($slotId);
+
+            $kvData = [];
+            $kvData[$k] = $value;
+            $command = $handelClass->getCommand($kvData);
+            if (!$this->sendCommandByClient($command, $client)) {
+                $result[] = false;
+                continue;
+            }
+            $recv = $this->recvByClient($client);
+            if ($recv === null) {
+                $result[] = false;
+                continue;
+            }
+            $result[] = $handelClass->getData($recv);
         }
         return $result;
     }
