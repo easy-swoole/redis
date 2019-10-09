@@ -464,11 +464,11 @@ class RedisCluster extends Redis
         return $handelClass->getData($recv);
     }
 
-    public function clusterReset($nodeId)
+    public function clusterReset($option=null)
     {
         $client = $this->getClient();
         $handelClass = new ClusterReset($this);
-        $command = $handelClass->getCommand($nodeId);
+        $command = $handelClass->getCommand($option);
         if (!$this->sendCommandByClient($command, $client)) {
             return false;
         }
@@ -509,11 +509,11 @@ class RedisCluster extends Redis
         return $handelClass->getData($recv);
     }
 
-    public function clusterSetSlot($slot)
+    public function clusterSetSlot($slot,$subCommand,$nodeId=null)
     {
         $client = $this->getClient();
         $handelClass = new ClusterSetSlot($this);
-        $command = $handelClass->getCommand($slot);
+        $command = $handelClass->getCommand($slot,$subCommand,$nodeId);
         if (!$this->sendCommandByClient($command, $client)) {
             return false;
         }

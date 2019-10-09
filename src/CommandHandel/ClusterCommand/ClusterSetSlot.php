@@ -14,14 +14,19 @@ class ClusterSetSlot extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $slot  = array_shift($data);
-        $command = [CommandConst::CLUSTER, 'SETSLOT', $slot];
-        $commandData = array_merge($command,$data);
+        $subCommand  = array_shift($data);
+        $nodeId  = array_shift($data);
+        $command = [CommandConst::CLUSTER, 'SETSLOT', $slot, $subCommand];
+        if ($nodeId){
+            $command[] = $nodeId;
+        }
+        $commandData = array_merge($command);
         return $commandData;
     }
 
 
-    public function handelRecv(Response $recv)
+    public function handelRecv(Response $recv):bool
     {
-        return $recv->getData();
+        return true;
     }
 }

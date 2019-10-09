@@ -13,8 +13,11 @@ class ClusterReset extends AbstractCommandHandel
 
     public function handelCommandData(...$data)
     {
-        $nodeId = array_shift($data);
-        $command = [CommandConst::CLUSTER, 'RESET', $nodeId];
+        $option = array_shift($data);
+        $command = [CommandConst::CLUSTER, 'RESET'];
+        if ($option){
+            $command[] = $option;
+        }
         $commandData = array_merge($command,$data);
         return $commandData;
     }
