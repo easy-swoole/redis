@@ -17,12 +17,17 @@ class ZRevRangeByScore extends AbstractCommandHandel
         $key = array_shift($data);
         $max = array_shift($data);
         $min = array_shift($data);
-        $withScores = array_shift($data);
-        $this->withScores = $withScores;
+        $options = array_shift($data);
+        $this->withScores = $options['withScores']??false;
 
         $command = [CommandConst::ZREVRANGEBYSCORE, $key, $max, $min];
-        if ($withScores == true) {
+        if ($this->withScores == true) {
             $command[] = 'WITHSCORES';
+        }
+        if (is_array($options['limit'])){
+            $command[] = 'LIMIT';
+            $command[]= $options['limit'][0];
+            $command[]= $options['limit'][1];
         }
         $commandData = array_merge($command);
         return $commandData;

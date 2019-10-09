@@ -1743,10 +1743,10 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    public function zRevRangeByScore($key, $max, $min, $withScores = false)
+    public function zRevRangeByScore($key, $max, $min,array $options)
     {
         $handelClass = new ZRevRangeByScore($this);
-        $command = $handelClass->getCommand($key, $max, $min, $withScores);
+        $command = $handelClass->getCommand($key, $max, $min, $options);
 
         if (!$this->sendCommand($command)) {
             return false;

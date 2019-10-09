@@ -1016,7 +1016,7 @@ class RedisTest extends TestCase
 
         $redis->del($key[0]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
-        $data = $redis->zRevRangeByScore($key[0], 3, 0, true);
+        $data = $redis->zRevRangeByScore($key[0], 3, 0, ['withScores' => true, 'limit' => array(0, 3)]);
 
         $this->assertEquals([
             $member[2] => $score[2],
@@ -1025,7 +1025,7 @@ class RedisTest extends TestCase
         ], $data);
         $redis->del($key[0]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
-        $data = $redis->zReVRangeByScore($key[0], 3, 0, false);
+        $data = $redis->zReVRangeByScore($key[0], 3, 0, ['withScores' => false, 'limit' => array(0, 3)]);
         $this->assertEquals([
             $member[2],
             $member[1],
@@ -1173,7 +1173,7 @@ class RedisTest extends TestCase
 
         $redis->del($key[0]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
-        $data = $redis->zRevRangeByScore($key[0], 3, 0, true);
+        $data = $redis->zRevRangeByScore($key[0], 3, 0, ['withScores' => true, 'limit' => array(0, 3)]);
 
         $this->assertEquals([
             $member[2] => $score[2],
@@ -1182,7 +1182,7 @@ class RedisTest extends TestCase
         ], $data);
         $redis->del($key[0]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
-        $data = $redis->zReVRangeByScore($key[0], 3, 0, false);
+        $data = $redis->zReVRangeByScore($key[0], 3, 0, ['withScores' => false, 'limit' => array(0, 3)]);
         $this->assertEquals([
             $member[2],
             $member[1],

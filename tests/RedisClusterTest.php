@@ -991,14 +991,14 @@ class RedisClusterTest extends TestCase
         $data = $redis->zRangeByLex($key[0], '-', '+');
         $this->assertEquals(3, count($data));
 
-        $data = $redis->zRangeByScore($key[0], 2, 3, true);
+        $data = $redis->zRangeByScore($key[0], 2, 3, ['withScores' => true, 'limit' => array(0, 2)]);
 
         $this->assertEquals([
             $member[1] => $score[1],
             $member[2] => $score[2],
         ], $data);
 
-        $data = $redis->zRangeByScore($key[0], 2, 3, false);
+        $data = $redis->zRangeByScore($key[0], 2, 3, ['withScores' => false, 'limit' => array(0, 2)]);
         $this->assertEquals([
             $member[1],
             $member[2],
@@ -1046,7 +1046,7 @@ class RedisClusterTest extends TestCase
 
         $redis->del($key[0]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
-        $data = $redis->zRevRangeByScore($key[0], 3, 0, true);
+        $data = $redis->zRevRangeByScore($key[0], 3, 0,  ['withScores' => true, 'limit' => array(0, 3)]);
 
         $this->assertEquals([
             $member[2] => $score[2],
@@ -1055,7 +1055,7 @@ class RedisClusterTest extends TestCase
         ], $data);
         $redis->del($key[0]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
-        $data = $redis->zReVRangeByScore($key[0], 3, 0, false);
+        $data = $redis->zReVRangeByScore($key[0], 3, 0,  ['withScores' => false, 'limit' => array(0, 3)]);
         $this->assertEquals([
             $member[2],
             $member[1],
