@@ -21,6 +21,14 @@ class ClusterInfo extends AbstractCommandHandel
 
     public function handelRecv(Response $recv)
     {
-        return $recv->getData();
+        $result = [];
+        foreach (explode("\r\n",$recv->getData()) as $value){
+            if (empty($value)){
+                continue;
+            }
+            $kvArr = explode(':',$value);
+            $result[$kvArr[0]] = $kvArr[1];
+        }
+        return $result;
     }
 }

@@ -197,7 +197,8 @@ class Client
         } elseif ($strLen == -1) {
             $response->setData(null);
         } else {
-            while ($len < $strLen) {
+            $eolLen = strlen("\r\n");
+            while ($len < $strLen+$eolLen) {
                 $strTmp = $this->client->recv($timeout);
                 $len += strlen($strTmp);
                 $buff .= $strTmp;

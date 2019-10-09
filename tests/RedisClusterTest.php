@@ -77,8 +77,7 @@ class RedisClusterTest extends TestCase
         $this->assertFalse($data);
 
         $redis->tryConnectServerList();
-        $data = $redis->clusterForget(array_column(($redis->getNodeList()),'name')[1]);
-        var_dump($redis->getErrorMsg());
+        $data = $redis->clusterForget(array_column(($redis->getNodeList()),'name')[0]);
         $this->assertTrue($data);
 
         $redis->set('a',1);
@@ -86,11 +85,11 @@ class RedisClusterTest extends TestCase
         $data = $redis->clusterGetKeySinSlot($data,1);
         $this->assertIsArray($data);
         $data = $redis->clusterInfo();
-        var_dump($data);return;
-        $data = $redis->clusterKeySlot();
-        var_dump($data);return;
-        $data = $redis->clusterMeet();
-        var_dump($data);return;
+        $this->assertIsArray($data);
+        $data = $redis->clusterKeySlot('b');
+        $this->assertIsInt($data);
+        $data = $redis->clusterMeet('172.16.253.156','9005');
+        $this->assertTrue($data);
         $data = $redis->clusterReplicate();
         var_dump($data);return;
         $data = $redis->clusterReset();
