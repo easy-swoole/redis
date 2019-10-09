@@ -1566,7 +1566,7 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    public function zInTerStore($destination, array $keys, array $weights=[], $aggregate='SUM')
+    public function zInTerStore($destination, array $keys, array $weights = [], $aggregate = 'SUM')
     {
         $handelClass = new ZInTerStore($this);
         $command = $handelClass->getCommand($destination, $keys, $weights, $aggregate);
@@ -1627,10 +1627,10 @@ class Redis
 
     /**
      * zRangeByScore
-     * @param       $key
-     * @param       $min
-     * @param       $max
-     * @param   array  $options Two options are available:
+     * @param         $key
+     * @param         $min
+     * @param         $max
+     * @param   array $options Two options are available:
      *                          - withScores => TRUE,
      *                          - and limit => array($offset, $count)
      * @return bool|string
@@ -1743,7 +1743,7 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    public function zRevRangeByScore($key, $max, $min,array $options)
+    public function zRevRangeByScore($key, $max, $min, array $options)
     {
         $handelClass = new ZRevRangeByScore($this);
         $command = $handelClass->getCommand($key, $max, $min, $options);
@@ -1788,7 +1788,7 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    public function zUnionStore($destination,array $keys, array $weights = [], $aggregate = 'SUM')
+    public function zUnionStore($destination, array $keys, array $weights = [], $aggregate = 'SUM')
     {
         $handelClass = new ZUnionStore($this);
         $command = $handelClass->getCommand($destination, $keys, $weights, $aggregate);
@@ -1819,10 +1819,10 @@ class Redis
 
     ######################HyperLogLog操作方法######################
 
-    public function pfAdd($key, ...$data)
+    public function pfAdd($key, $elements)
     {
         $handelClass = new PfAdd($this);
-        $command = $handelClass->getCommand($key, ...$data);
+        $command = $handelClass->getCommand($key, $elements);
 
         if (!$this->sendCommand($command)) {
             return false;
@@ -1834,10 +1834,10 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    public function pfCount($key, ...$keys)
+    public function pfCount($key)
     {
         $handelClass = new PfCount($this);
-        $command = $handelClass->getCommand($key, ...$keys);
+        $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
             return false;
@@ -1849,10 +1849,10 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    public function pfMerge($deStKey, $sourceKey, ...$sourceKeys)
+    public function pfMerge($deStKey, array $sourceKeys)
     {
         $handelClass = new PfMerge($this);
-        $command = $handelClass->getCommand($deStKey, $sourceKey, ...$sourceKeys);
+        $command = $handelClass->getCommand($deStKey,$sourceKeys);
 
         if (!$this->sendCommand($command)) {
             return false;
@@ -2798,14 +2798,14 @@ class Redis
         return $this->config;
     }
 
-    public function getTransaction():?RedisTransaction
+    public function getTransaction(): ?RedisTransaction
     {
         return $this->transaction;
     }
 
     public function setTransaction(?RedisTransaction $transaction): void
     {
-        if (!$this->getTransaction() instanceof  RedisTransaction){
+        if (!$this->getTransaction() instanceof RedisTransaction) {
             $this->transaction = $transaction;
         }
     }

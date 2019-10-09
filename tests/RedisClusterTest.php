@@ -924,10 +924,10 @@ class RedisClusterTest extends TestCase
     {
         $redis = $this->redis;
 
-        $server_list = [
-            'tcp://172.16.253.156:9001',
-        ];
-        $redis = new \RedisCluster(null,$server_list);
+//        $server_list = [
+//            'tcp://172.16.253.156:9001',
+//        ];
+//        $redis = new \RedisCluster(null,$server_list);
 
         $key = [
             'sortMuster1',
@@ -992,7 +992,6 @@ class RedisClusterTest extends TestCase
         $this->assertEquals(3, count($data));
 
         $data = $redis->zRangeByScore($key[0], 2, 3, ['withScores' => true, 'limit' => array(0, 2)]);
-
         $this->assertEquals([
             $member[1] => $score[1],
             $member[2] => $score[2],
@@ -1087,6 +1086,11 @@ class RedisClusterTest extends TestCase
     {
         $redis = $this->redisPHPSerialize;
 
+//        $server_list = [
+//            'tcp://172.16.253.156:9001',
+//        ];
+//        $redis = new \RedisCluster(null,$server_list);
+
         $key = [
             'sortMuster1',
             'sortMuster2',
@@ -1119,12 +1123,12 @@ class RedisClusterTest extends TestCase
         $this->assertEquals(2, $data);
 
 
-        $redis->del($key[0]);
-        $redis->del($key[1]);
-        $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
-        $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
-        $data = $redis->zInTerStore($key[2], 2, $key[0], $key[1]);
-        $this->assertEquals(1, $data);
+//        $redis->del($key[0]);
+//        $redis->del($key[1]);
+//        $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
+//        $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
+//        $data = $redis->zInTerStore($key[2], [$key[0], $key[1]]);
+//        $this->assertEquals(1, $data);
 
         $data = $redis->zLexCount($key[0], '-', '+');
         $this->assertEquals(2, $data);
@@ -1148,14 +1152,14 @@ class RedisClusterTest extends TestCase
         $data = $redis->zRangeByLex($key[0], '-', '+');
         $this->assertEquals(3, count($data));
 
-        $data = $redis->zRangeByScore($key[0], 2, 3, true);
 
+        $data = $redis->zRangeByScore($key[0], 2, 3, ['withScores' => true, 'limit' => array(0, 2)]);
         $this->assertEquals([
             $member[1] => $score[1],
             $member[2] => $score[2],
         ], $data);
 
-        $data = $redis->zRangeByScore($key[0], 2, 3, false);
+        $data = $redis->zRangeByScore($key[0], 2, 3, ['withScores' => false, 'limit' => array(0, 2)]);
         $this->assertEquals([
             $member[1],
             $member[2],
@@ -1203,7 +1207,7 @@ class RedisClusterTest extends TestCase
 
         $redis->del($key[0]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
-        $data = $redis->zRevRangeByScore($key[0], 3, 0, true);
+        $data = $redis->zRevRangeByScore($key[0], 3, 0,  ['withScores' => true, 'limit' => array(0, 3)]);
 
         $this->assertEquals([
             $member[2] => $score[2],
@@ -1212,7 +1216,7 @@ class RedisClusterTest extends TestCase
         ], $data);
         $redis->del($key[0]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
-        $data = $redis->zReVRangeByScore($key[0], 3, 0, false);
+        $data = $redis->zReVRangeByScore($key[0], 3, 0,  ['withScores' => false, 'limit' => array(0, 3)]);
         $this->assertEquals([
             $member[2],
             $member[1],
@@ -1225,13 +1229,13 @@ class RedisClusterTest extends TestCase
         $data = $redis->zScore($key[0], $member[0]);
         $this->assertEquals($score[0], $data);
 
-        $redis->del($key[0]);
-        $redis->del($key[1]);
-        $redis->del($key[2]);
-        $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
-        $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
-        $data = $redis->zUnionStore($key[2], 2, $key[1], $key[0]);
-        $this->assertEquals(3, $data);
+//        $redis->del($key[0]);
+//        $redis->del($key[1]);
+//        $redis->del($key[2]);
+//        $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
+//        $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
+//        $data = $redis->zUnionStore($key[2], 2, $key[1], $key[0]);
+//        $this->assertEquals(3, $data);
     }
 
     /**
@@ -1244,6 +1248,10 @@ class RedisClusterTest extends TestCase
     {
         $redis = $this->redis;
 
+//        $server_list = [
+//            'tcp://172.16.253.156:9001',
+//        ];
+//        $redis = new \RedisCluster(null,$server_list);
         $key = [
             'hp1',
             'hp2',
@@ -1253,15 +1261,15 @@ class RedisClusterTest extends TestCase
         ];
         $redis->del($key[0]);
         $redis->del($key[1]);
-        $data = $redis->pfAdd($key[0], ...[1, 2, 2, 3, 3]);
+        $data = $redis->pfAdd($key[0], [1, 2, 2, 3, 3]);
         $this->assertEquals(1, $data);
 
-        $redis->pfAdd($key[1], ...[1, 2, 2, 3, 3]);
-        $data = $redis->pfCount($key[0], $key[1]);
-        $this->assertEquals(3, $data);
+//        $redis->pfAdd($key[1], [1, 2, 2, 3, 3]);
+//        $data = $redis->pfCount([$key[0], $key[1]]);
+//        $this->assertEquals(3, $data);
 
-        $data = $redis->pfMerge($key[2], $key[0], $key[1]);
-        $this->assertEquals(1, $data);
+//        $data = $redis->pfMerge($key[2], [$key[0], $key[1]]);
+//        $this->assertEquals(1, $data);
     }
 
     /**

@@ -13,11 +13,10 @@ class PfMerge extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$deStKey=array_shift($data);
-		$sourceKey=array_shift($data);
+		$sourceKeys=array_shift($data);
 
-
-		$command = [CommandConst::PFMERGE,$deStKey,$sourceKey];
-		$commandData = array_merge($command,$data);
+		$command = [CommandConst::PFMERGE,$deStKey];
+		$commandData = array_merge($command,$sourceKeys);
 		return $commandData;
 	}
 
