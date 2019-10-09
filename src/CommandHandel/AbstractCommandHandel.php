@@ -34,7 +34,8 @@ Abstract class AbstractCommandHandel
         //开启了事务
         if ($this->redis->getTransaction() instanceof RedisTransaction && $this->redis->getTransaction()->isTransaction() == true) {
             $this->redis->getTransaction()->addCommand($this->commandName);
-            if (!in_array(strtolower($this->commandName), RedisTransaction::TRANSACTION_COMMAND)) {
+            //事务命令忽略
+            if (!in_array(strtolower($this->commandName), RedisTransaction::IGNORE_COMMAND)) {
                 return 'QUEUED';
             }
         }

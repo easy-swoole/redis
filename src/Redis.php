@@ -1866,7 +1866,7 @@ class Redis
 
     ######################HyperLogLog操作方法######################
 
-    ######################发布订阅操作方法(待测试)######################
+    ######################发布订阅操作方法######################
 
     public function pSubscribe($callback, $pattern, ...$patterns)
     {
@@ -1974,10 +1974,9 @@ class Redis
         return $this->subscribeStop;
     }
 
-    ######################发布订阅操作方法(待测试)######################
+    ######################发布订阅操作方法######################
 
-    ######################事务操作方法(待测试)######################
-
+    ######################事务操作方法)######################
     public function discard(): bool
     {
         $handelClass = new Discard($this);
@@ -2052,7 +2051,55 @@ class Redis
         }
         return $handelClass->getData($recv);
     }
-    ######################事务操作方法(待测试)######################
+    ######################事务操作方法)######################
+
+    ######################事务操作方法)######################
+    public function discardPipe(): bool
+    {
+        $handelClass = new Discard($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function execPipe()
+    {
+        $handelClass = new Exec($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function startPipe(): bool
+    {
+        $handelClass = new Multi($this);
+        $command = $handelClass->getCommand();
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    ######################事务操作方法)######################
 
 
     ######################脚本操作方法(待测试)######################
@@ -2140,7 +2187,7 @@ class Redis
     ######################脚本操作方法(待测试)######################
 
 
-######################服务器操作方法######################
+    ######################服务器操作方法######################
 
     public function bgRewriteAof()
     {
@@ -2517,7 +2564,6 @@ class Redis
     {
         $this->monitorStop = $monitorStop;
     }
-
 
     public function role()
     {

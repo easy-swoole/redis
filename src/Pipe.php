@@ -9,10 +9,10 @@
 namespace EasySwoole\Redis;
 
 
-class RedisTransaction
+class Pipe
 {
     protected $commandLog = [];
-    protected $isTransaction = false;
+    protected $isStartPipe = false;
 
     const IGNORE_COMMAND = [
         'discard',
@@ -38,7 +38,7 @@ class RedisTransaction
         $this->commandLog = $commandLog;
     }
 
-    function addCommand($command)
+    public function addCommand($command)
     {
         $this->commandLog[] = $command;
     }
@@ -46,16 +46,17 @@ class RedisTransaction
     /**
      * @return bool
      */
-    public function isTransaction(): bool
+    public function isStartPipe(): bool
     {
-        return $this->isTransaction;
+        return $this->isStartPipe;
     }
 
     /**
-     * @param bool $isTransaction
+     * @param bool $isStartPipe
      */
-    public function setIsTransaction(bool $isTransaction): void
+    public function setIsStartPipe(bool $isStartPipe): void
     {
-        $this->isTransaction = $isTransaction;
+        $this->isStartPipe = $isStartPipe;
     }
+
 }
