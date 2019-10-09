@@ -961,14 +961,14 @@ class RedisTest extends TestCase
         $data = $redis->zRangeByLex($key[0], '-', '+');
         $this->assertEquals(3, count($data));
 
-        $data = $redis->zRangeByScore($key[0], 2, 3, true);
+        $data = $redis->zRangeByScore($key[0], 2, 3, ['withScores' => true, 'limit' => array(0, 2)]);
 
         $this->assertEquals([
             $member[1] => $score[1],
             $member[2] => $score[2],
         ], $data);
 
-        $data = $redis->zRangeByScore($key[0], 2, 3, false);
+        $data = $redis->zRangeByScore($key[0], 2, 3, ['withScores' => false, 'limit' => array(0, 2)]);
         $this->assertEquals([
             $member[1],
             $member[2],
@@ -1093,7 +1093,7 @@ class RedisTest extends TestCase
         $redis->del($key[1]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
         $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
-        $data = $redis->zInTerStore($key[2], 2, [$key[0], $key[1]]);
+        $data = $redis->zInTerStore($key[2], [$key[0], $key[1]],[1,2]);
         $this->assertEquals(1, $data);
 
         $data = $redis->zLexCount($key[0], '-', '+');
@@ -1118,15 +1118,15 @@ class RedisTest extends TestCase
         $data = $redis->zRangeByLex($key[0], '-', '+');
         $this->assertEquals(3, count($data));
 
-        $data = $redis->zRangeByScore($key[0], 2, 3, true);
 
+        $data = $redis->zRangeByScore($key[0], 2, 3, ['withScores' => true, 'limit' => array(0, 2)]);
         $this->assertEquals([
             $member[1] => $score[1],
             $member[2] => $score[2],
         ], $data);
 
-        $data = $redis->zRangeByScore($key[0], 2, 3, false);
-        $this->assertEquals([
+
+        $data = $redis->zRangeByScore($key[0], 2, 3, ['withScores' => false, 'limit' => array(0, 2)]);  $this->assertEquals([
             $member[1],
             $member[2],
         ], $data);

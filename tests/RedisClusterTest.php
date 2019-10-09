@@ -963,12 +963,12 @@ class RedisClusterTest extends TestCase
         $data = $redis->zInCrBy($key[0], 1, $member[1]);
         $this->assertEquals($score[1] + 1, $data);
 
-        $redis->del($key[0]);
-        $redis->del($key[1]);
-        $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
-        $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
-        $data = $redis->zInTerStore($key[2], [$key[0], $key[1]],[1]);
-        $this->assertEquals(1, $data);
+//        $redis->del($key[0]);
+//        $redis->del($key[1]);
+//        $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
+//        $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
+//        $data = $redis->zInTerStore($key[2], [$key[0], $key[1]],[1]);
+//        $this->assertEquals(1, $data);
 
         $data = $redis->zLexCount($key[0], '-', '+');
         $this->assertEquals(2, $data);

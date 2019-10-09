@@ -1570,7 +1570,6 @@ class Redis
     {
         $handelClass = new ZInTerStore($this);
         $command = $handelClass->getCommand($destination, $keys, $weights, $aggregate);
-var_dump($command);
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -1626,10 +1625,23 @@ var_dump($command);
         return $handelClass->getData($recv);
     }
 
-    public function zRangeByScore($key, $min, $max, $withScores = false, ...$data)
+    /**
+     * zRangeByScore
+     * @param       $key
+     * @param       $min
+     * @param       $max
+     * @param   array  $options Two options are available:
+     *                          - withScores => TRUE,
+     *                          - and limit => array($offset, $count)
+     * @return bool|string
+     * @throws RedisException
+     * @author Tioncico
+     * Time: 9:38
+     */
+    public function zRangeByScore($key, $min, $max, array $options)
     {
         $handelClass = new ZRangeByScore($this);
-        $command = $handelClass->getCommand($key, $min, $max, $withScores, ...$data);
+        $command = $handelClass->getCommand($key, $min, $max, $options);
 
         if (!$this->sendCommand($command)) {
             return false;

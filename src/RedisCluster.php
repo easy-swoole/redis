@@ -4,6 +4,7 @@
 namespace EasySwoole\Redis;
 
 
+use EasySwoole\Redis\CommandHandel\Auth;
 use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterAddSlots;
 use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterCountFailureReports;
 use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterCountKeySinSlot;
