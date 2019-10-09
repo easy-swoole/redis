@@ -1,9 +1,7 @@
 <?php
 namespace EasySwoole\Redis\CommandHandel;
 
-use EasySwoole\Redis\CommandConst;
-use EasySwoole\Redis\Redis;
-use EasySwoole\Redis\RedisTransaction;
+use EasySwoole\Redis\Pipe;
 use EasySwoole\Redis\Response;
 
 class StartPipe extends AbstractCommandHandel
@@ -12,16 +10,14 @@ class StartPipe extends AbstractCommandHandel
 
 	public function handelCommandData(...$data)
 	{
-		$command = [CommandConst::MULTI];
-		$commandData = array_merge($command,$data);
-		return $commandData;
+		return true;
 	}
 
 
 	public function handelRecv(Response $recv)
 	{
-	    $this->redis->setTransaction(new RedisTransaction());
-	    $this->redis->getTransaction()->setIsTransaction(true);
+	    $this->redis->setPipe(new Pipe());
+	    $this->redis->getPipe()->setIsStartPipe(true);
 		return true;
 	}
 }

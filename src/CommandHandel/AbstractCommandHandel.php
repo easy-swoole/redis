@@ -10,6 +10,7 @@ namespace EasySwoole\Redis\CommandHandel;
 
 
 use EasySwoole\Redis\Config\RedisConfig;
+use EasySwoole\Redis\Pipe;
 use EasySwoole\Redis\Redis;
 use EasySwoole\Redis\RedisTransaction;
 use EasySwoole\Redis\Response;
@@ -26,7 +27,16 @@ Abstract class AbstractCommandHandel
 
     function getCommand(...$data)
     {
-        return $this->handelCommandData(...$data);
+        $commandData = $this->handelCommandData(...$data);
+        //开启了管道
+        if ($this->redis->getPipe() instanceof Pipe && $this->redis->getPipe()->isStartPipe() == true) {
+            $this->redis->getPipe()->addCommand([$this->commandName, $commandData]);
+            //事务命令忽略
+            if (!in_array(strtolower($this->commandName), Pipe::IGNORE_COMMAND)) {
+                return ['PIPE'];
+            }
+        }
+        return $commandData;
     }
 
     function getData(Response $recv)
@@ -39,7 +49,16 @@ Abstract class AbstractCommandHandel
                 return 'QUEUED';
             }
         }
-        if ($recv->getStatus()!=$recv::STATUS_OK){
+
+        //开启了管道
+        if ($this->redis->getPipe() instanceof Pipe && $this->redis->getPipe()->isStartPipe() == true) {
+            //事务命令忽略
+            if (!in_array(strtolower($this->commandName), Pipe::IGNORE_COMMAND)) {
+                return 'PIPE';
+            }
+        }
+
+        if ($recv->getStatus() != $recv::STATUS_OK) {
             $this->redis->setErrorType($recv->getErrorType());
             $this->redis->setErrorMsg($recv->getMsg());
             return false;
