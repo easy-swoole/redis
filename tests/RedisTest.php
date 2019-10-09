@@ -1229,10 +1229,10 @@ class RedisTest extends TestCase
         $this->assertEquals(1, $data);
 
         $redis->pfAdd($key[1], [1, 2, 2, 3, 3]);
-        $data = $redis->pfCount($key[0], $key[1]);
+        $data = $redis->pfCount([$key[0], $key[1]]);
         $this->assertEquals(3, $data);
 
-        $data = $redis->pfMerge($key[2], $key[0], $key[1]);
+        $data = $redis->pfMerge($key[2], [$key[0], $key[1]]);
         $this->assertEquals(1, $data);
     }
 
