@@ -1788,10 +1788,10 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    public function zUnionStore($destination, $keyNum, $key, ...$data)
+    public function zUnionStore($destination,array $keys, array $weights = [], $aggregate = 'SUM')
     {
         $handelClass = new ZUnionStore($this);
-        $command = $handelClass->getCommand($destination, $keyNum, $key, ...$data);
+        $command = $handelClass->getCommand($destination, $keys, $weights, $aggregate);
 
         if (!$this->sendCommand($command)) {
             return false;

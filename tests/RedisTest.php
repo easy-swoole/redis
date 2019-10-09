@@ -107,10 +107,10 @@ class RedisTest extends TestCase
 
         $redis->expire($key, 1);
         $data = $redis->pTTL($key);
-        $this->assertLessThanOrEqual(1000,$data);
+        $this->assertLessThanOrEqual(1000, $data);
 
         $data = $redis->ttl($key);
-        $this->assertLessThanOrEqual(1,$data);
+        $this->assertLessThanOrEqual(1, $data);
 
         $data = $redis->randomKey();
         $this->assertTrue(!!$data);
@@ -937,7 +937,7 @@ class RedisTest extends TestCase
         $redis->del($key[1]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
         $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
-        $data = $redis->zInTerStore($key[2], [$key[0], $key[1]],[1,2]);
+        $data = $redis->zInTerStore($key[2], [$key[0], $key[1]], [1, 2]);
         $this->assertEquals(1, $data);
 
         $data = $redis->zLexCount($key[0], '-', '+');
@@ -1043,7 +1043,8 @@ class RedisTest extends TestCase
         $redis->del($key[2]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
         $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
-        $data = $redis->zUnionStore($key[2], 2, $key[1], $key[0]);
+
+        $data = $redis->zUnionStore($key[2], [$key[1], $key[0]]);
         $this->assertEquals(3, $data);
     }
 
@@ -1093,7 +1094,7 @@ class RedisTest extends TestCase
         $redis->del($key[1]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
         $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
-        $data = $redis->zInTerStore($key[2], [$key[0], $key[1]],[1,2]);
+        $data = $redis->zInTerStore($key[2], [$key[0], $key[1]], [1, 2]);
         $this->assertEquals(1, $data);
 
         $data = $redis->zLexCount($key[0], '-', '+');
@@ -1126,7 +1127,8 @@ class RedisTest extends TestCase
         ], $data);
 
 
-        $data = $redis->zRangeByScore($key[0], 2, 3, ['withScores' => false, 'limit' => array(0, 2)]);  $this->assertEquals([
+        $data = $redis->zRangeByScore($key[0], 2, 3, ['withScores' => false, 'limit' => array(0, 2)]);
+        $this->assertEquals([
             $member[1],
             $member[2],
         ], $data);
@@ -1200,7 +1202,7 @@ class RedisTest extends TestCase
         $redis->del($key[2]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
         $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
-        $data = $redis->zUnionStore($key[2], 2, $key[1], $key[0]);
+        $data = $redis->zUnionStore($key[2], [$key[1], $key[0]],[1,2]);
         $this->assertEquals(3, $data);
     }
 
@@ -1299,26 +1301,26 @@ class RedisTest extends TestCase
 
         $data = $redis->multi();
         $this->assertTrue($data);
-        $this->assertEquals(true,$redis->getTransaction()->isTransaction());
+        $this->assertEquals(true, $redis->getTransaction()->isTransaction());
         $redis->del('ha');
-        $data = $redis->hset('ha','a', 1);
-        $this->assertEquals('QUEUED',$data);
-        $data = $redis->hset('ha','b', '2');
-        $this->assertEquals('QUEUED',$data);
-        $data = $redis->hset('ha','c', '3');
-        $this->assertEquals('QUEUED',$data);
+        $data = $redis->hset('ha', 'a', 1);
+        $this->assertEquals('QUEUED', $data);
+        $data = $redis->hset('ha', 'b', '2');
+        $this->assertEquals('QUEUED', $data);
+        $data = $redis->hset('ha', 'c', '3');
+        $this->assertEquals('QUEUED', $data);
         $data = $redis->hGetAll('ha');
-        $this->assertEquals('QUEUED',$data);
+        $this->assertEquals('QUEUED', $data);
         $data = $redis->exec();
-        $this->assertEquals(['a'=>1,'b'=>2,'c'=>3],$data[4]);
-        $this->assertEquals(false,$redis->getTransaction()->isTransaction());
+        $this->assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $data[4]);
+        $this->assertEquals(false, $redis->getTransaction()->isTransaction());
 
         $redis->multi();
-        $this->assertEquals(true,$redis->getTransaction()->isTransaction());
+        $this->assertEquals(true, $redis->getTransaction()->isTransaction());
         $data = $redis->discard();
         $this->assertEquals(true, $data);
-        $this->assertEquals(false,$redis->getTransaction()->isTransaction());
-        $data = $redis->watch('a','b','c');
+        $this->assertEquals(false, $redis->getTransaction()->isTransaction());
+        $data = $redis->watch('a', 'b', 'c');
         $data = $redis->unwatch();
         $this->assertEquals(1, $data);
     }
@@ -1467,28 +1469,29 @@ class RedisTest extends TestCase
      * @author tioncico
      * Time: 下午6:11
      */
-    function testGeohash(){
+    function testGeohash()
+    {
         $redis = $this->redis;
-        $key='testGeohash';
+        $key = 'testGeohash';
 
         $redis->del($key);
-        $data = $redis->geoAdd($key,'118.6197800000','24.88849','user1','118.6197800000','24.88859','user2','114.8197800000','25.88849','user3','118.8197800000','22.88849','user4');
+        $data = $redis->geoAdd($key, '118.6197800000', '24.88849', 'user1', '118.6197800000', '24.88859', 'user2', '114.8197800000', '25.88849', 'user3', '118.8197800000', '22.88849', 'user4');
         $this->assertEquals(4, $data);
 
-        $data = $redis->geoDist($key,'user1','user2');
+        $data = $redis->geoDist($key, 'user1', 'user2');
         $this->assertGreaterThan(10, $data);
 
-        $data = $redis->geoHash($key,'user1','user2');
+        $data = $redis->geoHash($key, 'user1', 'user2');
         $this->assertIsArray($data);
 
-        $data = $redis->geoPos($key,'user1','user2');
+        $data = $redis->geoPos($key, 'user1', 'user2');
         $this->assertIsArray($data);
 
-        $data = $redis->geoRadius($key,'118.6197800000','24.88849',100,'m',false,false,false,'desc');
-        $this->assertEquals(['user2','user1'], $data);
+        $data = $redis->geoRadius($key, '118.6197800000', '24.88849', 100, 'm', false, false, false, 'desc');
+        $this->assertEquals(['user2', 'user1'], $data);
 
-        $data = $redis->geoRadiusByMember($key,'user1',100,'m',false,false,false,'desc');
-        $this->assertEquals(['user2','user1'], $data);
+        $data = $redis->geoRadiusByMember($key, 'user1', 100, 'm', false, false, false, 'desc');
+        $this->assertEquals(['user2', 'user1'], $data);
 
     }
 

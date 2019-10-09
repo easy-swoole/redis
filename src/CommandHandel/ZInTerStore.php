@@ -17,14 +17,14 @@ class ZInTerStore extends AbstractCommandHandel
         $destination = array_shift($data);
         $keys = array_shift($data);
         $weights = array_shift($data);
+        $aggregate = array_shift($data);
         $keysCount = count($keys);
         $weightsCount = count($weights);
-        $aggregate = array_shift($data);
         if ($weightsCount>0&&$keysCount !== $weightsCount) {
             throw new RedisClusterException('WEIGHTS and keys array should be the same size!');
         }
 
-        $command = [CommandConst::ZINTERSTORE, $destination, count($keys)];
+        $command = [CommandConst::ZINTERSTORE, $destination, $keysCount];
         foreach ($keys as $k => $key) {
             $command[] = $key;
         }
