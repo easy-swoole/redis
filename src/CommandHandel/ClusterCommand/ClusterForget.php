@@ -20,8 +20,8 @@ class ClusterForget extends AbstractCommandHandel
     }
 
 
-    public function handelRecv(Response $recv)
+    public function handelRecv(Response $recv):bool
     {
-        return $recv->getData();
+        return true;
     }
 }

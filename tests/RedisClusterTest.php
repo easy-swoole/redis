@@ -48,30 +48,68 @@ class RedisClusterTest extends TestCase
     public function testAuth()
     {
         if (!empty(REDIS_AUTH)) {
-            $this->assertTrue($this->redis->auth(REDIS_AUTH));
+            $this->assertTrue($this->redis->auth(REDIS_CLUSTER_AUTH));
         }
         $this->assertTrue(true);
-    }
-
-    function testtest()
-    {
-        $key = 'test123213Key';
-        $redis = $this->redis;
-        $data = $redis->set($key, 123);
-        var_dump($data);
-        $this->assertTrue(!!$data);
-
-        $data = $redis->get($key);
-        var_dump($data);
     }
 
     function testCluster()
     {
         $redis = $this->redis;
+
         $data = $redis->clusterNodes();
         $this->assertIsArray($data);
+
         $data = $redis->clusterKeySlot('key1');
         $this->assertGreaterThan(0, $data);
+
+//        $data = $redis->clusterDelSlots([1,2,3]);
+//        $this->assertTrue($data);
+//        $data = $redis->clusterAddSlots([1,3]);
+//        $this->assertTrue($data);
+        $data = $redis->clusterCountFailureReports(current($redis->getNodeList())['name']);
+        $this->assertIsInt($data);
+
+        $data = $redis->clusterCountKeySinSlot(1);
+        $this->assertIsInt($data);
+
+        $data = $redis->clusterFailOver('FORCE');
+        $this->assertFalse($data);
+
+        $redis->tryConnectServerList();
+        $data = $redis->clusterForget(array_column(($redis->getNodeList()),'name')[1]);
+        var_dump($redis->getErrorMsg());
+        $this->assertTrue($data);
+
+        $redis->set('a',1);
+        $data = $redis->clusterKeySlot('a');
+        $data = $redis->clusterGetKeySinSlot($data,1);
+        $this->assertIsArray($data);
+        $data = $redis->clusterInfo();
+        var_dump($data);return;
+        $data = $redis->clusterKeySlot();
+        var_dump($data);return;
+        $data = $redis->clusterMeet();
+        var_dump($data);return;
+        $data = $redis->clusterReplicate();
+        var_dump($data);return;
+        $data = $redis->clusterReset();
+        var_dump($data);return;
+        $data = $redis->clusterSaveConfig();
+        var_dump($data);return;
+        $data = $redis->clusterSetConfigEpoch();
+        var_dump($data);return;
+        $data = $redis->clusterSetSlot();
+        var_dump($data);return;
+        $data = $redis->clusterSlaves();
+        var_dump($data);return;
+        $data = $redis->clusterSlots();
+        var_dump($data);return;
+        $data = $redis->readonly();
+        var_dump($data);return;
+        $data = $redis->readwrite();
+        var_dump($data);return;
+
 
     }
 

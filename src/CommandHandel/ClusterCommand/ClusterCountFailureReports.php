@@ -18,7 +18,7 @@ class ClusterCountFailureReports extends AbstractCommandHandel
         return $commandData;
     }
 
-    public function handelRecv(Response $recv):bool 
+    public function handelRecv(Response $recv)
     {
         return $recv->getData();
     }

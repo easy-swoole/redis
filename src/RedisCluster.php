@@ -155,6 +155,7 @@ class RedisCluster extends Redis
 
     protected function nodeListInit($nodeList)
     {
+        $nodeListArr = [];
         foreach ($nodeList as $node) {
             if (isset($this->nodeList[$node['name']])) {
                 $this->nodeList[$node['name']] = $node;
@@ -162,13 +163,15 @@ class RedisCluster extends Redis
                 $this->nodeList[$node['name']] = $node;
                 $this->nodeClientList[$node['name']] = new ClusterClient($node['host'], $node['port']);
             }
+            $nodeListArr[$node['name']] = $node;
         }
+        $this->nodeList = $nodeListArr;
     }
 
-    protected function tryConnectServerList()
+    public function tryConnectServerList()
     {
         foreach ($this->getNodeClientList() as $client) {
-            $result = $client->connect();
+            $result = $this->clientConnect($client);
             if ($result === false) {
                 continue;
             }
@@ -262,7 +265,7 @@ class RedisCluster extends Redis
         return $this->nodeList;
     }
 
-    public function clientAuth(ClusterClient $client,$password): bool
+     function clientAuth(ClusterClient $client,$password): bool
     {
         $handelClass = new Auth($this);
         $command = $handelClass->getCommand($password);
@@ -296,11 +299,11 @@ class RedisCluster extends Redis
         return $handelClass->getData($recv);
     }
 
-    public function clusterAddSlots($slot)
+    public function clusterAddSlots($slots)
     {
         $client = $this->getClient();
         $handelClass = new ClusterAddSlots($this);
-        $command = $handelClass->getCommand($slot);
+        $command = $handelClass->getCommand($slots);
         if (!$this->sendCommandByClient($command, $client)) {
             return false;
         }
@@ -356,11 +359,11 @@ class RedisCluster extends Redis
         return $handelClass->getData($recv);
     }
 
-    public function clusterFailOver($slot)
+    public function clusterFailOver($option=null)
     {
         $client = $this->getClient();
         $handelClass = new ClusterFailOver($this);
-        $command = $handelClass->getCommand($slot);
+        $command = $handelClass->getCommand($option);
         if (!$this->sendCommandByClient($command, $client)) {
             return false;
         }
@@ -653,7 +656,7 @@ class RedisCluster extends Redis
     ###################### redis集群兼容方法 ######################
 
     ###################### 发送接收tcp流数据 ######################
-    protected function sendCommandByClient(array $commandList, ClusterClient $client): bool
+    public function sendCommandByClient(array $commandList, ClusterClient $client): bool
     {
         $client = $client;
         while ($this->tryConnectTimes <= $this->config->getReconnectTimes()) {

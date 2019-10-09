@@ -13,7 +13,7 @@ class ClusterInfo extends AbstractCommandHandel
 
     public function handelCommandData(...$data)
     {
-        $command = [CommandConst::CLUSTER, 'FORGET'];
+        $command = [CommandConst::CLUSTER, 'INFO'];
         $commandData = array_merge($command);
         return $commandData;
     }
