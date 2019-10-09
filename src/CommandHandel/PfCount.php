@@ -13,10 +13,13 @@ class PfCount extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
-
-
-		$command = [CommandConst::PFCOUNT,$key];
-		$commandData = array_merge($command,$data);
+        if (is_array($key)){
+            $command = [CommandConst::PFCOUNT];
+            $commandData = array_merge($command,$key);
+        }else{
+            $command = [CommandConst::PFCOUNT,$key];
+            $commandData = $command;
+        }
 		return $commandData;
 	}
 

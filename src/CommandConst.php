@@ -162,7 +162,6 @@ class CommandConst
     const BGREWRITEAOF = 'BGREWRITEAOF';//异步执行一个 AOF（AppendOnly File） 文件重写操作
     const BGSAVE = 'BGSAVE';//在后台异步保存当前数据库的数据到磁盘
     const CLIENT = 'CLIENT';//关闭客户端连接
-    const CLUSTER = 'CLUSTER';//获取集群节点的映射数组
     const COMMAND = 'COMMAND';//获取 Redis 命令详情数组
     const COMMAND_COUNT = 'COMMAND COUNT';//获取 Redis 命令详情数组
     const TIME = 'TIME';//返回当前服务器时间
@@ -189,4 +188,8 @@ class CommandConst
     const GEORADIUS = 'GEORADIUS';
     const GEORADIUSBYMEMBER = 'GEORADIUSBYMEMBER';
 
+
+    const CLUSTER = 'CLUSTER';//获取集群节点的映射数组
+    const READONLY = 'READONLY';//集群相关命令
+    const READWRITE = 'READWRITE';//集群相关命令
 }

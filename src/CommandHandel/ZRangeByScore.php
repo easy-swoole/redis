@@ -17,15 +17,20 @@ class ZRangeByScore extends AbstractCommandHandel
         $key = array_shift($data);
         $min = array_shift($data);
         $max = array_shift($data);
-        $withScores = array_shift($data);
-        $this->withScores = $withScores;
-        if ($withScores == true) {
+        $options = array_shift($data);
+        $this->withScores = $options['withScores']??false;
+        if ($this->withScores == true) {
             $command = [CommandConst::ZRANGEBYSCORE, $key, $min, $max, 'WITHSCORES',];
         } else {
             $command = [CommandConst::ZRANGEBYSCORE, $key, $min, $max,];
         }
+        if (is_array($options['limit'])){
+            $command[] = 'LIMIT';
+            $command[]= $options['limit'][0];
+            $command[]= $options['limit'][1];
+        }
 
-        $commandData = array_merge($command, $data);
+        $commandData = array_merge($command);
         return $commandData;
     }
 

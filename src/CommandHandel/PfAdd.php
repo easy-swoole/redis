@@ -13,10 +13,10 @@ class PfAdd extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
-
+        $elements=array_shift($data);
 
 		$command = [CommandConst::PFADD,$key];
-		$commandData = array_merge($command,$data);
+		$commandData = array_merge($command,$elements);
 		return $commandData;
 	}
 

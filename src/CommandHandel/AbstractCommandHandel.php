@@ -38,7 +38,11 @@ Abstract class AbstractCommandHandel
                 return 'QUEUED';
             }
         }
-
+        if ($recv->getStatus()!=$recv::STATUS_OK){
+            $this->redis->setErrorType($recv->getErrorType());
+            $this->redis->setErrorMsg($recv->getMsg());
+            return false;
+        }
         return $this->handelRecv($recv);
     }
 
