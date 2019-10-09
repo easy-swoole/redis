@@ -5,3 +5,59 @@
 ```
 ./vendor/bin/co-phpunit tests
 ```
+
+## 支持方法
+目前,该redis客户端组件,已经支持除去脚本外的所有方法(大约160个方法):  
+
+- 连接方法(cluster)
+- 集群方法(connection)
+- geohash
+- 哈希(hash)
+- 键(keys)
+- 列表(lists)
+- 订阅/发布(pub/sub)
+- 服务器(server)
+- 字符串(string)
+- 有序集合(sorted sets)
+- 集合 (sets)
+- 事务 (transaction)
+
+> 由于redis的命令较多,可能漏掉1,2个命令
+
+
+## redis使用示例
+```php
+<?php
+include "../vendor/autoload.php";
+go(function (){
+    $redis = new \EasySwoole\Redis\Redis(new \EasySwoole\Redis\Config\RedisConfig([
+        'host' => '127.0.0.1',
+        'port' => '6379',
+        'auth' => 'easyswoole',
+        'serialize' => \EasySwoole\Redis\Config\RedisConfig::SERIALIZE_NONE
+    ]));
+    var_dump($redis->set('a',1));
+    var_dump($redis->get('a'));
+});
+```
+
+## redis集群使用示例
+```php
+<?php
+include "../vendor/autoload.php";
+go(function () {
+    $redis = new \EasySwoole\Redis\RedisCluster(new \EasySwoole\Redis\Config\RedisClusterConfig([
+        ['172.16.253.156', 9001],
+        ['172.16.253.156', 9002],
+        ['172.16.253.156', 9003],
+        ['172.16.253.156', 9004],
+    ], [
+        'auth' => '',
+        'serialize' => \EasySwoole\Redis\Config\RedisConfig::SERIALIZE_PHP
+    ]));
+    var_dump($redis->set('a',1));
+    var_dump($redis->get('a'));
+    var_dump($redis->clusterKeySlot('a'));
+
+});
+```
