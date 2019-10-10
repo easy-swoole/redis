@@ -1410,6 +1410,45 @@ class RedisClusterTest extends TestCase
     }
 
     /**
+     * 管道测试
+     * testTransaction
+     * @author tioncico
+     * Time: 下午5:40
+     */
+    function testPipe()
+    {
+        $this->assertEquals(1, 1);
+
+        $redis = $this->redis;
+        $redis->get('a');
+        $data = $redis->startPipe();
+        $this->assertTrue($data);
+        $this->assertEquals(true, $redis->getPipe()->isStartPipe());
+        $redis->del('ha');
+        $data = $redis->hset('ha', "a", "a\r\nb\r\nc");
+        $this->assertEquals('PIPE', $data);
+        $data = $redis->hset('ha', 'b', '2');
+        $this->assertEquals('PIPE', $data);
+        $data = $redis->hset('ha', 'c', '3');
+        $this->assertEquals('PIPE', $data);
+        $data = $redis->hGetAll('ha');
+        $this->assertEquals('PIPE', $data);
+        $data = $redis->execPipe();
+
+        $this->assertEquals(['a' => "a\r\nb\r\nc", 'b' => 2, 'c' => 3], $data[4]);
+        $this->assertEquals(false, $redis->getPipe()->isStartPipe());
+
+        $redis->startPipe();
+        $this->assertEquals(true, $redis->getPipe()->isStartPipe());
+        $data = $redis->set("a",'1');
+        $this->assertTrue($data);
+        $this->assertEquals('Set',($redis->getPipe()->getCommandLog()[0][0]));
+        $data = $redis->discardPipe();
+        $this->assertEquals(true, $data);
+        $this->assertEquals(false, $redis->getPipe()->isStartPipe());
+
+    }
+    /**
      * 脚本执行测试
      * testScript
      * @author tioncico

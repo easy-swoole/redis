@@ -30,8 +30,6 @@ class ClientTest extends TestCase
         }
         $this->client = $client;
     }
-
-
     function testRecv()
     {
         $this->client->sendCommand(['set', 'a', '1']);

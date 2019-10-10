@@ -21,8 +21,10 @@ use EasySwoole\Redis\CommandHandel\Decr;
 use EasySwoole\Redis\CommandHandel\DecrBy;
 use EasySwoole\Redis\CommandHandel\Del;
 use EasySwoole\Redis\CommandHandel\Discard;
+use EasySwoole\Redis\CommandHandel\DiscardPipe;
 use EasySwoole\Redis\CommandHandel\Dump;
 use EasySwoole\Redis\CommandHandel\Exec;
+use EasySwoole\Redis\CommandHandel\ExecPipe;
 use EasySwoole\Redis\CommandHandel\Exists;
 use EasySwoole\Redis\CommandHandel\Expire;
 use EasySwoole\Redis\CommandHandel\ExpireAt;
@@ -98,6 +100,7 @@ use EasySwoole\Redis\CommandHandel\SMove;
 use EasySwoole\Redis\CommandHandel\SPop;
 use EasySwoole\Redis\CommandHandel\SRandMemBer;
 use EasySwoole\Redis\CommandHandel\SRem;
+use EasySwoole\Redis\CommandHandel\StartPipe;
 use EasySwoole\Redis\CommandHandel\StrLen;
 use EasySwoole\Redis\CommandHandel\Subscribe;
 use EasySwoole\Redis\CommandHandel\SUnion;
@@ -178,7 +181,15 @@ class Redis
      */
     protected $monitorStop = true;
 
+    /**
+     * @var null 事务
+     */
     protected $transaction = null;
+
+    /**
+     * @var null 管道
+     */
+    protected $pipe = null;
 
     public function __construct(RedisConfig $config)
     {
@@ -1852,7 +1863,7 @@ class Redis
     public function pfMerge($deStKey, array $sourceKeys)
     {
         $handelClass = new PfMerge($this);
-        $command = $handelClass->getCommand($deStKey,$sourceKeys);
+        $command = $handelClass->getCommand($deStKey, $sourceKeys);
 
         if (!$this->sendCommand($command)) {
             return false;
@@ -1866,7 +1877,7 @@ class Redis
 
     ######################HyperLogLog操作方法######################
 
-    ######################发布订阅操作方法(待测试)######################
+    ######################发布订阅操作方法######################
 
     public function pSubscribe($callback, $pattern, ...$patterns)
     {
@@ -1974,10 +1985,9 @@ class Redis
         return $this->subscribeStop;
     }
 
-    ######################发布订阅操作方法(待测试)######################
+    ######################发布订阅操作方法######################
 
-    ######################事务操作方法(待测试)######################
-
+    ######################事务操作方法)######################
     public function discard(): bool
     {
         $handelClass = new Discard($this);
@@ -2052,7 +2062,80 @@ class Redis
         }
         return $handelClass->getData($recv);
     }
-    ######################事务操作方法(待测试)######################
+
+    public function getTransaction(): ?RedisTransaction
+    {
+        return $this->transaction;
+    }
+
+    public function setTransaction(?RedisTransaction $transaction): void
+    {
+        if (!$this->getTransaction() instanceof RedisTransaction) {
+            $this->transaction = $transaction;
+        }
+    }
+
+    ######################事务操作方法######################
+
+    ######################管道操作方法######################
+    public function discardPipe(): bool
+    {
+        $handelClass = new DiscardPipe($this);
+        //模拟命令,不实际执行
+        $handelClass->getCommand();
+        //模拟获取服务器数据,不实际执行
+        $recv = new Response();
+        $recv->setStatus($recv::STATUS_OK);
+        $recv->setData(true);
+        return $handelClass->getData($recv);
+    }
+
+    public function execPipe()
+    {
+        $handelClass = new ExecPipe($this);
+        $commandData = $handelClass->getCommand();
+        //发送原始tcp数据
+        if (!$this->client->send($commandData)) {
+            return false;
+        }
+        //模拟获取服务器数据,不实际执行
+        $recv = new Response();
+        $recv->setStatus($recv::STATUS_OK);
+        $recv->setData(true);
+        return $handelClass->getData($recv);
+    }
+
+    public function startPipe(): bool
+    {
+        $handelClass = new StartPipe($this);
+        //模拟命令,不实际执行
+        $handelClass->getCommand();
+        //模拟获取服务器数据,不实际执行
+        $recv = new Response();
+        $recv->setStatus($recv::STATUS_OK);
+        $recv->setData(true);
+        return $handelClass->getData($recv);
+    }
+
+    /**
+     * @return null
+     */
+    public function getPipe(): ?Pipe
+    {
+        return $this->pipe;
+    }
+
+    /**
+     * @param  $pipe
+     */
+    public function setPipe(Pipe $pipe): void
+    {
+        if (!$this->getPipe() instanceof Pipe) {
+            $this->pipe = $pipe;
+        }
+    }
+
+    ######################管道操作方法######################
 
 
     ######################脚本操作方法(待测试)######################
@@ -2140,7 +2223,7 @@ class Redis
     ######################脚本操作方法(待测试)######################
 
 
-######################服务器操作方法######################
+    ######################服务器操作方法######################
 
     public function bgRewriteAof()
     {
@@ -2518,7 +2601,6 @@ class Redis
         $this->monitorStop = $monitorStop;
     }
 
-
     public function role()
     {
         $handelClass = new Role($this);
@@ -2691,6 +2773,10 @@ class Redis
     ###################### 发送接收tcp流数据 ######################
     protected function sendCommand(array $com): bool
     {
+        //管道拦截
+        if ($this->getPipe() instanceof Pipe && $this->getPipe()->isStartPipe()) {
+            return true;
+        }
         while ($this->tryConnectTimes <= $this->config->getReconnectTimes()) {
             if ($this->connect()) {
                 if ($this->client->sendCommand($com)) {
@@ -2709,6 +2795,13 @@ class Redis
 
     public function recv($timeout = null): ?Response
     {
+        //管道拦截
+        if ($this->getPipe() instanceof Pipe && $this->getPipe()->isStartPipe()) {
+            $recv = new Response();
+            $recv->setData('PIPE');
+            $recv->setStatus($recv::STATUS_OK);
+            return $recv;
+        }
         $recv = $this->client->recv($timeout ?? $this->config->getTimeout());
         if ($recv->getStatus() == $recv::STATUS_ERR) {
             $this->errorType = $recv->getErrorType();
@@ -2796,18 +2889,6 @@ class Redis
     public function getConfig(): RedisConfig
     {
         return $this->config;
-    }
-
-    public function getTransaction(): ?RedisTransaction
-    {
-        return $this->transaction;
-    }
-
-    public function setTransaction(?RedisTransaction $transaction): void
-    {
-        if (!$this->getTransaction() instanceof RedisTransaction) {
-            $this->transaction = $transaction;
-        }
     }
 
 }
