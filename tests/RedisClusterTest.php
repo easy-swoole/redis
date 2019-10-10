@@ -1434,7 +1434,6 @@ class RedisClusterTest extends TestCase
         $data = $redis->hGetAll('ha');
         $this->assertEquals('PIPE', $data);
         $data = $redis->execPipe();
-
         $this->assertEquals(['a' => "a\r\nb\r\nc", 'b' => 2, 'c' => 3], $data[4]);
         $this->assertEquals(false, $redis->getPipe()->isStartPipe());
 
