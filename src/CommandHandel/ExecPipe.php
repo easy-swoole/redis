@@ -1,4 +1,5 @@
 <?php
+
 namespace EasySwoole\Redis\CommandHandel;
 
 use EasySwoole\Redis\CommandConst;
@@ -7,32 +8,40 @@ use EasySwoole\Redis\Response;
 
 class ExecPipe extends AbstractCommandHandel
 {
-	public $commandName = 'ExecPipe';
+    public $commandName = 'ExecPipe';
 
 
-	public function handelCommandData(...$data)
-	{
-		$command = [CommandConst::EXEC];
-		$commandData = array_merge($command,$data);
-		return $commandData;
-	}
+    public function handelCommandData(...$data)
+    {
+        $commandLog = $this->redis->getPipe()->getCommandLog();
+        $this->redis->getPipe()->setIsStartPipe(false);
+        $commandData = '';
+        foreach ($commandLog as $command) {
+            $argNum = count($command[1]);
+            $str = "*{$argNum}\r\n";
+            foreach ($command[1] as $value) {
+                $len = strlen($value);
+                $str = $str . '$' . "{$len}\r\n{$value}\r\n";
+            }
+
+            $commandData .= "{$str}";
+        }
+        return $commandData;
+    }
 
 
-	public function handelRecv(Response $recv)
-	{
-	    $data = $recv->getData();
-	    $commandLog = $this->redis->getTransaction()->getCommandLog();
-        $this->redis->getTransaction()->setCommandLog([]);
-        $this->redis->getTransaction()->setIsTransaction(false);
-	    foreach ($data as $k=>$value){
-	        $commandClassName = "\\EasySwoole\\Redis\\CommandHandel\\".array_shift($commandLog);
-	        $commandClass = new $commandClassName($this->redis);
-	        $response = new Response();
-            $response->setData($value);
-            $response->setStatus($response::STATUS_OK);
+    public function handelRecv(Response $recv)
+    {
+        $commandLog = $this->redis->getPipe()->getCommandLog();
+        $this->redis->getPipe()->setCommandLog([]);
+        $data = [];
+        foreach ($commandLog as $k => $command) {
+            $commandClassName = "\\EasySwoole\\Redis\\CommandHandel\\" . $command[0];
+            $commandClass = new $commandClassName($this->redis);
+            //获取返回tcp数据
+            $response = $this->redis->recv($this->redis->getConfig()->getTimeout());
             $data[$k] = $commandClass->getData($response);
         }
-
-		return $data;
-	}
+        return $data;
+    }
 }

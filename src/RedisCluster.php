@@ -25,6 +25,7 @@ use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterSlaves;
 use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterSlots;
 use EasySwoole\Redis\CommandHandel\ClusterCommand\Readonly;
 use EasySwoole\Redis\CommandHandel\ClusterCommand\Readwrite;
+use EasySwoole\Redis\CommandHandel\ExecPipe;
 use EasySwoole\Redis\CommandHandel\MGet;
 use EasySwoole\Redis\CommandHandel\MSet;
 use EasySwoole\Redis\CommandHandel\MSetNx;
@@ -193,7 +194,7 @@ class RedisCluster extends Redis
      * @author Tioncico
      * Time: 16:39
      */
-    protected function getClient($nodeKey = null): ClusterClient
+    public function getClient($nodeKey = null): ClusterClient
     {
         if ($nodeKey == null || !isset($this->nodeClientList[$nodeKey])) {
             foreach ($this->nodeClientList as $node) {
@@ -224,7 +225,7 @@ class RedisCluster extends Redis
      * @author tioncico
      * Time: 下午9:00
      */
-    protected function getMoveNodeId(Response $response)
+    public function getMoveNodeId(Response $response)
     {
         $data = explode(' ', $response->getMsg());
         $nodeId = $this->getSlotNodeId($data[1]);
@@ -234,7 +235,7 @@ class RedisCluster extends Redis
         return $nodeId;
     }
 
-    protected function getSlotNodeId($slotId)
+    public function getSlotNodeId($slotId)
     {
         foreach ($this->nodeList as $key => $node) {
             if (empty($node['slot'])) {
@@ -654,6 +655,27 @@ class RedisCluster extends Redis
         return $result;
     }
     ###################### redis集群兼容方法 ######################
+
+
+    ######################redis集群管道兼容方法######################
+
+    public function execPipe(?ClusterClient $client=null)
+    {
+        $handelClass = new ExecPipe($this);
+        $commandData = $handelClass->getCommand();
+        $client = $client??$this->getClient();
+        //发送原始tcp数据
+        if (!$client->send($commandData)) {
+            return false;
+        }
+        //模拟获取服务器数据,不实际执行
+        $recv = new Response();
+        $recv->setStatus($recv::STATUS_OK);
+        $recv->setData(true);
+        return $handelClass->getData($recv);
+    }
+
+    ######################redis集群管道兼容方法######################
 
     ###################### 发送接收tcp流数据 ######################
     public function sendCommandByClient(array $commandList, ClusterClient $client): bool

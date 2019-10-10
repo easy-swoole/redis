@@ -2093,8 +2093,11 @@ class Redis
     public function execPipe()
     {
         $handelClass = new ExecPipe($this);
-        //模拟命令,不实际执行
-        $handelClass->getCommand();
+        $commandData = $handelClass->getCommand();
+        //发送原始tcp数据
+        if (!$this->client->send($commandData)) {
+            return false;
+        }
         //模拟获取服务器数据,不实际执行
         $recv = new Response();
         $recv->setStatus($recv::STATUS_OK);
@@ -2131,7 +2134,6 @@ class Redis
             $this->pipe = $pipe;
         }
     }
-
 
     ######################管道操作方法######################
 

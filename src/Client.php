@@ -32,7 +32,7 @@ class Client
         return $this->client->connect($this->host, $this->port, $timeout);
     }
 
-    protected function send(string $data): bool
+    public function send(string $data): bool
     {
         return strlen($data) === $this->client->send($data);
     }

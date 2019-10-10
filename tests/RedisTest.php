@@ -1336,12 +1336,12 @@ class RedisTest extends TestCase
         $this->assertEquals(1, 1);
 
         $redis = $this->redis;
-
+        $redis->get('a');
         $data = $redis->startPipe();
         $this->assertTrue($data);
         $this->assertEquals(true, $redis->getPipe()->isStartPipe());
         $redis->del('ha');
-        $data = $redis->hset('ha', 'a', 1);
+        $data = $redis->hset('ha', "a", "a\r\nb\r\nc");
         $this->assertEquals('PIPE', $data);
         $data = $redis->hset('ha', 'b', '2');
         $this->assertEquals('PIPE', $data);
@@ -1349,19 +1349,20 @@ class RedisTest extends TestCase
         $this->assertEquals('PIPE', $data);
         $data = $redis->hGetAll('ha');
         $this->assertEquals('PIPE', $data);
-        var_dump($redis->getPipe()->getCommandLog());
-//        $data = $redis->exec();
-//        $this->assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $data[4]);
-//        $this->assertEquals(false, $redis->getTransaction()->isTransaction());
+        $data = $redis->execPipe();
 
-//        $redis->multi();
-//        $this->assertEquals(true, $redis->getTransaction()->isTransaction());
-//        $data = $redis->discard();
-//        $this->assertEquals(true, $data);
-//        $this->assertEquals(false, $redis->getTransaction()->isTransaction());
-//        $data = $redis->watch('a', 'b', 'c');
-//        $data = $redis->unwatch();
-//        $this->assertEquals(1, $data);
+        $this->assertEquals(['a' => "a\r\nb\r\nc", 'b' => 2, 'c' => 3], $data[4]);
+        $this->assertEquals(false, $redis->getPipe()->isStartPipe());
+
+        $redis->startPipe();
+        $this->assertEquals(true, $redis->getPipe()->isStartPipe());
+        $data = $redis->set("a",'1');
+        $this->assertTrue($data);
+        $this->assertEquals('Set',($redis->getPipe()->getCommandLog()[0][0]));
+        $data = $redis->discardPipe();
+        $this->assertEquals(true, $data);
+        $this->assertEquals(false, $redis->getPipe()->isStartPipe());
+
     }
 
     /**

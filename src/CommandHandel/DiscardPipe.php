@@ -1,4 +1,5 @@
 <?php
+
 namespace EasySwoole\Redis\CommandHandel;
 
 use EasySwoole\Redis\CommandConst;
@@ -7,21 +8,20 @@ use EasySwoole\Redis\Response;
 
 class DiscardPipe extends AbstractCommandHandel
 {
-	public $commandName = 'DiscardPipe';
+    public $commandName = 'DiscardPipe';
 
 
-	public function handelCommandData(...$data)
-	{
-		$command = [CommandConst::DISCARD];
-		$commandData = array_merge($command,$data);
-		return $commandData;
-	}
+    public function handelCommandData(...$data)
+    {
+
+        $this->redis->getPipe()->setIsStartPipe(false);
+        return true;
+    }
 
 
-	public function handelRecv(Response $recv)
-	{
-        $this->redis->getTransaction()->setCommandLog([]);
-        $this->redis->getTransaction()->setIsTransaction(false);
-		return true;
-	}
+    public function handelRecv(Response $recv)
+    {
+        $this->redis->getPipe()->setCommandLog([]);
+        return true;
+    }
 }
