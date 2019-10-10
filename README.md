@@ -9,8 +9,8 @@
 ## 支持方法
 目前,该redis客户端组件,已经支持除去脚本外的所有方法(目前支持了181个方法):  
 
-- 连接方法(cluster)
-- 集群方法(connection)
+- 连接方法(connection)
+- 集群方法(cluster)
 - geohash
 - 哈希(hash)
 - 键(keys)
