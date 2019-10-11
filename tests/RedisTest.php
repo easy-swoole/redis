@@ -455,7 +455,7 @@ class RedisTest extends TestCase
         $data = $redis->hLen($key);
         $this->assertEquals(count($field), $data);
 
-        $data = $redis->hMGet($key, $field[0], $field[1], $field[2]);
+        $data = $redis->hMGet($key, [$field[0], $field[1], $field[2]]);
         $this->assertEquals([1, 2, 3], $data);
 
         $data = $redis->hIncrBy($key, $field[4], 1);
@@ -567,7 +567,7 @@ class RedisTest extends TestCase
         $data = $redis->hLen($key);
         $this->assertEquals(count($field), $data);
 
-        $data = $redis->hMGet($key, $field[0], $field[1], $field[2]);
+        $data = $redis->hMGet($key, [$field[0], $field[1], $field[2]]);
         $this->assertEquals([1, 2, 3], $data);
 
         $data = $redis->hSetNx($key, $field[0], 1);

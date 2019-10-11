@@ -963,10 +963,10 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    public function hMGet($key, ...$field)
+    public function hMGet($key, array $hashKeys)
     {
         $handelClass = new HMGet($this);
-        $command = $handelClass->getCommand($key, ...$field);
+        $command = $handelClass->getCommand($key, $hashKeys);
 
         if (!$this->sendCommand($command)) {
             return false;
