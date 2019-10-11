@@ -15,7 +15,7 @@
 - 哈希(hash)
 - 键(keys)
 - 列表(lists)
-- 订阅/发布(pub/sub)
+- 发布/订阅(pub/sub)
 - 服务器(server)
 - 字符串(string)
 - 有序集合(sorted sets)
@@ -33,7 +33,7 @@ go(function (){
     $redis = new \EasySwoole\Redis\Redis(new \EasySwoole\Redis\Config\RedisConfig([
         'host' => '127.0.0.1',
         'port' => '6379',
-        'auth' => 'easyswoole',
+        'auth' => 'easyswoole'Default.xml,
         'serialize' => \EasySwoole\Redis\Config\RedisConfig::SERIALIZE_NONE
     ]));
     var_dump($redis->set('a',1));

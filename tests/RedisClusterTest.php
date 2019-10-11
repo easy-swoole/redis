@@ -295,7 +295,7 @@ class RedisClusterTest extends TestCase
         ]);
 //        var_dump($redis->getErrorMsg());
         $this->assertTrue($data);
-        $data = $redis->mGet($field[3], $field[2], $field[1]);
+        $data = $redis->mGet([$field[3], $field[2], $field[1]]);
         $this->assertEquals([$value[3], $value[2], $value[1]], $data);
 
 
@@ -398,7 +398,7 @@ class RedisClusterTest extends TestCase
             "{$field[4]}" => $value[4],
         ]);
         $this->assertTrue($data);
-        $data = $redis->mGet($field[3], $field[2], $field[1]);
+        $data = $redis->mGet([$field[3], $field[2], $field[1]]);
         $this->assertEquals([$value[3], $value[2], $value[1]], $data);
 
 

@@ -12,9 +12,14 @@ class MGet extends AbstractCommandHandel
 
 	public function handelCommandData(...$data)
 	{
-		$keys=array_shift($data);
-		$command = [CommandConst::MGET,$keys];
-		$commandData = array_merge($command,$data);
+        $keys=array_shift($data);
+        if (is_array($keys)){
+            $command = [CommandConst::MGET];
+            $commandData = array_merge($command,$keys);
+        }else{
+            $command = [CommandConst::MGET,$keys];
+            $commandData = $command;
+        }
 		return $commandData;
 	}
 

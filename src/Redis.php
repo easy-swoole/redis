@@ -592,10 +592,10 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    public function mGet(...$keys)
+    public function mGet($keys)
     {
         $handelClass = new MGet($this);
-        $command = $handelClass->getCommand(...$keys);
+        $command = $handelClass->getCommand($keys);
 
         if (!$this->sendCommand($command)) {
             return false;

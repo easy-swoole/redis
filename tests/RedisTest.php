@@ -212,7 +212,7 @@ class RedisTest extends TestCase
             "{$field[4]}" => $value[4],
         ]);
         $this->assertTrue($data);
-        $data = $redis->mGet($field[3], $field[2], $field[1]);
+        $data = $redis->mGet([$field[3], $field[2], $field[1]]);
         $this->assertEquals([$value[3], $value[2], $value[1]], $data);
 
 
@@ -315,7 +315,7 @@ class RedisTest extends TestCase
             "{$field[4]}" => $value[4],
         ]);
         $this->assertTrue($data);
-        $data = $redis->mGet($field[3], $field[2], $field[1]);
+        $data = $redis->mGet([$field[3], $field[2], $field[1]]);
         $this->assertEquals([$value[3], $value[2], $value[1]], $data);
 
 
