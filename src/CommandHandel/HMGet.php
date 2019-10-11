@@ -14,10 +14,10 @@ class HMGet extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
-        $field = array_shift($data);
+        $hashKeys = array_shift($data);
 
-        $command = [CommandConst::HMGET, $key, $field];
-        $commandData = array_merge($command, $data);
+        $command = [CommandConst::HMGET, $key];
+        $commandData = array_merge($command, $hashKeys);
         return $commandData;
     }
 

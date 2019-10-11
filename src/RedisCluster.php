@@ -608,10 +608,13 @@ class RedisCluster extends Redis
         return true;
     }
 
-    public function mGet(...$keys)
+    public function mGet($keys)
     {
         $handelClass = new MGet($this);
         $result = [];
+        if (is_string($keys)){
+            $keys = [$keys];
+        }
         foreach ($keys as $k => $value) {
             $slotId = $this->clusterKeySlot($value);
             $client = $this->getClientBySlotId($slotId);
