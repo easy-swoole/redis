@@ -42,6 +42,7 @@ use EasySwoole\Redis\CommandHandel\HKeys;
 use EasySwoole\Redis\CommandHandel\HLen;
 use EasySwoole\Redis\CommandHandel\HMGet;
 use EasySwoole\Redis\CommandHandel\HMSet;
+use EasySwoole\Redis\CommandHandel\HScan;
 use EasySwoole\Redis\CommandHandel\HSet;
 use EasySwoole\Redis\CommandHandel\HSetNx;
 use EasySwoole\Redis\CommandHandel\HValS;
@@ -83,6 +84,7 @@ use EasySwoole\Redis\CommandHandel\RPopLPush;
 use EasySwoole\Redis\CommandHandel\RPush;
 use EasySwoole\Redis\CommandHandel\RPuShx;
 use EasySwoole\Redis\CommandHandel\SAdd;
+use EasySwoole\Redis\CommandHandel\Scan;
 use EasySwoole\Redis\CommandHandel\SCard;
 use EasySwoole\Redis\CommandHandel\SDiff;
 use EasySwoole\Redis\CommandHandel\SDiffStore;
@@ -100,6 +102,7 @@ use EasySwoole\Redis\CommandHandel\SMove;
 use EasySwoole\Redis\CommandHandel\SPop;
 use EasySwoole\Redis\CommandHandel\SRandMemBer;
 use EasySwoole\Redis\CommandHandel\SRem;
+use EasySwoole\Redis\CommandHandel\SScan;
 use EasySwoole\Redis\CommandHandel\StartPipe;
 use EasySwoole\Redis\CommandHandel\StrLen;
 use EasySwoole\Redis\CommandHandel\Subscribe;
@@ -127,6 +130,7 @@ use EasySwoole\Redis\CommandHandel\ZRemRangeByScore;
 use EasySwoole\Redis\CommandHandel\ZRevRange;
 use EasySwoole\Redis\CommandHandel\ZRevRangeByScore;
 use EasySwoole\Redis\CommandHandel\ZRevRank;
+use EasySwoole\Redis\CommandHandel\ZScan;
 use EasySwoole\Redis\CommandHandel\ZScore;
 use EasySwoole\Redis\CommandHandel\ZUnionStore;
 use EasySwoole\Redis\CommandHandel\CommandGetKeys;
@@ -817,6 +821,23 @@ class Redis
         return $handelClass->getData($recv);
     }
 
+    public function scan(&$cursor, $pattern=null, $count=null)
+    {
+        $handelClass = new Scan($this);
+        $command = $handelClass->getCommand($cursor, $pattern, $count);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        $data  = $handelClass->getData($recv);
+        $cursor = $data[0];
+
+        return $data[1];
+    }
+
     ######################字符串方法######################
 
 
@@ -1017,18 +1038,21 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-//    public function hScan($key, $iterator, $pattern = '', $count = 0)
-//    {
-//        $data = [Command::HSCAN, $key, $iterator, $pattern, $count];
-//        if (!$this->sendCommand($data)) {
-//            return false;
-//        }
-//        $recv = $this->recv();
-//        if ($recv === null) {
-//            return false;
-//        }
-//        return $recv->getData();
-//    }
+    public function hScan($key,&$cursor, $pattern=null, $count=null)
+    {
+        $handelClass = new HScan($this);
+        $command = $handelClass->getCommand($key,$cursor, $pattern, $count);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        $data  = $handelClass->getData($recv);
+        $cursor = $data[0];
+        return $data[1];
+   }
 
     ######################hash操作方法######################
 
@@ -1501,18 +1525,22 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    /*    public function sScan($key,$cursor,$pattern,$count)
-        {
-            $data = [Command::SSCAN,$key,$cursor,$pattern,$count];
-            if (!$this->sendCommand($data)) {
-                return false;
-            }
-            $recv = $this->recv();
-            if ($recv === null) {
-                return false;
-            }
-            return $recv->getData();
-        }*/
+    public function sScan($key,&$cursor, $pattern=null, $count=null)
+    {
+        $handelClass = new SScan($this);
+        $command = $handelClass->getCommand($key,$cursor, $pattern, $count);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        $data  = $handelClass->getData($recv);
+        $cursor = $data[0];
+        return $data[1];
+    }
+
 
     ######################集合操作方法######################
 
@@ -1814,18 +1842,21 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    /*public function zScan($key, $cursor, $pattern, $count)
+    public function zScan($key,&$cursor, $pattern=null, $count=null)
     {
-        $data = [Command::ZSCAN, $key, $cursor, $pattern, $count];
-        if (!$this->sendCommand($data)) {
+        $handelClass = new ZScan($this);
+        $command = $handelClass->getCommand($key,$cursor, $pattern, $count);
+        if (!$this->sendCommand($command)) {
             return false;
         }
         $recv = $this->recv();
         if ($recv === null) {
             return false;
         }
-        return $recv->getData();
-    }*/
+        $data  = $handelClass->getData($recv);
+        $cursor = $data[0];
+        return $data[1];
+    }
     ######################有序集合操作方法######################
 
     ######################HyperLogLog操作方法######################

@@ -15,9 +15,6 @@ class Expire extends AbstractCommandHandel
 		$key=array_shift($data);
 		$expireTime=array_shift($data);
 
-
-		        
-
 		$command = [CommandConst::EXPIRE,$key,$expireTime];
 		$commandData = array_merge($command,$data);
 		return $commandData;

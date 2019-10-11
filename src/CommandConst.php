@@ -49,6 +49,7 @@ class CommandConst
     const DECR = 'DECR';//将 key 中储存的数字值减一。
     const DECRBY = 'DECRBY';//key 所储存的值减去给定的减量值（decrement） 。
     const APPEND = 'APPEND';//如果 key 已经存在并且是一个字符串， APPEND 命令将 value 追加到 key 原来的值的末尾。
+    const SCAN = 'SCAN';//
 
 
     const HDEL = 'HDEL';//删除一个或多个哈希表字段

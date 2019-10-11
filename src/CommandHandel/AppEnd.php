@@ -15,9 +15,6 @@ class AppEnd extends AbstractCommandHandel
 		$key=array_shift($data);
 		$value=array_shift($data);
 
-
-		        
-
 		$command = [CommandConst::APPEND,$key,$value];
 		$commandData = array_merge($command,$data);
 		return $commandData;

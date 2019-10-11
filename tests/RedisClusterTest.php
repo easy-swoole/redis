@@ -342,6 +342,21 @@ class RedisClusterTest extends TestCase
         $data = $redis->appEnd($field[0], '1');
         $this->assertEquals($redis->strLen($field[0]), $data);
         $this->assertEquals('1' . $value[0] . '1', $redis->get($field[0]));
+
+
+        //迭代测试
+//        $cursor = 0;
+//        $redis->flushAll();
+//        $redis->set('xxxa', '仙士可');
+//        $redis->set('xxxb', '仙士可');
+//        $redis->set('xxxc', '仙士可');
+//        $redis->set('xxxd', '仙士可');
+//        $data = [];
+//        do {
+//            $keys = $redis->scan($cursor, 'xxx*', 1);
+//            $data = array_merge($data,$keys);
+//        } while ($cursor);
+//        $this->assertEquals(4,count($data));
     }
 
     /**
@@ -430,6 +445,22 @@ class RedisClusterTest extends TestCase
         ]);
         $this->assertEquals([0,1], $data);
         $this->assertEquals($value[1] + 1, $redis->get($field[1]));
+
+
+        //迭代测试
+//        $cursor = 0;
+//        $redis->flushAll();
+//        $redis->set('xxxa', '仙士可');
+//        $redis->set('xxxb', '仙士可');
+//        $redis->set('xxxc', '仙士可');
+//        $redis->set('xxxd', '仙士可');
+//        $data = [];
+//        do {
+//            $keys = $redis->scan($cursor, 'xxx*', 1);
+//            $data = array_merge($data,$keys);
+//        } while ($cursor);
+//        $this->assertEquals(4,count($data));
+//        $this->assertTrue(in_array('xxxa',$data));
     }
 
     /**
@@ -522,9 +553,27 @@ class RedisClusterTest extends TestCase
         $this->assertEquals(1, $data);
         $this->assertEquals(1, $redis->hGet($key, $field[0] . 'a'));
 
-//        $data = $redis->hScan($key,1,'',100);
-//        var_dump($data);
-//        var_dump($redis->getErrorMsg());;
+
+
+        $cursor = 0;
+        $redis->del('a');
+        $redis->hMSet('a',[
+            'a'=>'tioncico',
+            'b'=>'tioncico',
+            'c'=>'tioncico',
+            'd'=>'tioncico',
+            'e'=>'tioncico',
+            'f'=>'tioncico',
+            'g'=>'tioncico',
+            'h'=>'tioncico',
+        ]);
+
+        $data = [];
+        do {
+            $keys = $redis->hScan('a',$cursor);
+            $data = array_merge($data,$keys);
+        } while ($cursor);
+        $this->assertEquals(8,count($data));
     }
 
     /**
@@ -611,9 +660,26 @@ class RedisClusterTest extends TestCase
         $this->assertEquals(1, $data);
         $this->assertEquals(1, $redis->hGet($key, $field[0] . 'a'));
 
-//        $data = $redis->hScan($key,1,'',100);
-//        var_dump($data);
-//        var_dump($redis->getErrorMsg());;
+
+        $cursor = 0;
+        $redis->del('a');
+        $redis->hMSet('a',[
+            'a'=>'tioncico',
+            'b'=>'tioncico',
+            'c'=>'tioncico',
+            'd'=>'tioncico',
+            'e'=>'tioncico',
+            'f'=>'tioncico',
+            'g'=>'tioncico',
+            'h'=>'tioncico',
+        ]);
+        $data = [];
+        do {
+            $keys = $redis->hScan('a',$cursor);
+            $data = array_merge($data,$keys);
+        } while ($cursor);
+        $this->assertEquals(8,count($data));
+        $this->assertEquals('tioncico',$data['a']);
     }
 
     /**
@@ -859,6 +925,15 @@ class RedisClusterTest extends TestCase
         $this->assertEquals(4, $data);
         $this->assertEquals([], $redis->sMembers($key[3]));
 
+        $cursor = 0;
+        $redis->del('a');
+        $redis->sAdd('a','a1','a2','a3','a4','a5');
+        $data= [];
+        do {
+            $keys = $redis->sScan('a',$cursor,'*',1);
+            $data = array_merge($data,$keys);
+        } while ($cursor);
+        $this->assertEquals(5,count($data));
     }
 
     /**
@@ -960,10 +1035,22 @@ class RedisClusterTest extends TestCase
         $redis->sAdd($key[1], 1, 2, 3, 4);
         $redis->sAdd($key[2], 5);
         $redis->sAdd($key[3], 6, 7);
+
+
 //        $data = $redis->sUnIonStore($key[4], $key[1], $key[2], $key[3]);
 //        $this->assertEquals(7, $data);
-//        $data = $redis->sScan('s', 'a', 's');
-//        $this->assertEquals(1, $data);
+
+
+        $cursor = 0;
+        $redis->del('a');
+        $redis->sAdd('a','a1','a2','a3','a4','a5');
+        $data= [];
+        do {
+            $keys = $redis->sScan('a',$cursor,'*',1);
+            $data = array_merge($data,$keys);
+        } while ($cursor);
+        $this->assertEquals(5,count($data));
+        $this->assertTrue(in_array('a1',$data));
     }
 
     /**
@@ -1126,6 +1213,17 @@ class RedisClusterTest extends TestCase
 //        $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
 //        $data = $redis->zUnionStore($key[2], [$key[1], $key[0]],[1,2]);
 //        $this->assertEquals(3, $data);
+
+
+        $cursor = 0;
+        $redis->del('a');
+        $redis->zAdd('a',1,'a1',2,'a2',3,'a3',4,'a4',5,'a5');
+        $data = [];
+        do {
+            $keys = $redis->zScan('a',$cursor,'*',1);
+            $data = array_merge($data,$keys);
+        } while ($cursor);
+        $this->assertEquals(5,count($data));
     }
 
     /**
@@ -1288,6 +1386,17 @@ class RedisClusterTest extends TestCase
 //        $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
 //        $data = $redis->zUnionStore($key[2], 2, $key[1], $key[0]);
 //        $this->assertEquals(3, $data);
+
+
+        $cursor = 0;
+        $redis->del('a');
+        $redis->zAdd('a',1,'a1',2,'a2',3,'a3',4,'a4',5,'a5');
+        $data = [];
+        do {
+            $keys = $redis->zScan('a',$cursor,'*',1);
+            $data = array_merge($data,$keys);
+        } while ($cursor);
+        $this->assertEquals(1,$data['a1']);
     }
 
     /**
