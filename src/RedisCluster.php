@@ -52,6 +52,10 @@ class RedisCluster extends Redis
     protected $lastCommandLog = [];
 
     protected $errorClientList = [];
+    /**
+     * @var $defaultClient ClusterClient
+     */
+    protected $defaultClient = null;
 
     public function __construct(RedisClusterConfig $config)
     {
@@ -70,7 +74,7 @@ class RedisCluster extends Redis
         }
         $client->setIsConnected($client->connect($timeout));
         if ($client->isConnected() && !empty($this->config->getAuth())) {
-            if (!$this->clientAuth($client,$this->config->getAuth())) {
+            if (!$this->clientAuth($client, $this->config->getAuth())) {
                 $client->setIsConnected(false);
                 throw new RedisClusterException("auth to redis host {$this->config->getHost()}:{$this->config->getPort()} fail");
             }
@@ -196,7 +200,13 @@ class RedisCluster extends Redis
      */
     public function getClient($nodeKey = null): ClusterClient
     {
+        //当key为null,并且defaultClient存在并且defaultClient已连接时,直接返回
+        if ($nodeKey == null && $this->defaultClient instanceof ClusterClient && $this->defaultClient->isConnected()) {
+            return $this->defaultClient;
+        }
+        //当key为null,或者nodeClient未找到该客户端时
         if ($nodeKey == null || !isset($this->nodeClientList[$nodeKey])) {
+            //取出第一个客户端
             foreach ($this->nodeClientList as $node) {
                 $client = $node;
                 break;
@@ -266,12 +276,12 @@ class RedisCluster extends Redis
         return $this->nodeList;
     }
 
-     function clientAuth(ClusterClient $client,$password): bool
+    public function clientAuth(ClusterClient $client, $password): bool
     {
         $handelClass = new Auth($this);
         $command = $handelClass->getCommand($password);
 
-        if (!$this->sendCommandByClient($command,$client)) {
+        if (!$this->sendCommandByClient($command, $client)) {
             return false;
         }
         $recv = $this->recvByClient($client);
@@ -279,6 +289,20 @@ class RedisCluster extends Redis
             return false;
         }
         return $handelClass->getData($recv);
+    }
+
+    /**
+     * setDefaultClient
+     * @param ClusterClient $defaultClient
+     * @return bool
+     * @throws RedisClusterException
+     * @author Tioncico
+     * Time: 17:25
+     */
+    public function setDefaultClient(ClusterClient $defaultClient)
+    {
+        $this->defaultClient = $defaultClient;
+        return $this->clientConnect($this->defaultClient);
     }
 
     ######################集群处理方法######################
@@ -360,7 +384,7 @@ class RedisCluster extends Redis
         return $handelClass->getData($recv);
     }
 
-    public function clusterFailOver($option=null)
+    public function clusterFailOver($option = null)
     {
         $client = $this->getClient();
         $handelClass = new ClusterFailOver($this);
@@ -465,7 +489,7 @@ class RedisCluster extends Redis
         return $handelClass->getData($recv);
     }
 
-    public function clusterReset($option=null)
+    public function clusterReset($option = null)
     {
         $client = $this->getClient();
         $handelClass = new ClusterReset($this);
@@ -510,11 +534,11 @@ class RedisCluster extends Redis
         return $handelClass->getData($recv);
     }
 
-    public function clusterSetSlot($slot,$subCommand,$nodeId=null)
+    public function clusterSetSlot($slot, $subCommand, $nodeId = null)
     {
         $client = $this->getClient();
         $handelClass = new ClusterSetSlot($this);
-        $command = $handelClass->getCommand($slot,$subCommand,$nodeId);
+        $command = $handelClass->getCommand($slot, $subCommand, $nodeId);
         if (!$this->sendCommandByClient($command, $client)) {
             return false;
         }
@@ -612,7 +636,7 @@ class RedisCluster extends Redis
     {
         $handelClass = new MGet($this);
         $result = [];
-        if (is_string($keys)){
+        if (is_string($keys)) {
             $keys = [$keys];
         }
         foreach ($keys as $k => $value) {
@@ -662,11 +686,12 @@ class RedisCluster extends Redis
 
     ######################redis集群管道兼容方法######################
 
-    public function execPipe(?ClusterClient $client=null)
+    public function execPipe(?ClusterClient $client = null)
     {
         $handelClass = new ExecPipe($this);
         $commandData = $handelClass->getCommand();
-        $client = $client??$this->getClient();
+        $client = $client ?? $this->getClient();
+        $this->setDefaultClient($client);
         //发送原始tcp数据
         if (!$client->send($commandData)) {
             return false;
@@ -735,18 +760,19 @@ class RedisCluster extends Redis
         return $result;
     }
 
-    protected function sendCommand(array $com): bool
+    protected function sendCommand(array $com, ?ClusterClient $client = null): bool
     {
-        $client = $this->getClient();
+        $client = $client ?? $this->getClient();
+        $this->setDefaultClient($client);
         return $this->sendCommandByClient($com, $client);
     }
 
-    public function recv($timeout = null): ?Response
+    public function recv($timeout = null, ?ClusterClient $client = null): ?Response
     {
-        $client = $this->getClient();
+        $client = $client ?? $this->getClient();
+        $this->setDefaultClient($client);
         return $this->recvByClient($client, $timeout);
     }
-
     ###################### 发送接收tcp流数据 ######################
 
 
