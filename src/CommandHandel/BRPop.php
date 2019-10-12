@@ -12,16 +12,26 @@ class BRPop extends AbstractCommandHandel
 
 	public function handelCommandData(...$data)
 	{
-		$key1=array_shift($data);
+        $keys=array_shift($data);
+        $timeout=array_shift($data);
+        if (is_string($keys)){
+            $keys = [$keys];
+        }
 
-		$command = [CommandConst::BRPOP,$key1];
-		$commandData = array_merge($command,$data);
-		return $commandData;
+        $command = array_merge([CommandConst::BLPOP],$keys);
+        $command[] = $timeout;
+        $commandData = $command;
+        return $commandData;
 	}
 
 
 	public function handelRecv(Response $recv)
 	{
-		return [$recv->getData()[0] => $this->unSerialize($recv->getData()[1])];
+        $data = $recv->getData();
+        if (is_array($data)){
+            return [$data[0] => $this->unSerialize($data[1])];
+        }else{
+            return $data;
+        }
 	}
 }

@@ -616,14 +616,24 @@ class RedisTest extends TestCase
             'a', 'b', 'c', 'd'
         ];
 
-        $redis->del($key[0]);
+        $redis->flushAll();
+
+        //测试null的时候
+        $data = $redis->bLPop([$key[0],$key[1]], 1);
+        $this->assertNull($data);
         $data = $redis->lPush($key[0], $value[0], $value[1]);
         $this->assertEquals(2, $data);
 
-        $data = $redis->bLPop($key[0], 1);
+        //测试null的时候
+        $data = $redis->bLPop([$key[1]], 1);
+        $this->assertNull($data);
+        $data = $redis->bRPop([$key[1]], 1);
+        $this->assertNull($data);
+
+        $data = $redis->bLPop([$key[0],$key[1]], 1);
         $this->assertTrue(!!$data);
 
-        $data = $redis->bRPop($key[0], 1);
+        $data = $redis->bRPop([$key[0],$key[1]], 1);
         $this->assertTrue(!!$data);
 
         $redis->del($key[0]);
@@ -702,15 +712,27 @@ class RedisTest extends TestCase
             'a', 'b', 'c', 'd'
         ];
 
-        $redis->del($key[0]);
+
+        $redis->flushAll();
+
+        //测试null的时候
+        $data = $redis->bLPop([$key[0],$key[1]], 1);
+        $this->assertNull($data);
         $data = $redis->lPush($key[0], $value[0], $value[1]);
         $this->assertEquals(2, $data);
 
-        $data = $redis->bLPop($key[0], 1);
+        //测试null的时候
+        $data = $redis->bLPop([$key[1]], 1);
+        $this->assertNull($data);
+        $data = $redis->bRPop([$key[1]], 1);
+        $this->assertNull($data);
+
+        $data = $redis->bLPop([$key[0],$key[1]], 1);
         $this->assertTrue(!!$data);
 
-        $data = $redis->bRPop($key[0], 1);
+        $data = $redis->bRPop([$key[0],$key[1]], 1);
         $this->assertTrue(!!$data);
+
 
         $redis->del($key[0]);
         $redis->lPush($key[0], $value[0], $value[1]);
@@ -1402,7 +1424,6 @@ class RedisTest extends TestCase
      */
     function testTransaction()
     {
-        $this->assertEquals(1, 1);
 
         $redis = $this->redis;
 

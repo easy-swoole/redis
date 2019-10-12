@@ -1058,10 +1058,10 @@ class Redis
 
     ######################列表操作方法######################
 
-    public function bLPop($key1, ...$data)
+    public function bLPop( $keys, $timeout)
     {
         $handelClass = new BLPop($this);
-        $command = $handelClass->getCommand($key1, ...$data);
+        $command = $handelClass->getCommand($keys, $timeout);
 
         if (!$this->sendCommand($command)) {
             return false;
@@ -1073,10 +1073,10 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    public function bRPop($key1, ...$data)
+    public function bRPop($keys, $timeout)
     {
         $handelClass = new BRPop($this);
-        $command = $handelClass->getCommand($key1, ...$data);
+        $command = $handelClass->getCommand($keys, $timeout);
 
         if (!$this->sendCommand($command)) {
             return false;
