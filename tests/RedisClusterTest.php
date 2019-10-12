@@ -9,6 +9,7 @@
 namespace Test;
 
 use EasySwoole\Redis\Client;
+use EasySwoole\Redis\ClusterClient;
 use EasySwoole\Redis\Config\RedisClusterConfig;
 use EasySwoole\Redis\Config\RedisConfig;
 use EasySwoole\Redis\Redis;
@@ -84,12 +85,12 @@ class RedisClusterTest extends TestCase
         $this->assertFalse($data);
 
         $redis->tryConnectServerList();
-        $data = $redis->clusterForget(array_column(($redis->getNodeList()),'name')[0]);
+        $data = $redis->clusterForget(array_column(($redis->getNodeList()), 'name')[0]);
         $this->assertTrue($data);
 
-        $redis->set('a',1);
+        $redis->set('a', 1);
         $data = $redis->clusterKeySlot('a');
-        $data = $redis->clusterGetKeySinSlot($data,1);
+        $data = $redis->clusterGetKeySinSlot($data, 1);
         $this->assertIsArray($data);
 
         $data = $redis->clusterInfo();
@@ -98,7 +99,7 @@ class RedisClusterTest extends TestCase
         $data = $redis->clusterKeySlot('b');
         $this->assertIsInt($data);
 
-        $data = $redis->clusterMeet('172.16.253.156','9005');
+        $data = $redis->clusterMeet('172.16.253.156', '9005');
         $this->assertTrue($data);
 
 //        $redis->tryConnectServerList();
@@ -116,7 +117,7 @@ class RedisClusterTest extends TestCase
 
 
         $redis->tryConnectServerList();
-        $data = $redis->clusterSetSlot(1,'NODE',current($redis->getNodeList())['name']);
+        $data = $redis->clusterSetSlot(1, 'NODE', current($redis->getNodeList())['name']);
         $this->assertTrue($data);
 
 //        $redis->tryConnectServerList();
@@ -131,6 +132,52 @@ class RedisClusterTest extends TestCase
         $this->assertTrue($data);
         $data = $redis->readwrite();
         $this->assertTrue($data);
+    }
+
+    /**
+     * 集群逻辑方法测试
+     * testClusterMethod
+     * @author Tioncico
+     * Time: 17:26
+     */
+    function testClusterMethod()
+    {
+        $redis = $this->redis;
+        $redis->tryConnectServerList();
+
+        $client = $redis->getClient();
+        $this->assertTrue($client->isConnected());
+
+        $data = ['a' => 1, 'b' => 1, 'c' => 1, 'd' => 1,];
+        $redis->mSet($data);
+
+        $recv = [];
+        $defaultKey='';
+        foreach ($data as $k => $va) {
+            $client->sendCommand(['get', $k]);
+            $response = $client->recv();
+            if ($response->getErrorType() == 'MOVED') {
+                $recv = $response;
+                $defaultKey = $k;
+                break;
+            }
+        }
+        $this->assertTrue(!!$recv);
+        $data = $redis->getMoveNodeId($recv);
+        $this->assertTrue(!!$data);
+
+
+        $client = $redis->getClient($data);
+        $this->assertTrue($client instanceof ClusterClient);
+        var_dump($client);
+
+//        $data = $redis->getSlotNodeId();
+//        $data = $redis->getNodeClientList();
+//        $data = $redis->getNodeList();
+//        $data = $redis->clientAuth();
+//        $data = $redis->setDefaultClient();
+
+
     }
 
     /**
@@ -436,14 +483,14 @@ class RedisClusterTest extends TestCase
             "{$field[0]}" => $value[0],
             "{$field[1]}" => $value[1],
         ]);
-        $this->assertEquals([1,0], $data);
+        $this->assertEquals([1, 0], $data);
         $this->assertEquals($value[1], $redis->get($field[1]));
         $redis->del($field[1]);
         $data = $redis->mSetNx([
             "{$field[0]}" => $value[0] + 1,
             "{$field[1]}" => $value[1] + 1,
         ]);
-        $this->assertEquals([0,1], $data);
+        $this->assertEquals([0, 1], $data);
         $this->assertEquals($value[1] + 1, $redis->get($field[1]));
 
 
@@ -554,26 +601,25 @@ class RedisClusterTest extends TestCase
         $this->assertEquals(1, $redis->hGet($key, $field[0] . 'a'));
 
 
-
         $cursor = 0;
         $redis->del('a');
-        $redis->hMSet('a',[
-            'a'=>'tioncico',
-            'b'=>'tioncico',
-            'c'=>'tioncico',
-            'd'=>'tioncico',
-            'e'=>'tioncico',
-            'f'=>'tioncico',
-            'g'=>'tioncico',
-            'h'=>'tioncico',
+        $redis->hMSet('a', [
+            'a' => 'tioncico',
+            'b' => 'tioncico',
+            'c' => 'tioncico',
+            'd' => 'tioncico',
+            'e' => 'tioncico',
+            'f' => 'tioncico',
+            'g' => 'tioncico',
+            'h' => 'tioncico',
         ]);
 
         $data = [];
         do {
-            $keys = $redis->hScan('a',$cursor);
-            $data = array_merge($data,$keys);
+            $keys = $redis->hScan('a', $cursor);
+            $data = array_merge($data, $keys);
         } while ($cursor);
-        $this->assertEquals(8,count($data));
+        $this->assertEquals(8, count($data));
     }
 
     /**
@@ -663,23 +709,23 @@ class RedisClusterTest extends TestCase
 
         $cursor = 0;
         $redis->del('a');
-        $redis->hMSet('a',[
-            'a'=>'tioncico',
-            'b'=>'tioncico',
-            'c'=>'tioncico',
-            'd'=>'tioncico',
-            'e'=>'tioncico',
-            'f'=>'tioncico',
-            'g'=>'tioncico',
-            'h'=>'tioncico',
+        $redis->hMSet('a', [
+            'a' => 'tioncico',
+            'b' => 'tioncico',
+            'c' => 'tioncico',
+            'd' => 'tioncico',
+            'e' => 'tioncico',
+            'f' => 'tioncico',
+            'g' => 'tioncico',
+            'h' => 'tioncico',
         ]);
         $data = [];
         do {
-            $keys = $redis->hScan('a',$cursor);
-            $data = array_merge($data,$keys);
+            $keys = $redis->hScan('a', $cursor);
+            $data = array_merge($data, $keys);
         } while ($cursor);
-        $this->assertEquals(8,count($data));
-        $this->assertEquals('tioncico',$data['a']);
+        $this->assertEquals(8, count($data));
+        $this->assertEquals('tioncico', $data['a']);
     }
 
     /**
@@ -900,7 +946,7 @@ class RedisClusterTest extends TestCase
         $this->assertEquals([$value[0], $value[2]], $data);
 
         $redis->del($key[2]);
-        $redis->sAdd($key[2],  $value[1]);
+        $redis->sAdd($key[2], $value[1]);
         $data = $redis->sMembers($key[2]);
         $this->assertEquals([$value[1]], $data);
 
@@ -912,7 +958,7 @@ class RedisClusterTest extends TestCase
 
 
         $redis->del($key[0]);
-        $redis->sAdd($key[0],  $value[1]);
+        $redis->sAdd($key[0], $value[1]);
         $data = $redis->sPop($key[0]);
         $this->assertEquals(2, $data);
 
@@ -927,13 +973,13 @@ class RedisClusterTest extends TestCase
 
         $cursor = 0;
         $redis->del('a');
-        $redis->sAdd('a','a1','a2','a3','a4','a5');
-        $data= [];
+        $redis->sAdd('a', 'a1', 'a2', 'a3', 'a4', 'a5');
+        $data = [];
         do {
-            $keys = $redis->sScan('a',$cursor,'*',1);
-            $data = array_merge($data,$keys);
+            $keys = $redis->sScan('a', $cursor, '*', 1);
+            $data = array_merge($data, $keys);
         } while ($cursor);
-        $this->assertEquals(5,count($data));
+        $this->assertEquals(5, count($data));
     }
 
     /**
@@ -990,7 +1036,7 @@ class RedisClusterTest extends TestCase
 //        $this->assertEquals(1, $data);
 
         $redis->del($key[2]);
-        $redis->sAdd($key[2],  $value[1]);
+        $redis->sAdd($key[2], $value[1]);
         $data = $redis->sMembers($key[2]);
         $this->assertEquals([$value[1]], $data);
         $data = $redis->sMembers($key[2]);
@@ -1012,9 +1058,9 @@ class RedisClusterTest extends TestCase
 //        $this->assertEquals(1, $data);
 
         $redis->del($key[0]);
-        $redis->sAdd($key[0],  $value[1]);
+        $redis->sAdd($key[0], $value[1]);
         $data = $redis->sPop($key[0]);
-        $this->assertEquals( $value[1], $data);
+        $this->assertEquals($value[1], $data);
 
         $redis->del($key[3]);
         $redis->sAdd($key[3], $value[0], $value[1], $value[2], $value[3]);
@@ -1043,14 +1089,14 @@ class RedisClusterTest extends TestCase
 
         $cursor = 0;
         $redis->del('a');
-        $redis->sAdd('a','a1','a2','a3','a4','a5');
-        $data= [];
+        $redis->sAdd('a', 'a1', 'a2', 'a3', 'a4', 'a5');
+        $data = [];
         do {
-            $keys = $redis->sScan('a',$cursor,'*',1);
-            $data = array_merge($data,$keys);
+            $keys = $redis->sScan('a', $cursor, '*', 1);
+            $data = array_merge($data, $keys);
         } while ($cursor);
-        $this->assertEquals(5,count($data));
-        $this->assertTrue(in_array('a1',$data));
+        $this->assertEquals(5, count($data));
+        $this->assertTrue(in_array('a1', $data));
     }
 
     /**
@@ -1184,7 +1230,7 @@ class RedisClusterTest extends TestCase
 
         $redis->del($key[0]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
-        $data = $redis->zRevRangeByScore($key[0], 3, 0,  ['withScores' => true, 'limit' => array(0, 3)]);
+        $data = $redis->zRevRangeByScore($key[0], 3, 0, ['withScores' => true, 'limit' => array(0, 3)]);
 
         $this->assertEquals([
             $member[2] => $score[2],
@@ -1193,7 +1239,7 @@ class RedisClusterTest extends TestCase
         ], $data);
         $redis->del($key[0]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
-        $data = $redis->zReVRangeByScore($key[0], 3, 0,  ['withScores' => false, 'limit' => array(0, 3)]);
+        $data = $redis->zReVRangeByScore($key[0], 3, 0, ['withScores' => false, 'limit' => array(0, 3)]);
         $this->assertEquals([
             $member[2],
             $member[1],
@@ -1217,13 +1263,13 @@ class RedisClusterTest extends TestCase
 
         $cursor = 0;
         $redis->del('a');
-        $redis->zAdd('a',1,'a1',2,'a2',3,'a3',4,'a4',5,'a5');
+        $redis->zAdd('a', 1, 'a1', 2, 'a2', 3, 'a3', 4, 'a4', 5, 'a5');
         $data = [];
         do {
-            $keys = $redis->zScan('a',$cursor,'*',1);
-            $data = array_merge($data,$keys);
+            $keys = $redis->zScan('a', $cursor, '*', 1);
+            $data = array_merge($data, $keys);
         } while ($cursor);
-        $this->assertEquals(5,count($data));
+        $this->assertEquals(5, count($data));
     }
 
     /**
@@ -1357,7 +1403,7 @@ class RedisClusterTest extends TestCase
 
         $redis->del($key[0]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
-        $data = $redis->zRevRangeByScore($key[0], 3, 0,  ['withScores' => true, 'limit' => array(0, 3)]);
+        $data = $redis->zRevRangeByScore($key[0], 3, 0, ['withScores' => true, 'limit' => array(0, 3)]);
 
         $this->assertEquals([
             $member[2] => $score[2],
@@ -1366,7 +1412,7 @@ class RedisClusterTest extends TestCase
         ], $data);
         $redis->del($key[0]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1], $score[2], $member[2]);
-        $data = $redis->zReVRangeByScore($key[0], 3, 0,  ['withScores' => false, 'limit' => array(0, 3)]);
+        $data = $redis->zReVRangeByScore($key[0], 3, 0, ['withScores' => false, 'limit' => array(0, 3)]);
         $this->assertEquals([
             $member[2],
             $member[1],
@@ -1390,13 +1436,13 @@ class RedisClusterTest extends TestCase
 
         $cursor = 0;
         $redis->del('a');
-        $redis->zAdd('a',1,'a1',2,'a2',3,'a3',4,'a4',5,'a5');
+        $redis->zAdd('a', 1, 'a1', 2, 'a2', 3, 'a3', 4, 'a4', 5, 'a5');
         $data = [];
         do {
-            $keys = $redis->zScan('a',$cursor,'*',1);
-            $data = array_merge($data,$keys);
+            $keys = $redis->zScan('a', $cursor, '*', 1);
+            $data = array_merge($data, $keys);
         } while ($cursor);
-        $this->assertEquals(1,$data['a1']);
+        $this->assertEquals(1, $data['a1']);
     }
 
     /**
@@ -1443,7 +1489,7 @@ class RedisClusterTest extends TestCase
     {
 //                $this->assertEquals(1,1);
         go(function () {
-            $redis =  new RedisCluster(new RedisClusterConfig(REDIS_CLUSTER_SERVER_LIST, [
+            $redis = new RedisCluster(new RedisClusterConfig(REDIS_CLUSTER_SERVER_LIST, [
                 'auth' => REDIS_CLUSTER_AUTH,
             ]));
             $redis->pSubscribe(function (RedisCluster $redis, $pattern, $str) {
@@ -1548,14 +1594,15 @@ class RedisClusterTest extends TestCase
 
         $redis->startPipe();
         $this->assertEquals(true, $redis->getPipe()->isStartPipe());
-        $data = $redis->set("a",'1');
+        $data = $redis->set("a", '1');
         $this->assertTrue($data);
-        $this->assertEquals('Set',($redis->getPipe()->getCommandLog()[0][0]));
+        $this->assertEquals('Set', ($redis->getPipe()->getCommandLog()[0][0]));
         $data = $redis->discardPipe();
         $this->assertEquals(true, $data);
         $this->assertEquals(false, $redis->getPipe()->isStartPipe());
 
     }
+
     /**
      * 脚本执行测试
      * testScript
