@@ -2709,10 +2709,19 @@ class Redis
     ######################服务器操作方法######################
 
     ######################geohash操作方法######################
-    public function geoAdd($key, $longitude, $latitude, $name, ...$data)
+    /**
+     * geoAdd
+     * @param $key
+     * @param $locationData[[longitude=>'',latitude=>'',name=>''],[longitude=>'',latitude=>'',name=>'']] or $locationData[[longitude,latitude,name],[longitude,latitude,name],]
+     * @return bool|string
+     * @throws RedisException
+     * @author Tioncico
+     * Time: 11:20
+     */
+    public function geoAdd($key, $locationData)
     {
         $handelClass = new GeoAdd($this);
-        $command = $handelClass->getCommand($key, $longitude, $latitude, $name, ...$data);
+        $command = $handelClass->getCommand($key,$locationData);
 
         if (!$this->sendCommand($command)) {
             return false;

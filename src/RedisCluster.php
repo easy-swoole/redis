@@ -94,13 +94,13 @@ class RedisCluster extends Redis
 
     public function connect(float $timeout = null): bool
     {
-        $client = $this->getClient();
+        $client = $this->getDefaultClient();
         return $this->clientConnect($client, $timeout);
     }
 
     function disconnect()
     {
-        $client = $this->getClient();
+        $client = $this->getDefaultClient();
         $this->clientDisconnect($client);
     }
     ######################服务器连接方法######################
@@ -304,6 +304,22 @@ class RedisCluster extends Redis
         $this->defaultClient = $defaultClient;
         return $this->clientConnect($this->defaultClient);
     }
+
+    /**
+     * getDefaultClient
+     * @return ClusterClient|null
+     * @throws RedisClusterException
+     * @author Tioncico
+     * Time: 9:30
+     */
+    public function getDefaultClient(): ?ClusterClient
+    {
+        if ($this->defaultClient===null){
+            $this->setDefaultClient($this->getClient());
+        }
+        return $this->defaultClient;
+    }
+
 
     ######################集群处理方法######################
 
@@ -690,7 +706,8 @@ class RedisCluster extends Redis
     {
         $handelClass = new ExecPipe($this);
         $commandData = $handelClass->getCommand();
-        $client = $client ?? $this->getClient();
+        $client = $client ?? $this->getDefaultClient();
+        //必须默认客户端,否则recv获取不到数据
         $this->setDefaultClient($client);
         //发送原始tcp数据
         if (!$client->send($commandData)) {
@@ -762,18 +779,17 @@ class RedisCluster extends Redis
 
     protected function sendCommand(array $com, ?ClusterClient $client = null): bool
     {
-        $client = $client ?? $this->getClient();
+        $client = $client ?? $this->getDefaultClient();
         $this->setDefaultClient($client);
         return $this->sendCommandByClient($com, $client);
     }
 
     public function recv($timeout = null, ?ClusterClient $client = null): ?Response
     {
-        $client = $client ?? $this->getClient();
+        $client = $client ?? $this->getDefaultClient();
         $this->setDefaultClient($client);
         return $this->recvByClient($client, $timeout);
     }
     ###################### 发送接收tcp流数据 ######################
-
 
 }
