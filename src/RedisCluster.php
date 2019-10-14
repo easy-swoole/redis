@@ -94,13 +94,13 @@ class RedisCluster extends Redis
 
     public function connect(float $timeout = null): bool
     {
-        $client = $this->getClient();
+        $client = $this->getDefaultClient();
         return $this->clientConnect($client, $timeout);
     }
 
     function disconnect()
     {
-        $client = $this->getClient();
+        $client = $this->getDefaultClient();
         $this->clientDisconnect($client);
     }
     ######################服务器连接方法######################
@@ -317,7 +317,6 @@ class RedisCluster extends Redis
         if ($this->defaultClient===null){
             $this->setDefaultClient($this->getClient());
         }
-
         return $this->defaultClient;
     }
 
@@ -779,14 +778,14 @@ class RedisCluster extends Redis
 
     protected function sendCommand(array $com, ?ClusterClient $client = null): bool
     {
-        $client = $client ?? $this->getClient();
+        $client = $client ?? $this->getDefaultClient();
         $this->setDefaultClient($client);
         return $this->sendCommandByClient($com, $client);
     }
 
     public function recv($timeout = null, ?ClusterClient $client = null): ?Response
     {
-        $client = $client ?? $this->getClient();
+        $client = $client ?? $this->getDefaultClient();
         $this->setDefaultClient($client);
         return $this->recvByClient($client, $timeout);
     }
