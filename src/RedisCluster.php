@@ -706,7 +706,8 @@ class RedisCluster extends Redis
     {
         $handelClass = new ExecPipe($this);
         $commandData = $handelClass->getCommand();
-        $client = $client ?? $this->getClient();
+        $client = $client ?? $this->getDefaultClient();
+        //必须默认客户端,否则recv获取不到数据
         $this->setDefaultClient($client);
         //发送原始tcp数据
         if (!$client->send($commandData)) {
