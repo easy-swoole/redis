@@ -305,6 +305,23 @@ class RedisCluster extends Redis
         return $this->clientConnect($this->defaultClient);
     }
 
+    /**
+     * getDefaultClient
+     * @return ClusterClient|null
+     * @throws RedisClusterException
+     * @author Tioncico
+     * Time: 9:30
+     */
+    public function getDefaultClient(): ?ClusterClient
+    {
+        if ($this->defaultClient===null){
+            $this->setDefaultClient($this->getClient());
+        }
+
+        return $this->defaultClient;
+    }
+
+
     ######################集群处理方法######################
 
     ###################### redis集群方法 ######################

@@ -150,7 +150,7 @@ class RedisClusterTest extends TestCase
 
         $data = ['a' => 1, 'b' => 1, 'c' => 1, 'd' => 1,];
         $redis->mSet($data);
-
+        $defaultClientPort = $redis->getDefaultClient()->getPort();
         $recv = [];
         $defaultKey='';
         foreach ($data as $k => $va) {
@@ -162,20 +162,42 @@ class RedisClusterTest extends TestCase
                 break;
             }
         }
+
         $this->assertTrue(!!$recv);
         $data = $redis->getMoveNodeId($recv);
         $this->assertTrue(!!$data);
 
 
         $client = $redis->getClient($data);
+        //断言这个客户端和之前的不一样
+        $this->assertNotEquals($client->getPort(),$defaultClientPort);
         $this->assertTrue($client instanceof ClusterClient);
-        var_dump($client);
 
-//        $data = $redis->getSlotNodeId();
-//        $data = $redis->getNodeClientList();
-//        $data = $redis->getNodeList();
-//        $data = $redis->clientAuth();
-//        $data = $redis->setDefaultClient();
+        //进行一次get 命令的操作,还是默认的客户端
+        $redis->get($defaultKey);
+        $this->assertEquals($redis->getDefaultClient()->getPort(),$defaultClientPort);
+
+        //重新设置默认客户端
+        $redis->setDefaultClient($client);
+        $this->assertNotEquals($redis->getDefaultClient()->getPort(),$defaultClientPort);
+
+        $client = $redis->getDefaultClient();
+        $client->sendCommand(['get', $defaultKey]);
+        $response = $client->recv();
+        $this->assertEquals($response->getData(),1);
+
+
+
+
+//        $data = $redis->getSlotNodeId(3300);
+
+
+        $data = $redis->getNodeClientList();
+        $this->assertIsArray($data);
+        $data = $redis->getNodeList();
+        $this->assertIsArray($data);
+        $data = $redis->clientAuth($client,REDIS_CLUSTER_AUTH);
+
 
 
     }
