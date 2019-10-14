@@ -1771,7 +1771,19 @@ class RedisClusterTest extends TestCase
         $key = 'testGeohash';
 
         $redis->del($key);
-        $data = $redis->geoAdd($key, '118.6197800000', '24.88849', 'user1', '118.6197800000', '24.88859', 'user2', '114.8197800000', '25.88849', 'user3', '118.8197800000', '22.88849', 'user4');
+        $data = $redis->geoAdd($key, [
+            ['118.6197800000', '24.88849', 'user1',],
+            ['118.6197800000', '24.88859', 'user2',],
+            ['114.8197800000', '25.88849', 'user3'],
+            ['118.8197800000', '22.88849', 'user4'],
+        ]);
+        $this->assertEquals(4, $data);
+        $data = $redis->geoAdd($key.'new', [
+            ['longitude'=>'118.6197800000','latitude'=> '24.88849', 'name'=>'user1',],
+            ['longitude'=>'118.6197800000','latitude'=> '24.88859', 'name'=>'user2',],
+            ['longitude'=>'114.8197800000','latitude'=> '25.88849', 'name'=>'user3'],
+            ['longitude'=>'118.8197800000','latitude'=> '22.88849', 'name'=>'user4'],
+        ]);
         $this->assertEquals(4, $data);
 
         $data = $redis->geoDist($key, 'user1', 'user2');

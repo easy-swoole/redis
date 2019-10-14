@@ -272,9 +272,9 @@ class RedisTest extends TestCase
         $data = [];
         do {
             $keys = $redis->scan($cursor, 'xxx*', 1);
-            $data = array_merge($data,$keys);
+            $data = array_merge($data, $keys);
         } while ($cursor);
-        $this->assertEquals(4,count($data));
+        $this->assertEquals(4, count($data));
     }
 
     /**
@@ -375,10 +375,10 @@ class RedisTest extends TestCase
         $data = [];
         do {
             $keys = $redis->scan($cursor, 'xxx*', 1);
-            $data = array_merge($data,$keys);
+            $data = array_merge($data, $keys);
         } while ($cursor);
-        $this->assertEquals(4,count($data));
-        $this->assertTrue(in_array('xxxa',$data));
+        $this->assertEquals(4, count($data));
+        $this->assertTrue(in_array('xxxa', $data));
     }
 
     /**
@@ -474,23 +474,23 @@ class RedisTest extends TestCase
 
         $cursor = 0;
         $redis->del('a');
-        $redis->hMSet('a',[
-            'a'=>'tioncico',
-            'b'=>'tioncico',
-            'c'=>'tioncico',
-            'd'=>'tioncico',
-            'e'=>'tioncico',
-            'f'=>'tioncico',
-            'g'=>'tioncico',
-            'h'=>'tioncico',
+        $redis->hMSet('a', [
+            'a' => 'tioncico',
+            'b' => 'tioncico',
+            'c' => 'tioncico',
+            'd' => 'tioncico',
+            'e' => 'tioncico',
+            'f' => 'tioncico',
+            'g' => 'tioncico',
+            'h' => 'tioncico',
         ]);
 
         $data = [];
         do {
-            $keys = $redis->hScan('a',$cursor);
-            $data = array_merge($data,$keys);
+            $keys = $redis->hScan('a', $cursor);
+            $data = array_merge($data, $keys);
         } while ($cursor);
-        $this->assertEquals(8,count($data));
+        $this->assertEquals(8, count($data));
     }
 
     /**
@@ -580,23 +580,23 @@ class RedisTest extends TestCase
 
         $cursor = 0;
         $redis->del('a');
-        $redis->hMSet('a',[
-            'a'=>'tioncico',
-            'b'=>'tioncico',
-            'c'=>'tioncico',
-            'd'=>'tioncico',
-            'e'=>'tioncico',
-            'f'=>'tioncico',
-            'g'=>'tioncico',
-            'h'=>'tioncico',
+        $redis->hMSet('a', [
+            'a' => 'tioncico',
+            'b' => 'tioncico',
+            'c' => 'tioncico',
+            'd' => 'tioncico',
+            'e' => 'tioncico',
+            'f' => 'tioncico',
+            'g' => 'tioncico',
+            'h' => 'tioncico',
         ]);
         $data = [];
         do {
-            $keys = $redis->hScan('a',$cursor);
-            $data = array_merge($data,$keys);
+            $keys = $redis->hScan('a', $cursor);
+            $data = array_merge($data, $keys);
         } while ($cursor);
-        $this->assertEquals(8,count($data));
-        $this->assertEquals('tioncico',$data['a']);
+        $this->assertEquals(8, count($data));
+        $this->assertEquals('tioncico', $data['a']);
     }
 
     /**
@@ -619,7 +619,7 @@ class RedisTest extends TestCase
         $redis->flushAll();
 
         //测试null的时候
-        $data = $redis->bLPop([$key[0],$key[1]], 1);
+        $data = $redis->bLPop([$key[0], $key[1]], 1);
         $this->assertNull($data);
         $data = $redis->lPush($key[0], $value[0], $value[1]);
         $this->assertEquals(2, $data);
@@ -630,10 +630,10 @@ class RedisTest extends TestCase
         $data = $redis->bRPop([$key[1]], 1);
         $this->assertNull($data);
 
-        $data = $redis->bLPop([$key[0],$key[1]], 1);
+        $data = $redis->bLPop([$key[0], $key[1]], 1);
         $this->assertTrue(!!$data);
 
-        $data = $redis->bRPop([$key[0],$key[1]], 1);
+        $data = $redis->bRPop([$key[0], $key[1]], 1);
         $this->assertTrue(!!$data);
 
         $redis->del($key[0]);
@@ -716,7 +716,7 @@ class RedisTest extends TestCase
         $redis->flushAll();
 
         //测试null的时候
-        $data = $redis->bLPop([$key[0],$key[1]], 1);
+        $data = $redis->bLPop([$key[0], $key[1]], 1);
         $this->assertNull($data);
         $data = $redis->lPush($key[0], $value[0], $value[1]);
         $this->assertEquals(2, $data);
@@ -727,10 +727,10 @@ class RedisTest extends TestCase
         $data = $redis->bRPop([$key[1]], 1);
         $this->assertNull($data);
 
-        $data = $redis->bLPop([$key[0],$key[1]], 1);
+        $data = $redis->bLPop([$key[0], $key[1]], 1);
         $this->assertTrue(!!$data);
 
-        $data = $redis->bRPop([$key[0],$key[1]], 1);
+        $data = $redis->bRPop([$key[0], $key[1]], 1);
         $this->assertTrue(!!$data);
 
 
@@ -885,13 +885,13 @@ class RedisTest extends TestCase
 
         $cursor = 0;
         $redis->del('a');
-        $redis->sAdd('a','a1','a2','a3','a4','a5');
-        $data= [];
+        $redis->sAdd('a', 'a1', 'a2', 'a3', 'a4', 'a5');
+        $data = [];
         do {
-            $keys = $redis->sScan('a',$cursor,'*',1);
-            $data = array_merge($data,$keys);
+            $keys = $redis->sScan('a', $cursor, '*', 1);
+            $data = array_merge($data, $keys);
         } while ($cursor);
-        $this->assertEquals(5,count($data));
+        $this->assertEquals(5, count($data));
     }
 
     /**
@@ -986,14 +986,14 @@ class RedisTest extends TestCase
 
         $cursor = 0;
         $redis->del('a');
-        $redis->sAdd('a','a1','a2','a3','a4','a5');
-        $data= [];
+        $redis->sAdd('a', 'a1', 'a2', 'a3', 'a4', 'a5');
+        $data = [];
         do {
-            $keys = $redis->sScan('a',$cursor,'*',1);
-            $data = array_merge($data,$keys);
+            $keys = $redis->sScan('a', $cursor, '*', 1);
+            $data = array_merge($data, $keys);
         } while ($cursor);
-        $this->assertEquals(5,count($data));
-        $this->assertTrue(in_array('a1',$data));
+        $this->assertEquals(5, count($data));
+        $this->assertTrue(in_array('a1', $data));
     }
 
     /**
@@ -1157,13 +1157,13 @@ class RedisTest extends TestCase
 
         $cursor = 0;
         $redis->del('a');
-        $redis->zAdd('a',1,'a1',2,'a2',3,'a3',4,'a4',5,'a5');
+        $redis->zAdd('a', 1, 'a1', 2, 'a2', 3, 'a3', 4, 'a4', 5, 'a5');
         $data = [];
         do {
-            $keys = $redis->zScan('a',$cursor,'*',1);
-            $data = array_merge($data,$keys);
+            $keys = $redis->zScan('a', $cursor, '*', 1);
+            $data = array_merge($data, $keys);
         } while ($cursor);
-        $this->assertEquals(5,count($data));
+        $this->assertEquals(5, count($data));
     }
 
     /**
@@ -1320,19 +1320,19 @@ class RedisTest extends TestCase
         $redis->del($key[2]);
         $redis->zAdd($key[0], $score[0], $member[0], $score[1], $member[1]);
         $redis->zAdd($key[1], $score[0], $member[0], $score[3], $member[3]);
-        $data = $redis->zUnionStore($key[2], [$key[1], $key[0]],[1,2]);
+        $data = $redis->zUnionStore($key[2], [$key[1], $key[0]], [1, 2]);
         $this->assertEquals(3, $data);
 
 
         $cursor = 0;
         $redis->del('a');
-        $redis->zAdd('a',1,'a1',2,'a2',3,'a3',4,'a4',5,'a5');
+        $redis->zAdd('a', 1, 'a1', 2, 'a2', 3, 'a3', 4, 'a4', 5, 'a5');
         $data = [];
         do {
-            $keys = $redis->zScan('a',$cursor,'*',1);
-            $data = array_merge($data,$keys);
+            $keys = $redis->zScan('a', $cursor, '*', 1);
+            $data = array_merge($data, $keys);
         } while ($cursor);
-        $this->assertEquals(1,$data['a1']);
+        $this->assertEquals(1, $data['a1']);
     }
 
     /**
@@ -1484,9 +1484,9 @@ class RedisTest extends TestCase
 
         $redis->startPipe();
         $this->assertEquals(true, $redis->getPipe()->isStartPipe());
-        $data = $redis->set("a",'1');
+        $data = $redis->set("a", '1');
         $this->assertTrue($data);
-        $this->assertEquals('Set',($redis->getPipe()->getCommandLog()[0][0]));
+        $this->assertEquals('Set', ($redis->getPipe()->getCommandLog()[0][0]));
         $data = $redis->discardPipe();
         $this->assertEquals(true, $data);
         $this->assertEquals(false, $redis->getPipe()->isStartPipe());
@@ -1643,7 +1643,12 @@ class RedisTest extends TestCase
         $key = 'testGeohash';
 
         $redis->del($key);
-        $data = $redis->geoAdd($key, '118.6197800000', '24.88849', 'user1', '118.6197800000', '24.88859', 'user2', '114.8197800000', '25.88849', 'user3', '118.8197800000', '22.88849', 'user4');
+        $data = $redis->geoAdd($key, [
+            ['118.6197800000', '24.88849', 'user1',],
+            ['118.6197800000', '24.88859', 'user2',],
+            ['114.8197800000', '25.88849', 'user3'],
+            ['118.8197800000', '22.88849', 'user4'],
+        ]);
         $this->assertEquals(4, $data);
 
         $data = $redis->geoDist($key, 'user1', 'user2');
