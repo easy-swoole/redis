@@ -521,10 +521,23 @@ class Redis
 
     ######################字符串方法######################
 
-    public function set($key, $val, $expireTime = null): bool
+    /**
+     * set
+     * @param     $key
+     * @param     $val
+     * @param int|string|array $timeout  $timeout [optional]
+     * $timeout = 10
+     * $timeout = 'XX',timeout='NX'
+     * ['NX','EX'=>10],['XX','PX'=>10]
+     * @return bool
+     * @throws RedisException
+     * @author Tioncico
+     * Time: 14:33
+     */
+    public function set($key, $val, $timeout = 0):?bool
     {
         $handelClass = new Set($this);
-        $command = $handelClass->getCommand($key, $val, $expireTime);
+        $command = $handelClass->getCommand($key, $val, $timeout);
 
         if (!$this->sendCommand($command)) {
             return false;
