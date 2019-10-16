@@ -19,7 +19,8 @@ class Set extends AbstractCommandHandel
         $val = $this->serialize($val);
         $command = [CommandConst::SET, $key, $val];
         if ($expireTime != null && $expireTime > 0) {
-            $command[] = 'EX ' . $expireTime;
+            $command[] = 'EX';
+            $command[] = $expireTime;
         }
         $commandData = array_merge($command, $data);
         return $commandData;
