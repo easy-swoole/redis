@@ -148,8 +148,42 @@ class RedisTest extends TestCase
         $data = $redis->set($key, $value);
         $this->assertTrue($data);
 
+        $redis->set($key, $value);
         $data = $redis->get($key);
         $this->assertEquals($data, $value);
+        //set的其他作用测试(超时作用)
+        $keyTTL=$key.'ttl';
+        $redis->set($keyTTL,$value,20);
+        $this->assertGreaterThan(18,$redis->ttl($keyTTL));
+        $redis->set($keyTTL,$value,['EX'=>20]);
+        $this->assertGreaterThan(18,$redis->ttl($keyTTL));
+        $redis->set($keyTTL,$value,['PX'=>20000]);
+        $this->assertGreaterThan(18000,$redis->pTTL($keyTTL));
+        $this->assertGreaterThan(18,$redis->ttl($keyTTL));
+        //set的其他作用测试(存在以及不存在时候设置)
+        $keyExist = $key.'exist';
+        $redis->del($keyExist);
+        $data = $redis->set($keyExist,'1','XX');
+        $this->assertNull($data);
+        $data = $redis->set($keyExist,'1','NX');
+        $this->assertTrue($data);
+        $this->assertEquals('1',$redis->get($keyExist));
+        $data = $redis->set($keyExist,'1','NX');
+        $this->assertNull($data);
+        $data = $redis->set($keyExist,'2','XX');
+        $this->assertTrue($data);
+        $this->assertEquals('2',$redis->get($keyExist));
+        //set组合测试
+        $data = $redis->set($keyExist,'3',['XX','EX'=>10]);
+        $this->assertTrue($data);
+        $this->assertEquals('3',$redis->get($keyExist));
+        $this->assertGreaterThan(8,$redis->ttl($keyTTL));
+        $data = $redis->set($keyExist,'3',['NX','EX'=>10]);
+        $this->assertNull($data);
+        $redis->del($keyExist);;
+        $redis->set($keyExist,'4',['NX','EX'=>20]);
+        $this->assertEquals('4',$redis->get($keyExist));
+        $this->assertGreaterThan(18,$redis->ttl($keyTTL));
 
         $data = $redis->exists($key);
         $this->assertEquals(1, $data);
@@ -292,6 +326,43 @@ class RedisTest extends TestCase
         $this->assertNotFalse($data);
         $data = $redis->set($key, $value);
         $this->assertTrue($data);
+
+        $redis->set($key, $value);
+        $data = $redis->get($key);
+        $this->assertEquals($data, $value);
+        //set的其他作用测试(超时作用)
+        $keyTTL=$key.'ttl';
+        $redis->set($keyTTL,$value,20);
+        $this->assertGreaterThan(18,$redis->ttl($keyTTL));
+        $redis->set($keyTTL,$value,['EX'=>20]);
+        $this->assertGreaterThan(18,$redis->ttl($keyTTL));
+        $redis->set($keyTTL,$value,['PX'=>20000]);
+        $this->assertGreaterThan(18000,$redis->pTTL($keyTTL));
+        $this->assertGreaterThan(18,$redis->ttl($keyTTL));
+        //set的其他作用测试(存在以及不存在时候设置)
+        $keyExist = $key.'exist';
+        $redis->del($keyExist);
+        $data = $redis->set($keyExist,'1','XX');
+        $this->assertNull($data);
+        $data = $redis->set($keyExist,'1','NX');
+        $this->assertTrue($data);
+        $this->assertEquals('1',$redis->get($keyExist));
+        $data = $redis->set($keyExist,'1','NX');
+        $this->assertNull($data);
+        $data = $redis->set($keyExist,'2','XX');
+        $this->assertTrue($data);
+        $this->assertEquals('2',$redis->get($keyExist));
+        //set组合测试
+        $data = $redis->set($keyExist,'3',['XX','EX'=>10]);
+        $this->assertTrue($data);
+        $this->assertEquals('3',$redis->get($keyExist));
+        $this->assertGreaterThan(8,$redis->ttl($keyTTL));
+        $data = $redis->set($keyExist,'3',['NX','EX'=>10]);
+        $this->assertNull($data);
+        $redis->del($keyExist);;
+        $redis->set($keyExist,'4',['NX','EX'=>20]);
+        $this->assertEquals('4',$redis->get($keyExist));
+        $this->assertGreaterThan(18,$redis->ttl($keyTTL));
 
         $data = $redis->get($key);
         $this->assertEquals($data, $value);

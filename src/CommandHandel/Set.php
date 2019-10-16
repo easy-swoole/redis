@@ -15,20 +15,45 @@ class Set extends AbstractCommandHandel
     {
         $key = array_shift($data);
         $val = array_shift($data);
-        $expireTime = array_shift($data);
+        $timeout = array_shift($data);
         $val = $this->serialize($val);
         $command = [CommandConst::SET, $key, $val];
-        if ($expireTime != null && $expireTime > 0) {
+        //int的时候
+        if (is_int($timeout) && $timeout > 0) {
             $command[] = 'EX';
-            $command[] = $expireTime;
+            $command[] = $timeout;
         }
-        $commandData = array_merge($command, $data);
+        //string的时候
+        if (is_string($timeout) && in_array($timeout, ['NX', 'XX'])) {
+            $command[] = $timeout;
+        }
+        //传入数组
+        if (is_array($timeout)) {
+            if (!empty($timeout['EX'])) {
+                $command[] = 'EX';
+                $command[] = $timeout['EX'];
+                unset($timeout['EX']);
+            }
+            if (!empty($timeout['PX'])) {
+                $command[] = 'PX';
+                $command[] = $timeout['PX'];
+                unset($timeout['PX']);
+            }
+            foreach ($timeout as $v) {
+                $command[] = $v;
+            }
+        }
+        $commandData = $command;
         return $commandData;
     }
 
 
     public function handelRecv(Response $recv)
     {
-        return true;
+        if ($recv->getData() === null) {
+            return null;
+        } else {
+            return true;
+        }
     }
 }
