@@ -150,6 +150,8 @@ class RedisTest extends TestCase
 
         $redis->set($key, $value,3);
         $this->assertNotEquals(-1,$redis->ttl($key));
+        $redis->set($key, $value,30);
+        $this->assertGreaterThan(20,$redis->ttl($key));
 
         $data = $redis->get($key);
         $this->assertEquals($data, $value);
