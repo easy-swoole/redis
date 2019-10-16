@@ -148,6 +148,9 @@ class RedisTest extends TestCase
         $data = $redis->set($key, $value);
         $this->assertTrue($data);
 
+        $redis->set($key, $value,3);
+        $this->assertNotEquals(-1,$redis->ttl($key));
+
         $data = $redis->get($key);
         $this->assertEquals($data, $value);
 
