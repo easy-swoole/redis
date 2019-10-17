@@ -5,9 +5,11 @@
 ```
 ./vendor/bin/co-phpunit tests
 ```
+## redis详细文档
+http://www.easyswoole.com/Components/Redis/introduction.html
 
 ## 支持方法
-目前,该redis客户端组件,已经支持除去脚本外的所有方法(目前支持了181个方法):  
+目前,该redis客户端组件,已经支持除去脚本外的所有方法(目前支持了188个方法):
 
 - 连接方法(connection)
 - 集群方法(cluster)
@@ -21,6 +23,7 @@
 - 有序集合(sorted sets)
 - 集合 (sets)
 - 事务 (transaction)
+- 管道支持 (pipe)
 
 > 由于redis的命令较多,可能漏掉1,2个命令
 
@@ -33,7 +36,7 @@ go(function (){
     $redis = new \EasySwoole\Redis\Redis(new \EasySwoole\Redis\Config\RedisConfig([
         'host' => '127.0.0.1',
         'port' => '6379',
-        'auth' => 'easyswoole'Default.xml,
+        'auth' => 'easyswoole',
         'serialize' => \EasySwoole\Redis\Config\RedisConfig::SERIALIZE_NONE
     ]));
     var_dump($redis->set('a',1));
