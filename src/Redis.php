@@ -220,7 +220,7 @@ class Redis
                 throw new RedisException("auth to redis host {$this->config->getHost()}:{$this->config->getPort()} fail");
             }
         }
-        if ($this->config->getDb()>0){
+        if ($this->config->getDb()!==null){
             $this->select($this->config->getDb());
         }
 
