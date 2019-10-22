@@ -16,6 +16,7 @@ class RedisConfig extends SplBean
     protected $auth;
     protected $timeout = 3.0;
     protected $reconnectTimes = 3;
+    protected $db=null;
     protected $serialize = self::SERIALIZE_NONE;
 
     /**
@@ -112,5 +113,21 @@ class RedisConfig extends SplBean
     public function setSerialize(int $serialize): void
     {
         $this->serialize = $serialize;
+    }
+
+    /**
+     * @return int
+     */
+    public function getDb(): ?int
+    {
+        return $this->db;
+    }
+
+    /**
+     * @param int $db
+     */
+    public function setDb(?int $db): void
+    {
+        $this->db = $db;
     }
 }
