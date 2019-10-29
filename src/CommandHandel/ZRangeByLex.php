@@ -13,7 +13,8 @@ class ZRangeByLex extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
-		$min=array_shift($data);
+        $this->setClusterExecClientByKey($key);
+        $min=array_shift($data);
 		$max=array_shift($data);
 
 		$command = [CommandConst::ZRANGEBYLEX,$key,$min,$max];

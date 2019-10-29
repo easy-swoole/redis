@@ -541,7 +541,6 @@ class Redis
     public function set($key, $val, $timeout = 0):?bool
     {
         $handelClass = new Set($this);
-        return $handelClass->exec($key, $val, $timeout);
         $command = $handelClass->getCommand($key, $val, $timeout);
 
         if (!$this->sendCommand($command)) {
@@ -557,7 +556,6 @@ class Redis
     public function get($key)
     {
         $handelClass = new Get($this);
-        return $handelClass->exec($key);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -2057,7 +2055,6 @@ class Redis
     {
         $handelClass = new Exec($this);
         $command = $handelClass->getCommand();
-
         if (!$this->sendCommand($command)) {
             return false;
         }

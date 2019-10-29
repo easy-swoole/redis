@@ -14,6 +14,7 @@ class SAdd extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->setClusterExecClientByKey($key);
         $data = array_shift($data);
 
 

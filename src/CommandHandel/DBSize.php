@@ -12,7 +12,6 @@ class DBSize extends AbstractCommandHandel
 
 	public function handelCommandData(...$data)
 	{
-		
 
 		$command = [CommandConst::DBSIZE];
 		$commandData = array_merge($command,$data);

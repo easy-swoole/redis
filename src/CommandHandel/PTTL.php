@@ -13,6 +13,7 @@ class PTTL extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
+        $this->setClusterExecClientByKey($key);
 
 
 		        

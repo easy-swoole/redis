@@ -12,8 +12,6 @@ class Command extends AbstractCommandHandel
 
 	public function handelCommandData(...$data)
 	{
-
-
 		$command = [CommandConst::COMMAND];
 		$commandData = array_merge($command,$data);
 		return $commandData;

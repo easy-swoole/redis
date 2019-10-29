@@ -14,6 +14,7 @@ class SRem extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->setClusterExecClientByKey($key);
         $member1 = array_shift($data);
         $members = [];
 

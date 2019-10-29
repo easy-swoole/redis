@@ -12,7 +12,6 @@ class LastSave extends AbstractCommandHandel
 
 	public function handelCommandData(...$data)
 	{
-		
 
 		$command = [CommandConst::LASTSAVE];
 		$commandData = array_merge($command,$data);

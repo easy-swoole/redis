@@ -251,10 +251,13 @@ class RedisCluster extends Redis
             if (empty($node['slot'])) {
                 continue;
             }
+
+            if (strpos($node['flags'], 'master') === false) {
+                continue;
+            }
+
             if ($node['slot'][0] <= $slotId && $node['slot'][1] >= $slotId) {
-                if (strpos($node['flags'], 'master') !== false) {
-                    return $key;
-                }
+                return $key;
             }
         }
         return null;
@@ -294,15 +297,12 @@ class RedisCluster extends Redis
     /**
      * setDefaultClient
      * @param ClusterClient $defaultClient
-     * @return bool
-     * @throws RedisClusterException
      * @author Tioncico
      * Time: 17:25
      */
     public function setDefaultClient(ClusterClient $defaultClient)
     {
         $this->defaultClient = $defaultClient;
-        return $this->clientConnect($this->defaultClient);
     }
 
     /**
@@ -783,7 +783,7 @@ class RedisCluster extends Redis
     {
         if ($client === null) {
             $client = $this->getDefaultClient();
-        }else{
+        } else {
             $this->setDefaultClient($client);
         }
         return $this->sendCommandByClient($com, $client);
@@ -793,7 +793,7 @@ class RedisCluster extends Redis
     {
         if ($client === null) {
             $client = $this->getDefaultClient();
-        }else{
+        } else {
             $this->setDefaultClient($client);
         }
         return $this->recvByClient($client, $timeout);

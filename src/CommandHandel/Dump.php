@@ -13,11 +13,9 @@ class Dump extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
+        $this->setClusterExecClientByKey($key);
 
-
-		        
-
-		$command = [CommandConst::DUMP,$key];
+        $command = [CommandConst::DUMP,$key];
 		$commandData = array_merge($command,$data);
 		return $commandData;
 	}

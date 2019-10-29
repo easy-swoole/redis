@@ -15,7 +15,6 @@ class ConfigSet extends AbstractCommandHandel
 		$parameter=array_shift($data);
 		$value=array_shift($data);
 
-
 		$command = [CommandConst::CONFIG,'SET',$parameter,$value];
 		$commandData = array_merge($command,$data);
 		return $commandData;

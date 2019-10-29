@@ -13,7 +13,8 @@ class GeoAdd extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
-		$data = array_shift($data);
+        $this->setClusterExecClientByKey($key);
+        $data = array_shift($data);
         $command = [CommandConst::GEOADD,$key];
         foreach ($data as $locationData){
             $command[] = $locationData['longitude']??$locationData[0];

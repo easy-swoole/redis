@@ -12,7 +12,6 @@ class FlushDb extends AbstractCommandHandel
 
 	public function handelCommandData(...$data)
 	{
-		
 
 		$command = [CommandConst::FLUSHDB];
 		$commandData = array_merge($command,$data);

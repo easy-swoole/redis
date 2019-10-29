@@ -12,7 +12,6 @@ class DebugSegfault extends AbstractCommandHandel
 
 	public function handelCommandData(...$data)
 	{
-		
 
 		$command = [CommandConst::DEBUGSEGFAULT];
 		$commandData = array_merge($command,$data);

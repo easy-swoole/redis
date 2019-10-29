@@ -13,11 +13,10 @@ class GetRange extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
-		$start=array_shift($data);
+        $this->setClusterExecClientByKey($key);
+        $start=array_shift($data);
 		$end=array_shift($data);
 
-
-		        
 
 		$command = [CommandConst::GETRANGE,$key,$start,$end];
 		$commandData = array_merge($command,$data);

@@ -16,9 +16,6 @@ class BRPopLPush extends AbstractCommandHandel
 		$destination=array_shift($data);
 		$timeout=array_shift($data);
 
-
-		        
-
 		$command = [CommandConst::BRPOPLPUSH,$source,$destination,$timeout];
 		$commandData = array_merge($command,$data);
 		return $commandData;
@@ -28,6 +25,6 @@ class BRPopLPush extends AbstractCommandHandel
 	public function handelRecv(Response $recv)
 	{
 		$data = $recv->getData();
-		        return $this->unSerialize($data);
+		return $this->unSerialize($data);
 	}
 }

@@ -13,7 +13,8 @@ class Expire extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
-		$expireTime=array_shift($data);
+        $this->setClusterExecClientByKey($key);
+        $expireTime=array_shift($data);
 
 		$command = [CommandConst::EXPIRE,$key,$expireTime];
 		$commandData = array_merge($command,$data);

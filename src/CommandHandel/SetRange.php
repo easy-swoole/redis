@@ -13,7 +13,8 @@ class SetRange extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
-		$offset=array_shift($data);
+        $this->setClusterExecClientByKey($key);
+        $offset=array_shift($data);
 		$value=array_shift($data);
 
 

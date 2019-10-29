@@ -14,6 +14,7 @@ class ZAdd extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->setClusterExecClientByKey($key);
         $score1 = array_shift($data);
         $member1 = array_shift($data);
 

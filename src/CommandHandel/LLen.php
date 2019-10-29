@@ -13,9 +13,7 @@ class LLen extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
-
-
-		        
+        $this->setClusterExecClientByKey($key);
 
 		$command = [CommandConst::LLEN,$key];
 		$commandData = array_merge($command,$data);

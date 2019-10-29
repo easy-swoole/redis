@@ -13,6 +13,7 @@ class PfAdd extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
+        $this->setClusterExecClientByKey($key);
         $elements=array_shift($data);
 
 		$command = [CommandConst::PFADD,$key];

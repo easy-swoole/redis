@@ -12,8 +12,6 @@ class FlushAll extends AbstractCommandHandel
 
 	public function handelCommandData(...$data)
 	{
-		
-
 		$command = [CommandConst::FLUSHALL];
 		$commandData = array_merge($command,$data);
 		return $commandData;

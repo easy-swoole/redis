@@ -13,10 +13,8 @@ class LIndex extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
-		$index=array_shift($data);
-
-
-		        
+        $this->setClusterExecClientByKey($key);
+        $index=array_shift($data);
 
 		$command = [CommandConst::LINDEX,$key,$index];
 		$commandData = array_merge($command,$data);

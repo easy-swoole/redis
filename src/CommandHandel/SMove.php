@@ -17,7 +17,7 @@ class SMove extends AbstractCommandHandel
 		$member=array_shift($data);
 
 
-		        $member = $this->serialize($member);
+		$member = $this->serialize($member);
 		        
 
 		$command = [CommandConst::SMOVE,$source,$destination,$member];

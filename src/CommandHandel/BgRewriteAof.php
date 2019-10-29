@@ -12,8 +12,6 @@ class BgRewriteAof extends AbstractCommandHandel
 
 	public function handelCommandData(...$data)
 	{
-		
-
 		$command = [CommandConst::BGREWRITEAOF];
 		$commandData = array_merge($command,$data);
 		return $commandData;

@@ -12,7 +12,6 @@ class Role extends AbstractCommandHandel
 
 	public function handelCommandData(...$data)
 	{
-		
 
 		$command = [CommandConst::ROLE];
 		$commandData = array_merge($command,$data);
