@@ -217,7 +217,7 @@ class RedisCluster extends Redis
         return $client;
     }
 
-    protected function getClientBySlotId($slotId)
+    public function getClientBySlotId($slotId)
     {
         $nodeId = $this->getSlotNodeId($slotId);
         if ($nodeId == null) {
@@ -314,7 +314,7 @@ class RedisCluster extends Redis
      */
     public function getDefaultClient(): ?ClusterClient
     {
-        if ($this->defaultClient===null){
+        if ($this->defaultClient === null) {
             $this->setDefaultClient($this->getClient());
         }
         return $this->defaultClient;
@@ -746,7 +746,7 @@ class RedisCluster extends Redis
         throw new RedisClusterException("connect to redis host {$client->getHost()}:{$client->getPort()} fail after retry {$this->tryConnectTimes} times");
     }
 
-    protected function recvByClient(ClusterClient $client, $timeout = null)
+    public function recvByClient(ClusterClient $client, $timeout = null)
     {
         $command = array_shift($this->lastCommandLog);
         $result = $client->recv($timeout ?? $this->config->getTimeout());
@@ -759,6 +759,7 @@ class RedisCluster extends Redis
             $client->sendCommand($command);
             $result = $client->recv($timeout ?? $this->config->getTimeout());
         }
+
         if ($result->getStatus() === $result::STATUS_TIMEOUT) {
             //节点断线处理
             $this->clientDisconnect($client);
@@ -766,6 +767,7 @@ class RedisCluster extends Redis
             $this->lastSocketError = $client->socketError();
             return false;
         }
+
         if ($result->getStatus() == $result::STATUS_ERR) {
             $this->errorType = $result->getErrorType();
             $this->errorMsg = $result->getMsg();
@@ -777,17 +779,23 @@ class RedisCluster extends Redis
         return $result;
     }
 
-    protected function sendCommand(array $com, ?ClusterClient $client = null): bool
+    public function sendCommand(array $com, ?ClusterClient $client = null): bool
     {
-        $client = $client ?? $this->getDefaultClient();
-        $this->setDefaultClient($client);
+        if ($client === null) {
+            $client = $this->getDefaultClient();
+        }else{
+            $this->setDefaultClient($client);
+        }
         return $this->sendCommandByClient($com, $client);
     }
 
     public function recv($timeout = null, ?ClusterClient $client = null): ?Response
     {
-        $client = $client ?? $this->getDefaultClient();
-        $this->setDefaultClient($client);
+        if ($client === null) {
+            $client = $this->getDefaultClient();
+        }else{
+            $this->setDefaultClient($client);
+        }
         return $this->recvByClient($client, $timeout);
     }
     ###################### 发送接收tcp流数据 ######################

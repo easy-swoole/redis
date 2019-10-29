@@ -541,6 +541,7 @@ class Redis
     public function set($key, $val, $timeout = 0):?bool
     {
         $handelClass = new Set($this);
+        return $handelClass->exec($key, $val, $timeout);
         $command = $handelClass->getCommand($key, $val, $timeout);
 
         if (!$this->sendCommand($command)) {
@@ -556,6 +557,7 @@ class Redis
     public function get($key)
     {
         $handelClass = new Get($this);
+        return $handelClass->exec($key);
         $command = $handelClass->getCommand($key);
 
         if (!$this->sendCommand($command)) {
@@ -2828,7 +2830,7 @@ class Redis
 
 
     ###################### 发送接收tcp流数据 ######################
-    protected function sendCommand(array $com): bool
+    public function sendCommand(array $com): bool
     {
         //管道拦截
         if ($this->getPipe() instanceof Pipe && $this->getPipe()->isStartPipe()) {

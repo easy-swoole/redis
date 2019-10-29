@@ -1,4 +1,5 @@
 <?php
+
 namespace EasySwoole\Redis\CommandHandel;
 
 use EasySwoole\Redis\CommandConst;
@@ -7,30 +8,30 @@ use EasySwoole\Redis\Response;
 
 class MGet extends AbstractCommandHandel
 {
-	public $commandName = 'MGet';
+    public $commandName = 'MGet';
 
 
-	public function handelCommandData(...$data)
-	{
-        $keys=array_shift($data);
-        if (is_array($keys)){
+    public function handelCommandData(...$data)
+    {
+        $keys = array_shift($data);
+        if (is_array($keys)) {
             $command = [CommandConst::MGET];
-            $commandData = array_merge($command,$keys);
-        }else{
-            $command = [CommandConst::MGET,$keys];
+            $commandData = array_merge($command, $keys);
+        } else {
+            $command = [CommandConst::MGET, $keys];
             $commandData = $command;
         }
-		return $commandData;
-	}
+        return $commandData;
+    }
 
 
-	public function handelRecv(Response $recv)
-	{
-		$data = $recv->getData();
-		        foreach ($data as $key => $value) {
-		            $data[$key] = $this->unSerialize($value);
-		        }
+    public function handelRecv(Response $recv)
+    {
+        $data = $recv->getData();
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->unSerialize($value);
+        }
 
-		        return $data;
-	}
+        return $data;
+    }
 }

@@ -14,6 +14,8 @@ class Set extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->key = $key;
+//        $this->setClusterExecClientByKey($key);
         $val = array_shift($data);
         $timeout = array_shift($data);
         $val = $this->serialize($val);
