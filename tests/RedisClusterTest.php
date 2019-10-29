@@ -1622,43 +1622,6 @@ class RedisClusterTest extends TestCase
 
     }
 
-    /**
-     * 事务测试
-     * testTransaction
-     * @author tioncico
-     * Time: 下午5:40
-     */
-    function testTransaction()
-    {
-        $this->assertEquals(1, 1);
-
-        $redis = $this->redis;
-
-        $data = $redis->multi();
-        $this->assertTrue($data);
-        $this->assertEquals(true, $redis->getTransaction()->isTransaction());
-        $redis->del('ha');
-        $data = $redis->hset('ha', 'a', 1);
-        $this->assertEquals('QUEUED', $data);
-        $data = $redis->hset('ha', 'b', '2');
-        $this->assertEquals('QUEUED', $data);
-        $data = $redis->hset('ha', 'c', '3');
-        $this->assertEquals('QUEUED', $data);
-        $data = $redis->hGetAll('ha');
-        $this->assertEquals('QUEUED', $data);
-        $data = $redis->exec();
-        $this->assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $data[4]);
-        $this->assertEquals(false, $redis->getTransaction()->isTransaction());
-
-        $redis->multi();
-        $this->assertEquals(true, $redis->getTransaction()->isTransaction());
-        $data = $redis->discard();
-        $this->assertEquals(true, $data);
-        $this->assertEquals(false, $redis->getTransaction()->isTransaction());
-        $data = $redis->watch('a', 'b', 'c');
-        $data = $redis->unwatch();
-        $this->assertEquals(1, $data);
-    }
 
     /**
      * 管道测试

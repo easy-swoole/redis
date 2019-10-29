@@ -14,6 +14,7 @@ class ZRem extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->setClusterExecClientByKey($key);
         $member = array_shift($data);
 
         $members = [];

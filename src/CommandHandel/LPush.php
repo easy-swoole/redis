@@ -14,6 +14,7 @@ class LPush extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->setClusterExecClientByKey($key);
         foreach ($data as $k=>$value){
             $data[$k] = $this->serialize($value);
         }

@@ -13,7 +13,8 @@ class ZInCrBy extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
-		$increment=array_shift($data);
+        $this->setClusterExecClientByKey($key);
+        $increment=array_shift($data);
 		$member=array_shift($data);
 
 

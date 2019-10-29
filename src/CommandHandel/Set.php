@@ -10,10 +10,10 @@ class Set extends AbstractCommandHandel
 {
     public $commandName = 'Set';
 
-
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->setClusterExecClientByKey($key);
         $val = array_shift($data);
         $timeout = array_shift($data);
         $val = $this->serialize($val);

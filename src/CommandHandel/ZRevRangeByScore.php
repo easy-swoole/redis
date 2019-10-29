@@ -15,6 +15,7 @@ class ZRevRangeByScore extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->setClusterExecClientByKey($key);
         $max = array_shift($data);
         $min = array_shift($data);
         $options = array_shift($data);

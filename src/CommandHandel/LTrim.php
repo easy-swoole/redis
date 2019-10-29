@@ -13,7 +13,8 @@ class LTrim extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
-		$start=array_shift($data);
+        $this->setClusterExecClientByKey($key);
+        $start=array_shift($data);
 		$stop=array_shift($data);
 
 

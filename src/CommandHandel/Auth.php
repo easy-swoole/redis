@@ -14,9 +14,6 @@ class Auth extends AbstractCommandHandel
 	{
 		$password=array_shift($data);
 
-
-		        
-
 		$command = [CommandConst::AUTH,$password];
 		$commandData = array_merge($command,$data);
 		return $commandData;

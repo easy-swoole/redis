@@ -15,8 +15,6 @@ class Keys extends AbstractCommandHandel
 		$pattern=array_shift($data);
 
 
-		        
-
 		$command = [CommandConst::KEYS,$pattern];
 		$commandData = array_merge($command,$data);
 		return $commandData;

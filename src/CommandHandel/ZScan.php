@@ -12,6 +12,7 @@ class ZScan extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key=array_shift($data);
+        $this->setClusterExecClientByKey($key);
         $cursor=array_shift($data);
         $pattern=array_shift($data);
         $count=array_shift($data);

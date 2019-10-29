@@ -14,6 +14,7 @@ class SRandMemBer extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->setClusterExecClientByKey($key);
         $count = array_shift($data);
 
         $command = [CommandConst::SRANDMEMBER, $key];

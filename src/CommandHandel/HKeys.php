@@ -13,9 +13,8 @@ class HKeys extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
+        $this->setClusterExecClientByKey($key);
 
-
-		        
 
 		$command = [CommandConst::HKEYS,$key];
 		$commandData = array_merge($command,$data);

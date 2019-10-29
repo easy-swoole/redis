@@ -14,6 +14,7 @@ class LInsert extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->setClusterExecClientByKey($key);
         $isBefore = array_shift($data);
         $pivot = array_shift($data);
         $value = array_shift($data);

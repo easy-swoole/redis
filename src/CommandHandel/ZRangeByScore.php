@@ -15,6 +15,7 @@ class ZRangeByScore extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->setClusterExecClientByKey($key);
         $min = array_shift($data);
         $max = array_shift($data);
         $options = array_shift($data);

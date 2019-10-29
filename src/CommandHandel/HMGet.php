@@ -14,6 +14,7 @@ class HMGet extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->setClusterExecClientByKey($key);
         $hashKeys = array_shift($data);
 
         $command = [CommandConst::HMGET, $key];

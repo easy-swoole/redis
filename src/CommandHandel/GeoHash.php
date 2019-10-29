@@ -13,7 +13,8 @@ class GeoHash extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
-		$location=array_shift($data);
+        $this->setClusterExecClientByKey($key);
+        $location=array_shift($data);
 
 		$command = [CommandConst::GEOHASH,$key,$location];
 		$commandData = array_merge($command,$data);

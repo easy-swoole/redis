@@ -13,7 +13,8 @@ class IncrByFloat extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
-		$value=array_shift($data);
+        $this->setClusterExecClientByKey($key);
+        $value=array_shift($data);
 
 
 		        

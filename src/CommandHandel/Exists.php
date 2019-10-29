@@ -14,8 +14,7 @@ class Exists extends AbstractCommandHandel
 	{
 		$key=array_shift($data);
 
-
-		        
+        $this->setClusterExecClientByKey($key);
 
 		$command = [CommandConst::EXISTS,$key];
 		$commandData = array_merge($command,$data);

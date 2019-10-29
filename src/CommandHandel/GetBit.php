@@ -13,7 +13,8 @@ class GetBit extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
-		$offset=array_shift($data);
+        $this->setClusterExecClientByKey($key);
+        $offset=array_shift($data);
 
 
 		        

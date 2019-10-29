@@ -14,6 +14,7 @@ class LRem extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->setClusterExecClientByKey($key);
         $count = array_shift($data);
         $value = array_shift($data);
 

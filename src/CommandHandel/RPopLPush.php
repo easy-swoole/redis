@@ -15,9 +15,6 @@ class RPopLPush extends AbstractCommandHandel
 		$source=array_shift($data);
 		$destination=array_shift($data);
 
-
-		        
-
 		$command = [CommandConst::RPOPLPUSH,$source,$destination];
 		$commandData = array_merge($command,$data);
 		return $commandData;

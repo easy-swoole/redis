@@ -13,11 +13,11 @@ class GetSet extends AbstractCommandHandel
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
-		$value=array_shift($data);
+        $this->setClusterExecClientByKey($key);
+        $value=array_shift($data);
 
 
-		        $value = $this->serialize($value);
-		        
+		$value = $this->serialize($value);
 
 		$command = [CommandConst::GETSET,$key,$value];
 		$commandData = array_merge($command,$data);

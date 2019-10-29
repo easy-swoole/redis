@@ -2055,7 +2055,6 @@ class Redis
     {
         $handelClass = new Exec($this);
         $command = $handelClass->getCommand();
-
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -2828,7 +2827,7 @@ class Redis
 
 
     ###################### 发送接收tcp流数据 ######################
-    protected function sendCommand(array $com): bool
+    public function sendCommand(array $com): bool
     {
         //管道拦截
         if ($this->getPipe() instanceof Pipe && $this->getPipe()->isStartPipe()) {

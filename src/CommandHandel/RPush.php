@@ -14,6 +14,7 @@ class RPush extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->setClusterExecClientByKey($key);
 
         foreach ($data as $k => $va) {
             $data[$k] = $this->serialize($va);

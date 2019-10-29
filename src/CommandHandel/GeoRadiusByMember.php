@@ -14,6 +14,7 @@ class GeoRadiusByMember extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->setClusterExecClientByKey($key);
         $location = array_shift($data);
         $radius = array_shift($data);
         $unit = array_shift($data);

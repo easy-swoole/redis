@@ -12,7 +12,6 @@ class Shutdown extends AbstractCommandHandel
 
 	public function handelCommandData(...$data)
 	{
-		
 
 		$command = [CommandConst::SHUTDOWN];
 		$commandData = array_merge($command,$data);
