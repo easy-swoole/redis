@@ -6,7 +6,7 @@ use EasySwoole\Redis\CommandConst;
 use EasySwoole\Redis\Redis;
 use EasySwoole\Redis\Response;
 
-class SRandMemBer extends AbstractCommandHandel
+class SRandMember extends AbstractCommandHandel
 {
     public $commandName = 'SRandMemBer';
 
@@ -29,6 +29,9 @@ class SRandMemBer extends AbstractCommandHandel
     public function handelRecv(Response $recv)
     {
         $data = $recv->getData();
+        if ($data===null){
+            return null;
+        }
         foreach ($data as $key => $value) {
             $data[$key] = $this->unSerialize($value);
         }
