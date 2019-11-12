@@ -933,8 +933,14 @@ class RedisTest extends TestCase
 
         $redis->del($key[3]);
         $redis->sAdd($key[3], $value[0], $value[1], $value[2], $value[3]);
-        $data = $redis->sRandMemBer($key[3], 4);
+        $data = $redis->sRandMember($key[3], 4);
         $this->assertEquals(4, count($data));
+
+        $data = $redis->sRandMember($key[3].rand(1,1111));
+        $this->assertEquals(null, $data);
+
+        $data = $redis->sRandMember($key[3]);
+        $this->assertTrue(in_array($data,$value));
 
         $data = $redis->sRem($key[3], $value[0], $value[1], $value[2], $value[3]);
         $this->assertEquals(4, $data);
@@ -1034,8 +1040,14 @@ class RedisTest extends TestCase
 
         $redis->del($key[3]);
         $redis->sAdd($key[3], $value[0], $value[1], $value[2], $value[3]);
-        $data = $redis->sRandMemBer($key[3], 4);
+        $data = $redis->sRandMember($key[3], 4);
         $this->assertEquals(4, count($data));
+
+        $data = $redis->sRandMember($key[3].rand(1,1111));
+        $this->assertEquals(null, $data);
+
+        $data = $redis->sRandMember($key[3]);
+        $this->assertTrue(in_array($data,$value));
 
         $data = $redis->sRem($key[3], $value[0], $value[1], $value[2], $value[3]);
         $this->assertEquals(4, $data);

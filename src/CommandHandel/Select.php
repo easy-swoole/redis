@@ -14,9 +14,6 @@ class Select extends AbstractCommandHandel
 	{
 		$db=array_shift($data);
 
-
-		        
-
 		$command = [CommandConst::SELECT,$db];
 		$commandData = array_merge($command,$data);
 		return $commandData;

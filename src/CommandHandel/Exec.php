@@ -24,6 +24,9 @@ class Exec extends AbstractCommandHandel
 	    $commandLog = $this->redis->getTransaction()->getCommandLog();
         $this->redis->getTransaction()->setCommandLog([]);
         $this->redis->getTransaction()->setIsTransaction(false);
+        if ($data===null){
+            return $data;
+        }
 	    foreach ($data as $k=>$value){
 	        $commandClassName = "\\EasySwoole\\Redis\\CommandHandel\\".array_shift($commandLog);
 	        $commandClass = new $commandClassName($this->redis);

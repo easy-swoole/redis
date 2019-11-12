@@ -100,7 +100,7 @@ use EasySwoole\Redis\CommandHandel\SIsMember;
 use EasySwoole\Redis\CommandHandel\SMembers;
 use EasySwoole\Redis\CommandHandel\SMove;
 use EasySwoole\Redis\CommandHandel\SPop;
-use EasySwoole\Redis\CommandHandel\SRandMemBer;
+use EasySwoole\Redis\CommandHandel\SRandMember;
 use EasySwoole\Redis\CommandHandel\SRem;
 use EasySwoole\Redis\CommandHandel\SScan;
 use EasySwoole\Redis\CommandHandel\StartPipe;
@@ -1482,9 +1482,9 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    public function sRandMemBer($key, $count = null)
+    public function sRandMember($key, $count = null)
     {
-        $handelClass = new SRandMemBer($this);
+        $handelClass = new SRandMember($this);
         $command = $handelClass->getCommand($key, $count);
 
         if (!$this->sendCommand($command)) {
