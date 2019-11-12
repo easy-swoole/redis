@@ -20,7 +20,7 @@ class ZInTerStore extends AbstractCommandHandel
         $aggregate = array_shift($data);
         $keysCount = count($keys);
         $weightsCount = count($weights);
-        if ($weightsCount>0&&$keysCount !== $weightsCount) {
+        if ($weightsCount > 0 && $keysCount !== $weightsCount) {
             throw new RedisClusterException('WEIGHTS and keys array should be the same size!');
         }
 
@@ -28,7 +28,7 @@ class ZInTerStore extends AbstractCommandHandel
         foreach ($keys as $k => $key) {
             $command[] = $key;
         }
-        if ($weightsCount>0){
+        if ($weightsCount > 0) {
             $command[] = 'WEIGHTS';
         }
         foreach ($weights as $k => $weight) {
