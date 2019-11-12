@@ -1067,7 +1067,7 @@ class RedisClusterTest extends TestCase
         $this->assertEquals(null, $data);
 
         $data = $redis->sRandMember($key[3]);
-        $this->assertTrue(!!$data);
+        $this->assertTrue(in_array($data,$value));
 
         $data = $redis->sRem($key[3], $value[0], $value[1], $value[2], $value[3]);
         $this->assertEquals(4, $data);
@@ -1173,7 +1173,7 @@ class RedisClusterTest extends TestCase
         $this->assertEquals(null, $data);
 
         $data = $redis->sRandMember($key[3]);
-        $this->assertTrue(!!$data);
+        $this->assertTrue(in_array($data,$value));
 
         $data = $redis->sRem($key[3], $value[0], $value[1], $value[2], $value[3]);
         $this->assertEquals(4, $data);

@@ -33,6 +33,8 @@ class SRandMember extends AbstractCommandHandel
             foreach ($data as $key => $value) {
                 $data[$key] = $this->unSerialize($value);
             }
+        }else{
+            $data = $this->unSerialize($data);
         }
 
         return $data;
