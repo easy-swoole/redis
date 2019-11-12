@@ -29,12 +29,12 @@ class SRandMember extends AbstractCommandHandel
     public function handelRecv(Response $recv)
     {
         $data = $recv->getData();
-        if ($data===null){
-            return null;
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $data[$key] = $this->unSerialize($value);
+            }
         }
-        foreach ($data as $key => $value) {
-            $data[$key] = $this->unSerialize($value);
-        }
+
         return $data;
     }
 }
