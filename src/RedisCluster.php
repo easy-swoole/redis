@@ -652,8 +652,6 @@ class RedisCluster extends Redis
             if ($recv === null) {
                 continue;
             }
-            var_dump($handelClass->getData($recv));
-
             $result += $handelClass->getData($recv);
         }
         return $result;

@@ -171,7 +171,7 @@ class RedisTest extends TestCase
         $data = $redis->unlink($keyArr[0].'test');
         $this->assertEquals(0,$data);
 
-        $data = $redis->del($keyArr[1],$keyArr[2],$keyArr[3]);
+        $data = $redis->unlink($keyArr[1],$keyArr[2],$keyArr[3]);
         $this->assertEquals(3,$data);
 
         $redis->mSet([
@@ -180,7 +180,7 @@ class RedisTest extends TestCase
             $keyArr[2]=>$valueArr[2],
             $keyArr[3]=>$valueArr[3],
         ]);
-        $data = $redis->del([$keyArr[1],$keyArr[2],$keyArr[3]]);
+        $data = $redis->unlink([$keyArr[1],$keyArr[2],$keyArr[3]]);
         $this->assertEquals(3,$data);
 
 
