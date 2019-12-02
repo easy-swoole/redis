@@ -10,7 +10,7 @@ class RedisConfig extends SplBean
 {
     public const SERIALIZE_NONE = 0;
     public const SERIALIZE_PHP = 1;
-    public const SERIALIZE_JSON = 1;
+    public const SERIALIZE_JSON = 2;
     protected $host='127.0.0.1';
     protected $port = 6379;
     protected $auth;

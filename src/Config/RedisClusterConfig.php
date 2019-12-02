@@ -7,7 +7,7 @@ class RedisClusterConfig extends RedisConfig
 {
     public const SERIALIZE_NONE = 0;
     public const SERIALIZE_PHP = 1;
-    public const SERIALIZE_JSON = 1;
+    public const SERIALIZE_JSON = 2;
     protected $serverList = [
         [
             'host' => '127.0.0.1',
