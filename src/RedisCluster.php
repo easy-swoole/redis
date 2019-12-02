@@ -25,10 +25,12 @@ use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterSlaves;
 use EasySwoole\Redis\CommandHandel\ClusterCommand\ClusterSlots;
 use EasySwoole\Redis\CommandHandel\ClusterCommand\Readonly;
 use EasySwoole\Redis\CommandHandel\ClusterCommand\Readwrite;
+use EasySwoole\Redis\CommandHandel\Del;
 use EasySwoole\Redis\CommandHandel\ExecPipe;
 use EasySwoole\Redis\CommandHandel\MGet;
 use EasySwoole\Redis\CommandHandel\MSet;
 use EasySwoole\Redis\CommandHandel\MSetNx;
+use EasySwoole\Redis\CommandHandel\Unlink;
 use EasySwoole\Redis\Config\RedisClusterConfig;
 use EasySwoole\Redis\Exception\RedisClusterException;
 
@@ -628,6 +630,59 @@ class RedisCluster extends Redis
     ###################### redis集群方法 ######################
 
     ###################### redis集群兼容方法 ######################
+
+    public function del(...$keys): ?int
+    {
+        $handelClass = new Del($this);
+        $key = array_shift($keys);
+        if (is_array($key)) {
+            $keyList = $key;
+        } else {
+            $keyList = array_merge([$key], $keys);
+        }
+        $result = 0;
+        foreach ($keyList as $k) {
+            $slotId = $this->clusterKeySlot($k);
+            $client = $this->getClientBySlotId($slotId);
+            $command = $handelClass->getCommand($k);
+            if (!$this->sendCommandByClient($command, $client)) {
+                continue;
+            }
+            $recv = $this->recvByClient($client);
+            if ($recv === null) {
+                continue;
+            }
+            $result += $handelClass->getData($recv);
+        }
+        return $result;
+    }
+
+    public function unlink(...$keys): ?int
+    {
+        $handelClass = new Unlink($this);
+        $key = array_shift($keys);
+        if (is_array($key)) {
+            $keyList = $key;
+        } else {
+            $keyList = array_merge([$key], $keys);
+        }
+        $result = 0;
+        foreach ($keyList as $k) {
+            $slotId = $this->clusterKeySlot($k);
+            $client = $this->getClientBySlotId($slotId);
+            $command = $handelClass->getCommand($k);
+            if (!$this->sendCommandByClient($command, $client)) {
+                continue;
+            }
+            $recv = $this->recvByClient($client);
+            if ($recv === null) {
+                continue;
+            }
+            $result += $handelClass->getData($recv);
+        }
+        return $result;
+    }
+
     public function mSet($data): bool
     {
         $handelClass = new MSet($this);
