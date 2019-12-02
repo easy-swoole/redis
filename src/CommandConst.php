@@ -12,6 +12,7 @@ namespace EasySwoole\Redis;
 class CommandConst
 {
     const DEL = 'DEL';//该命令用于在 key 存在是删除 key。
+    const UNLINK = 'UNLINK';//非阻塞删除key。
     const DUMP = 'DUMP';//序列化给定 key ，并返回被序列化的值。
     const EXISTS = 'EXISTS';//检查给定 key 是否存在。
     const EXPIRE = 'EXPIRE';//为给定 key 设置过期时间。

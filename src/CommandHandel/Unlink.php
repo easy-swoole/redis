@@ -5,19 +5,19 @@ use EasySwoole\Redis\CommandConst;
 use EasySwoole\Redis\Redis;
 use EasySwoole\Redis\Response;
 
-class Del extends AbstractCommandHandel
+class Unlink extends AbstractCommandHandel
 {
-	public $commandName = 'Del';
+	public $commandName = 'Unlink';
 
 
 	public function handelCommandData(...$data)
 	{
 		$key=array_shift($data);
 		if (is_array($key)){
-            $command = [CommandConst::DEL];
+            $command = [CommandConst::UNLINK];
             $commandData = array_merge($command,$key);
         }else{
-            $command = [CommandConst::DEL,$key];
+            $command = [CommandConst::UNLINK,$key];
             $commandData = array_merge($command,$data);
         }
 

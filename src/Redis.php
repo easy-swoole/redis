@@ -110,6 +110,7 @@ use EasySwoole\Redis\CommandHandel\SUnion;
 use EasySwoole\Redis\CommandHandel\SUnIonStore;
 use EasySwoole\Redis\CommandHandel\Ttl;
 use EasySwoole\Redis\CommandHandel\Type;
+use EasySwoole\Redis\CommandHandel\Unlink;
 use EasySwoole\Redis\CommandHandel\Unsubscribe;
 use EasySwoole\Redis\CommandHandel\UnWatch;
 use EasySwoole\Redis\CommandHandel\Watch;
@@ -310,10 +311,26 @@ class Redis
 
     ######################key操作方法######################
 
-    public function del($key)
+    public function del(...$keys)
     {
         $handelClass = new Del($this);
-        $command = $handelClass->getCommand($key);
+        $command = $handelClass->getCommand(...$keys);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+
+    public function unlink(...$keys)
+    {
+        $handelClass = new Unlink($this);
+        $command = $handelClass->getCommand(...$keys);
 
         if (!$this->sendCommand($command)) {
             return false;

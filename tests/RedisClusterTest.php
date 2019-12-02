@@ -279,6 +279,61 @@ class RedisClusterTest extends TestCase
         $redis->set($key . 'new', 1);
         $data = $redis->type($key . 'new');
         $this->assertEquals('string', $data);
+
+
+        //del单元测试新增
+        $keyArr = ['a1','a2','a3','a4'];
+        $valueArr = ['a1','a2','a3','a4'];
+        $redis->mSet([
+            $keyArr[0]=>$valueArr[0],
+            $keyArr[1]=>$valueArr[1],
+            $keyArr[2]=>$valueArr[2],
+            $keyArr[3]=>$valueArr[3],
+        ]);
+        $data = $redis->del($keyArr[0]);
+        $this->assertEquals(1,$data);
+
+        $data = $redis->del($keyArr[1],$keyArr[2],$keyArr[3]);
+        $this->assertEquals(3,$data);
+
+        $redis->mSet([
+            $keyArr[0]=>$valueArr[0],
+            $keyArr[1]=>$valueArr[1],
+            $keyArr[2]=>$valueArr[2],
+            $keyArr[3]=>$valueArr[3],
+        ]);
+        $data = $redis->del([$keyArr[1],$keyArr[2],$keyArr[3]]);
+        $this->assertEquals(3,$data);
+
+
+        //unlink命令新增
+        $keyArr = ['a1','a2','a3','a4'];
+        $valueArr = ['a1','a2','a3','a4'];
+        $redis->mSet([
+            $keyArr[0]=>$valueArr[0],
+            $keyArr[1]=>$valueArr[1],
+            $keyArr[2]=>$valueArr[2],
+            $keyArr[3]=>$valueArr[3],
+        ]);
+        $data = $redis->unlink($keyArr[0]);
+        $this->assertEquals(1,$data);
+
+        $data = $redis->unlink($keyArr[0].'test');
+        $this->assertEquals(0,$data);
+
+        $data = $redis->del($keyArr[1],$keyArr[2],$keyArr[3]);
+        $this->assertEquals(3,$data);
+
+        $redis->mSet([
+            $keyArr[0]=>$valueArr[0],
+            $keyArr[1]=>$valueArr[1],
+            $keyArr[2]=>$valueArr[2],
+            $keyArr[3]=>$valueArr[3],
+        ]);
+        $data = $redis->del([$keyArr[1],$keyArr[2],$keyArr[3]]);
+        $this->assertEquals(3,$data);
+
+
     }
 
     /**
