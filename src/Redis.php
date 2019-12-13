@@ -2830,7 +2830,6 @@ class Redis
     {
         $handelClass = new GeoRadiusByMember($this);
         $command = $handelClass->getCommand($key, $location, $radius, $unit, $withCoord, $withDist, $withHash, $count, $sort, $storeKey, $storeDistKey);
-
         if (!$this->sendCommand($command)) {
             return false;
         }

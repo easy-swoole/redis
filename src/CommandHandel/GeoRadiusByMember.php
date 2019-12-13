@@ -26,9 +26,6 @@ class GeoRadiusByMember extends AbstractCommandHandel
         $storeKey = array_shift($data);
         $storeDistKey = array_shift($data);
 
-
-
-
         $command = [CommandConst::GEORADIUSBYMEMBER, $key, $location, $radius, $unit, ];
 
         if ($withCoord === true) {
@@ -41,15 +38,18 @@ class GeoRadiusByMember extends AbstractCommandHandel
             $command[] = 'WITHHASH';
         }
         if ($count !== null) {
-            $command[] = $count;
+            $command[] = 'COUNT';
+            $command[] = (int)$count;
         }
         if ($sort !== null) {
             $command[] = $sort;
         }
         if ($storeKey !== null) {
+            $command[] = 'STORE';
             $command[] = $storeKey;
         }
         if ($storeDistKey !== null) {
+            $command[] = 'STOREDIST';
             $command[] = $storeDistKey;
         }
         $commandData = array_merge($command, $data);
