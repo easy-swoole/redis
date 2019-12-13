@@ -41,15 +41,18 @@ class GeoRadius extends AbstractCommandHandel
             $command[] = 'WITHHASH';
         }
         if ($count !== null) {
-            $command[] = $count;
+            $command[] = 'COUNT';
+            $command[] = (int)$count;
         }
         if ($sort !== null) {
             $command[] = $sort;
         }
         if ($storeKey !== null) {
+            $command[] = 'STORE';
             $command[] = $storeKey;
         }
         if ($storeDistKey !== null) {
+            $command[] = 'STOREDIST';
             $command[] = $storeDistKey;
         }
         $commandData = array_merge($command, $data);
