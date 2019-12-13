@@ -1800,17 +1800,17 @@ class RedisTest extends TestCase
         $data = $redis->geoAdd($key, [
             ['118.6197800000', '24.88869', 'user5',],
         ]);
-//        $data = $redis->geoDist($key, 'user1', 'user2');
-//        $this->assertGreaterThan(10, $data);
-//
-//        $data = $redis->geoHash($key, 'user1', 'user2');
-//        $this->assertIsArray($data);
-//
-//        $data = $redis->geoPos($key, 'user1', 'user2');
-//        $this->assertIsArray($data);
-//
-//        $data = $redis->geoRadius($key, '118.6197800000', '24.88849', 100, 'm', false, false, false, 'desc');
-//        $this->assertEquals(['user2', 'user1'], $data);
+        $data = $redis->geoDist($key, 'user1', 'user2');
+        $this->assertGreaterThan(10, $data);
+
+        $data = $redis->geoHash($key, 'user1', 'user2');
+        $this->assertIsArray($data);
+
+        $data = $redis->geoPos($key, 'user1', 'user2');
+        $this->assertIsArray($data);
+
+        $data = $redis->geoRadius($key, '118.6197800000', '24.88849', 100, 'm', false, false, false, null,'desc');
+        $this->assertEquals(['user5','user2', 'user1'], $data);
 
         $data = $redis->geoRadiusByMember($key, 'user1', 100, 'm', false, false, false, 2,'DESC');
         //限制为2,并且desc
