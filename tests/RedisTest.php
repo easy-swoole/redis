@@ -41,6 +41,15 @@ class RedisTest extends TestCase
         ]));
         $this->redis->connect();
         $this->redisPHPSerialize->connect();
+        //测试原始rawCommand
+        $redis = $this->redis;
+
+        $data = $redis->rawCommand(['set','a','1']);
+        $this->assertEquals('OK',$data->getData());
+        $data = $redis->rawCommand(['get','a']);
+        $this->assertEquals('1',$data->getData());
+        $redis->del('a');
+
     }
 
     function testConnect()

@@ -1458,7 +1458,6 @@ class Redis
     {
         $handelClass = new SMembers($this);
         $command = $handelClass->getCommand($key);
-
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -2888,6 +2887,17 @@ class Redis
             $this->disconnect();
         }
         return null;
+    }
+
+    public function rawCommand(array $command){
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv;
     }
     ###################### 发送接收tcp流数据 ######################
 
