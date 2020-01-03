@@ -45,6 +45,7 @@ class RedisClusterTest extends TestCase
         $this->assertEquals('OK',$data->getData());
         $data = $redis->rawCommand(['get','a']);
         $this->assertEquals('1',$data->getData());
+        $redis->del('a');
     }
 
     function testConnect()

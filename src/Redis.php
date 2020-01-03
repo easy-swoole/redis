@@ -1458,7 +1458,6 @@ class Redis
     {
         $handelClass = new SMembers($this);
         $command = $handelClass->getCommand($key);
-
         if (!$this->sendCommand($command)) {
             return false;
         }
