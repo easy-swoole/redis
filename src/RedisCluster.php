@@ -222,7 +222,7 @@ class RedisCluster extends Redis
     public function getClientBySlotId($slotId)
     {
         $nodeId = $this->getSlotNodeId($slotId);
-        if ($nodeId == null) {
+        if ($nodeId === null) {
             throw new RedisClusterException('不存在节点:' . $nodeId);
         }
         return $this->getClient($nodeId);
@@ -241,7 +241,7 @@ class RedisCluster extends Redis
     {
         $data = explode(' ', $response->getMsg());
         $nodeId = $this->getSlotNodeId($data[1]);
-        if ($nodeId == null) {
+        if ($nodeId === null) {
             throw new RedisClusterException('不存在节点:' . $nodeId);
         }
         return $nodeId;
@@ -642,7 +642,7 @@ class RedisCluster extends Redis
         }
         $result = 0;
         foreach ($keyList as $k) {
-            $slotId = $this->clusterKeySlot($k);
+            $slotId = CrcHash::getRedisSlot($k);
             $client = $this->getClientBySlotId($slotId);
             $command = $handelClass->getCommand($k);
             if (!$this->sendCommandByClient($command, $client)) {
@@ -668,7 +668,7 @@ class RedisCluster extends Redis
         }
         $result = 0;
         foreach ($keyList as $k) {
-            $slotId = $this->clusterKeySlot($k);
+            $slotId = CrcHash::getRedisSlot($k);
             $client = $this->getClientBySlotId($slotId);
             $command = $handelClass->getCommand($k);
             if (!$this->sendCommandByClient($command, $client)) {
@@ -689,7 +689,7 @@ class RedisCluster extends Redis
         foreach ($data as $k => $value) {
             $kvData = [];
             $kvData[$k] = $value;
-            $slotId = $this->clusterKeySlot($k);
+            $slotId = CrcHash::getRedisSlot($k);
             $client = $this->getClientBySlotId($slotId);
             $command = $handelClass->getCommand($kvData);
             if (!$this->sendCommandByClient($command, $client)) {
@@ -711,7 +711,7 @@ class RedisCluster extends Redis
             $keys = [$keys];
         }
         foreach ($keys as $k => $value) {
-            $slotId = $this->clusterKeySlot($value);
+            $slotId = CrcHash::getRedisSlot($k);
             $client = $this->getClientBySlotId($slotId);
             $command = $handelClass->getCommand($value);
             if (!$this->sendCommandByClient($command, $client)) {
@@ -733,7 +733,7 @@ class RedisCluster extends Redis
         $handelClass = new MSetNx($this);
         $result = [];
         foreach ($data as $k => $value) {
-            $slotId = $this->clusterKeySlot($k);
+            $slotId = CrcHash::getRedisSlot($k);
             $client = $this->getClientBySlotId($slotId);
 
             $kvData = [];
@@ -842,6 +842,12 @@ class RedisCluster extends Redis
             $this->setDefaultClient($client);
         }
         return $this->sendCommandByClient($com, $client);
+    }
+
+    public function rawCommand(array $command, ?ClusterClient $client = null){
+        $this->sendCommand($command,$client);
+        $client = $this->getDefaultClient();
+        return $this->recvByClient($client);
     }
 
     public function recv($timeout = null, ?ClusterClient $client = null): ?Response

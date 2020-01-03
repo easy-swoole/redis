@@ -2889,6 +2889,17 @@ class Redis
         }
         return null;
     }
+
+    public function rawCommand(array $command){
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv;
+    }
     ###################### 发送接收tcp流数据 ######################
 
     /**

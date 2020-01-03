@@ -41,6 +41,14 @@ class RedisTest extends TestCase
         ]));
         $this->redis->connect();
         $this->redisPHPSerialize->connect();
+        //测试原始rawCommand
+        $redis = $this->redis;
+
+        $data = $redis->rawCommand(['set','a','1']);
+        $this->assertEquals('OK',$data->getData());
+        $data = $redis->rawCommand(['get','a']);
+        $this->assertEquals('1',$data->getData());
+
     }
 
     function testConnect()
@@ -927,37 +935,37 @@ class RedisTest extends TestCase
     function testMuster()
     {
         $redis = $this->redis;
-        $key = [
-            'muster1',
-            'muster2',
-            'muster3',
-            'muster4',
-            'muster5',
-        ];
-        $value = [
-            '1',
-            '2',
-            '3',
-            '4',
-        ];
+//        $key = [
+//            'muster1',
+//            'muster2',
+//            'muster3',
+//            'muster4',
+//            'muster5',
+//        ];
+//        $value = [
+//            '1',
+//            '2',
+//            '3',
+//            '4',
+//        ];
+//
+//        $redis->del($key[0]);
+//        $redis->del($key[1]);
+//        $data = $redis->sAdd($key[0], $value[0], $value[1]);
+//        $this->assertEquals(2, $data);
+//
+//        $data = $redis->sCard($key[0]);
+//        $this->assertEquals(2, $data);
+//
+//        $redis->sAdd($key[1], $value[0], $value[2]);
+//
+//        $data = $redis->sDiff($key[0], $key[1]);
+//        $this->assertEquals([$value[1]], $data);
+//
+//        $data = $redis->sDiff($key[1], $key[0]);
+//        $this->assertEquals([$value[2]], $data);
 
-        $redis->del($key[0]);
-        $redis->del($key[1]);
-        $data = $redis->sAdd($key[0], $value[0], $value[1]);
-        $this->assertEquals(2, $data);
-
-        $data = $redis->sCard($key[0]);
-        $this->assertEquals(2, $data);
-
-        $redis->sAdd($key[1], $value[0], $value[2]);
-
-        $data = $redis->sDiff($key[0], $key[1]);
-        $this->assertEquals([$value[1]], $data);
-
-        $data = $redis->sDiff($key[1], $key[0]);
-        $this->assertEquals([$value[2]], $data);
-
-        $data = $redis->sMembers($key[0]);
+        $data = $redis->sMembers('a');
         $this->assertEquals([$value[0], $value[1]], $data);
         $data = $redis->sMembers($key[1]);
         $this->assertEquals([$value[0], $value[2]], $data);

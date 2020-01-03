@@ -39,6 +39,12 @@ class RedisClusterTest extends TestCase
             'auth'      => REDIS_CLUSTER_AUTH,
             'serialize' => RedisConfig::SERIALIZE_PHP
         ]));
+
+        $redis = $this->redis;
+        $data = $redis->rawCommand(['set','a','1']);
+        $this->assertEquals('OK',$data->getData());
+        $data = $redis->rawCommand(['get','a']);
+        $this->assertEquals('1',$data->getData());
     }
 
     function testConnect()
@@ -1690,45 +1696,6 @@ class RedisClusterTest extends TestCase
 
 
     /**
-     * 管道测试
-     * testTransaction
-     * @author tioncico
-     * Time: 下午5:40
-     */
-    function testPipe()
-    {
-        $this->assertEquals(1, 1);
-
-        $redis = $this->redis;
-        $redis->get('a');
-        $data = $redis->startPipe();
-        $this->assertTrue($data);
-        $this->assertEquals(true, $redis->getPipe()->isStartPipe());
-        $redis->del('ha');
-        $data = $redis->hset('ha', "a", "a\r\nb\r\nc");
-        $this->assertEquals('PIPE', $data);
-        $data = $redis->hset('ha', 'b', '2');
-        $this->assertEquals('PIPE', $data);
-        $data = $redis->hset('ha', 'c', '3');
-        $this->assertEquals('PIPE', $data);
-        $data = $redis->hGetAll('ha');
-        $this->assertEquals('PIPE', $data);
-        $data = $redis->execPipe();
-        $this->assertEquals(['a' => "a\r\nb\r\nc", 'b' => 2, 'c' => 3], $data[4]);
-        $this->assertEquals(false, $redis->getPipe()->isStartPipe());
-
-        $redis->startPipe();
-        $this->assertEquals(true, $redis->getPipe()->isStartPipe());
-        $data = $redis->set("a", '1');
-        $this->assertTrue($data);
-        $this->assertEquals('Set', ($redis->getPipe()->getCommandLog()[0][0]));
-        $data = $redis->discardPipe();
-        $this->assertEquals(true, $data);
-        $this->assertEquals(false, $redis->getPipe()->isStartPipe());
-
-    }
-
-    /**
      * 脚本执行测试
      * testScript
      * @author tioncico
@@ -1900,10 +1867,10 @@ class RedisClusterTest extends TestCase
         $data = $redis->geoPos($key, 'user1', 'user2');
         $this->assertIsArray($data);
 
-        $data = $redis->geoRadius($key, '118.6197800000', '24.88849', 100, 'm', false, false, false, 'desc');
+        $data = $redis->geoRadius($key, '118.6197800000', '24.88849', 100, 'm', false, false, false, null,'desc');
         $this->assertEquals(['user2', 'user1'], $data);
 
-        $data = $redis->geoRadiusByMember($key, 'user1', 100, 'm', false, false, false, 'desc');
+        $data = $redis->geoRadiusByMember($key, 'user1', 100, 'm', false, false, false, null,'desc');
         $this->assertEquals(['user2', 'user1'], $data);
 
     }
