@@ -25,7 +25,7 @@ class ZRevRangeByScore extends AbstractCommandHandel
         if ($this->withScores == true) {
             $command[] = 'WITHSCORES';
         }
-        if (is_array($options['limit'])){
+        if (!empty($options['limit'])&&is_array($options['limit'])){
             $command[] = 'LIMIT';
             $command[]= $options['limit'][0];
             $command[]= $options['limit'][1];
