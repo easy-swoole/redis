@@ -215,6 +215,7 @@ class Redis
             $this->client = new Client($this->config->getHost(), $this->config->getPort());
         }
         $this->isConnected = $this->client->connect($timeout);
+
         if ($this->isConnected && !empty($this->config->getAuth())) {
             if (!$this->auth($this->config->getAuth())) {
                 $this->isConnected = false;
@@ -2843,6 +2844,8 @@ class Redis
     ###################### 发送接收tcp流数据 ######################
     public function sendCommand(array $com): bool
     {
+        //重置次数
+        $this->tryConnectTimes = 0;
         //管道拦截
         if ($this->getPipe() instanceof Pipe && $this->getPipe()->isStartPipe()) {
             return true;

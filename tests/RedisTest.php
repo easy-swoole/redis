@@ -1068,6 +1068,9 @@ class RedisTest extends TestCase
         $redis->sAdd($key[1], $value[0], $value[2]);
 
         $data = $redis->sDiff($key[0], $key[1]);
+
+//        auth2.0
+
         $this->assertEquals([$value[1]], $data);
 
         $data = $redis->sDiff($key[1], $key[0]);
