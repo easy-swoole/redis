@@ -15,12 +15,11 @@ class Info extends AbstractCommandHandel
     {
         $section = array_shift($data);
 
-
         if ($section != null) {
             $data[] = $section;
         }
 
-        $command = [CommandConst::INFO, $section];
+        $command = [CommandConst::INFO];
         $commandData = array_merge($command, $data);
         return $commandData;
     }
