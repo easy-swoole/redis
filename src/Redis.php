@@ -2607,7 +2607,6 @@ class Redis
     {
         $handelClass = new Info($this);
         $command = $handelClass->getCommand($section);
-
         if (!$this->sendCommand($command)) {
             return false;
         }
