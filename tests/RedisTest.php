@@ -1075,6 +1075,7 @@ class RedisTest extends TestCase
 
         $data = $redis->sMembers($key[0]);
         $this->assertEquals([$value[1], $value[0]], $data);
+
         $data = $redis->sMembers($key[1]);
         $this->assertEquals([$value[2], $value[0]], $data);
 

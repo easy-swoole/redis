@@ -18,8 +18,6 @@ class ZRemRangeByScore extends AbstractCommandHandel
 		$max=array_shift($data);
 
 
-		        
-
 		$command = [CommandConst::ZREMRANGEBYSCORE,$key,$min,$max];
 		$commandData = array_merge($command,$data);
 		return $commandData;
