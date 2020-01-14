@@ -781,6 +781,8 @@ class RedisCluster extends Redis
     public function sendCommandByClient(array $commandList, ClusterClient $client): bool
     {
         $client = $client;
+        //重置重试次数
+        $this->tryConnectTimes=0;
         while ($this->tryConnectTimes <= $this->config->getReconnectTimes()) {
             if ($this->clientConnect($client)) {
                 if ($client->sendCommand($commandList)) {
