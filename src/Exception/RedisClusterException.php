@@ -9,7 +9,7 @@
 namespace EasySwoole\Redis\Exception;
 
 
-class RedisClusterException extends \Exception
+class RedisClusterException extends RedisException
 {
 
 }

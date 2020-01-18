@@ -2877,12 +2877,11 @@ class Redis
         }
         $recv = $this->client->recv($timeout ?? $this->config->getTimeout());
         if ($recv->getStatus() == $recv::STATUS_ERR) {
-            $this->errorType = $recv->getErrorType();
-            $this->errorMsg = $recv->getMsg();
-            //未登录
-            if ($this->errorType == 'NOAUTH') {
-                throw new RedisException($recv->getMsg());
-            }
+            //redis错误,直接报错
+            $this->setErrorType($recv->getErrorType());
+            $this->setErrorMsg($recv->getMsg());
+            throw new RedisException($recv->getMsg(),$recv->getErrorType());
+
         } elseif ($recv->getStatus() == $recv::STATUS_OK) {
             return $recv;
         } elseif ($recv->getStatus() == $recv::STATUS_TIMEOUT) {

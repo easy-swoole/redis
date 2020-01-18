@@ -782,7 +782,7 @@ class RedisCluster extends Redis
     {
         $client = $client;
         //重置重试次数
-        $this->tryConnectTimes=0;
+        $this->tryConnectTimes = 0;
         while ($this->tryConnectTimes <= $this->config->getReconnectTimes()) {
             if ($this->clientConnect($client)) {
                 if ($client->sendCommand($commandList)) {
@@ -826,12 +826,9 @@ class RedisCluster extends Redis
         }
 
         if ($result->getStatus() == $result::STATUS_ERR) {
-            $this->errorType = $result->getErrorType();
-            $this->errorMsg = $result->getMsg();
-            //未登录
-            if ($this->errorType == 'NOAUTH') {
-                throw new RedisClusterException($result->getMsg());
-            }
+            $this->setErrorMsg($result->getMsg());
+            $this->setErrorType($result->getErrorType());
+            throw new RedisClusterException($result->getMsg(),$result->getErrorType());
         }
         return $result;
     }
@@ -846,8 +843,9 @@ class RedisCluster extends Redis
         return $this->sendCommandByClient($com, $client);
     }
 
-    public function rawCommand(array $command, ?ClusterClient $client = null){
-        $this->sendCommand($command,$client);
+    public function rawCommand(array $command, ?ClusterClient $client = null)
+    {
+        $this->sendCommand($command, $client);
         $client = $this->getDefaultClient();
         return $this->recvByClient($client);
     }
