@@ -11,6 +11,8 @@ namespace EasySwoole\Redis\CommandHandel;
 
 use EasySwoole\Redis\Config\RedisConfig;
 use EasySwoole\Redis\CrcHash;
+use EasySwoole\Redis\Exception\RedisClusterException;
+use EasySwoole\Redis\Exception\RedisException;
 use EasySwoole\Redis\Pipe;
 use EasySwoole\Redis\Redis;
 use EasySwoole\Redis\RedisCluster;
@@ -69,7 +71,11 @@ Abstract class AbstractCommandHandel
         if ($recv->getStatus() != $recv::STATUS_OK) {
             $this->redis->setErrorType($recv->getErrorType());
             $this->redis->setErrorMsg($recv->getMsg());
-            return false;
+            if ($this->redis instanceof RedisCluster){
+                throw new RedisClusterException($recv->getMsg(),$recv->getErrorType());
+            }else{
+                throw new RedisException($recv->getMsg(),$recv->getErrorType());
+            }
         }
         return $this->handelRecv($recv);
     }
