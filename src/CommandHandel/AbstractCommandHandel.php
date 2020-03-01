@@ -114,18 +114,14 @@ Abstract class AbstractCommandHandel
             case RedisConfig::SERIALIZE_PHP:
                 {
                     $res = unserialize($val);
-                    if(!$res){
-                        return $val;
-                    }
+                    return $res?$res:$val;
                     break;
                 }
 
             case RedisConfig::SERIALIZE_JSON:
                 {
                     $res = json_decode($val, true);
-                    if(!$res){
-                        return $val;
-                    }
+                    return $res?$res:$val;
                     break;
                 }
             default:
