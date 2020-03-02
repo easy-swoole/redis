@@ -113,13 +113,15 @@ Abstract class AbstractCommandHandel
         switch ($this->redis->getConfig()->getSerialize()) {
             case RedisConfig::SERIALIZE_PHP:
                 {
-                    return unserialize($val);
+                    $res = unserialize($val);
+                    return $res?$res:$val;
                     break;
                 }
 
             case RedisConfig::SERIALIZE_JSON:
                 {
-                    return json_decode($val, true);
+                    $res = json_decode($val, true);
+                    return $res?$res:$val;
                     break;
                 }
             default:
