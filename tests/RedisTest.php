@@ -481,7 +481,7 @@ class RedisTest extends TestCase
         $redis->del($key);
         $data = $redis->setNx($key, 1);
         $this->assertEquals(1, $data);
-
+        $this->assertEquals(1, $redis->get($key));
 
         $redis->del($field[0]);
         $data = $redis->mSetNx([

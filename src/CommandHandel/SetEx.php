@@ -18,9 +18,7 @@ class SetEx extends AbstractCommandHandel
         $expireTime = array_shift($data);
         $value = array_shift($data);
 
-
         $value = $this->serialize($value);
-
 
         $command = [CommandConst::SETEX, $key, $expireTime, $value];
         $commandData = array_merge($command, $data);
