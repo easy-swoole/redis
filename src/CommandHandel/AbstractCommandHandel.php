@@ -114,7 +114,7 @@ Abstract class AbstractCommandHandel
             case RedisConfig::SERIALIZE_PHP:
                 {
                     $res = unserialize($val);
-                    return $res!==null?$res:$val;
+                    return $res!==false?$res:$val;
                     break;
                 }
 
