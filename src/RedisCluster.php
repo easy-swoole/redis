@@ -160,6 +160,13 @@ class RedisCluster extends Redis
         return $handelClass->getData($recv);
     }
 
+    /**
+     * nodeListInit
+     * @param $nodeList
+     * @throws RedisClusterException
+     * @author Tioncico
+     * Time: 10:59
+     */
     protected function nodeListInit($nodeList)
     {
         $nodeListArr = [];
@@ -168,7 +175,10 @@ class RedisCluster extends Redis
                 $this->nodeList[$node['name']] = $node;
             } else {
                 $this->nodeList[$node['name']] = $node;
-                $this->nodeClientList[$node['name']] = new ClusterClient($node['host'], $node['port']);
+                $clusterClient = new ClusterClient($node['host'], $node['port']);
+                //尝试连接客户端
+                $this->clientConnect($clusterClient);
+                $this->nodeClientList[$node['name']] = $clusterClient;
             }
             $nodeListArr[$node['name']] = $node;
         }
@@ -822,13 +832,13 @@ class RedisCluster extends Redis
             $this->clientDisconnect($client);
             $this->lastSocketErrno = $client->socketErrno();
             $this->lastSocketError = $client->socketError();
-            return false;
+            throw new RedisClusterException($client->socketError(), $client->socketErrno());
         }
 
         if ($result->getStatus() == $result::STATUS_ERR) {
             $this->setErrorMsg($result->getMsg());
             $this->setErrorType($result->getErrorType());
-            throw new RedisClusterException($result->getMsg(),$result->getErrorType());
+            throw new RedisClusterException($result->getMsg(), $result->getErrorType());
         }
         return $result;
     }

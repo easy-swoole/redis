@@ -1813,6 +1813,7 @@ class RedisTest extends TestCase
         $data = $redis->geoAdd($key, [
             ['118.6197800000', '24.88869', 'user5',],
         ]);
+
         $data = $redis->geoDist($key, 'user1', 'user2');
         $this->assertGreaterThan(10, $data);
 
