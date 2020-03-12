@@ -30,6 +30,7 @@ use EasySwoole\Redis\CommandHandel\ExecPipe;
 use EasySwoole\Redis\CommandHandel\MGet;
 use EasySwoole\Redis\CommandHandel\MSet;
 use EasySwoole\Redis\CommandHandel\MSetNx;
+use EasySwoole\Redis\CommandHandel\Ping;
 use EasySwoole\Redis\CommandHandel\Unlink;
 use EasySwoole\Redis\Config\RedisClusterConfig;
 use EasySwoole\Redis\Exception\RedisClusterException;
@@ -100,10 +101,34 @@ class RedisCluster extends Redis
         return $this->clientConnect($client, $timeout);
     }
 
-    function disconnect()
+    public function disconnect()
     {
         $client = $this->getDefaultClient();
         $this->clientDisconnect($client);
+    }
+
+    public function pingAll()
+    {
+        //获取所有客户端
+        $result = [];
+        /**
+         * @var $client ClusterClient
+         */
+        foreach ($this->nodeClientList as $key => $client) {
+            $handelClass = new Ping($this);
+            $command = $handelClass->getCommand();
+            if (!$this->sendCommandByClient($command, $client)) {
+                $result[$key] = false;
+                continue;
+            }
+            $recv = $this->recvByClient($client);
+            if ($recv === null) {
+                $result[$key] = false;
+                continue;
+            }
+            $result[$key] = $handelClass->getData($recv);
+        }
+        return $result;
     }
     ######################服务器连接方法######################
 
@@ -177,7 +202,7 @@ class RedisCluster extends Redis
                 $this->nodeList[$node['name']] = $node;
                 $clusterClient = new ClusterClient($node['host'], $node['port']);
                 //尝试连接客户端
-                $this->clientConnect($clusterClient);
+//                $this->clientConnect($clusterClient);
                 $this->nodeClientList[$node['name']] = $clusterClient;
             }
             $nodeListArr[$node['name']] = $node;
@@ -640,7 +665,6 @@ class RedisCluster extends Redis
     ###################### redis集群方法 ######################
 
     ###################### redis集群兼容方法 ######################
-
     public function del(...$keys): ?int
     {
         $handelClass = new Del($this);

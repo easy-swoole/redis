@@ -41,16 +41,20 @@ class RedisClusterTest extends TestCase
         ]));
 
         $redis = $this->redis;
-        $data = $redis->rawCommand(['set','a','1']);
-        $this->assertEquals('OK',$data->getData());
-        $data = $redis->rawCommand(['get','a']);
-        $this->assertEquals('1',$data->getData());
+        $data = $redis->rawCommand(['set', 'a', '1']);
+        $this->assertEquals('OK', $data->getData());
+        $data = $redis->rawCommand(['get', 'a']);
+        $this->assertEquals('1', $data->getData());
         $redis->del('a');
     }
 
     function testConnect()
     {
         $this->assertTrue($this->redis->connect());
+        $data = $this->redis->pingAll();
+        foreach ($data as $value) {
+            $this->assertEquals('PONG', $value);
+        }
     }
 
     public function testAuth()
@@ -159,7 +163,7 @@ class RedisClusterTest extends TestCase
         $redis->mSet($data);
         $defaultClientPort = $redis->getDefaultClient()->getPort();
         $recv = [];
-        $defaultKey='';
+        $defaultKey = '';
         foreach ($data as $k => $va) {
             $client->sendCommand(['get', $k]);
             $response = $client->recv();
@@ -177,23 +181,21 @@ class RedisClusterTest extends TestCase
 
         $client = $redis->getClient($data);
         //断言这个客户端和之前的不一样
-        $this->assertNotEquals($client->getPort(),$defaultClientPort);
+        $this->assertNotEquals($client->getPort(), $defaultClientPort);
         $this->assertTrue($client instanceof ClusterClient);
 
         //进行一次get 命令的操作,还是默认的客户端
         $redis->get($defaultKey);
-        $this->assertEquals($redis->getDefaultClient()->getPort(),$defaultClientPort);
+        $this->assertEquals($redis->getDefaultClient()->getPort(), $defaultClientPort);
 
         //重新设置默认客户端
         $redis->setDefaultClient($client);
-        $this->assertNotEquals($redis->getDefaultClient()->getPort(),$defaultClientPort);
+        $this->assertNotEquals($redis->getDefaultClient()->getPort(), $defaultClientPort);
 
         $client = $redis->getDefaultClient();
         $client->sendCommand(['get', $defaultKey]);
         $response = $client->recv();
-        $this->assertEquals($response->getData(),1);
-
-
+        $this->assertEquals($response->getData(), 1);
 
 
 //        $data = $redis->getSlotNodeId(3300);
@@ -203,8 +205,7 @@ class RedisClusterTest extends TestCase
         $this->assertIsArray($data);
         $data = $redis->getNodeList();
         $this->assertIsArray($data);
-        $data = $redis->clientAuth($client,REDIS_CLUSTER_AUTH);
-
+        $data = $redis->clientAuth($client, REDIS_CLUSTER_AUTH);
 
 
     }
@@ -289,56 +290,56 @@ class RedisClusterTest extends TestCase
 
 
         //del单元测试新增
-        $keyArr = ['a1','a2','a3','a4'];
-        $valueArr = ['a1','a2','a3','a4'];
+        $keyArr = ['a1', 'a2', 'a3', 'a4'];
+        $valueArr = ['a1', 'a2', 'a3', 'a4'];
         $redis->mSet([
-            $keyArr[0]=>$valueArr[0],
-            $keyArr[1]=>$valueArr[1],
-            $keyArr[2]=>$valueArr[2],
-            $keyArr[3]=>$valueArr[3],
+            $keyArr[0] => $valueArr[0],
+            $keyArr[1] => $valueArr[1],
+            $keyArr[2] => $valueArr[2],
+            $keyArr[3] => $valueArr[3],
         ]);
         $data = $redis->del($keyArr[0]);
-        $this->assertEquals(1,$data);
+        $this->assertEquals(1, $data);
 
-        $data = $redis->del($keyArr[1],$keyArr[2],$keyArr[3]);
-        $this->assertEquals(3,$data);
+        $data = $redis->del($keyArr[1], $keyArr[2], $keyArr[3]);
+        $this->assertEquals(3, $data);
 
         $redis->mSet([
-            $keyArr[0]=>$valueArr[0],
-            $keyArr[1]=>$valueArr[1],
-            $keyArr[2]=>$valueArr[2],
-            $keyArr[3]=>$valueArr[3],
+            $keyArr[0] => $valueArr[0],
+            $keyArr[1] => $valueArr[1],
+            $keyArr[2] => $valueArr[2],
+            $keyArr[3] => $valueArr[3],
         ]);
-        $data = $redis->del([$keyArr[1],$keyArr[2],$keyArr[3]]);
-        $this->assertEquals(3,$data);
+        $data = $redis->del([$keyArr[1], $keyArr[2], $keyArr[3]]);
+        $this->assertEquals(3, $data);
 
 
         //unlink命令新增
-        $keyArr = ['a1','a2','a3','a4'];
-        $valueArr = ['a1','a2','a3','a4'];
+        $keyArr = ['a1', 'a2', 'a3', 'a4'];
+        $valueArr = ['a1', 'a2', 'a3', 'a4'];
         $redis->mSet([
-            $keyArr[0]=>$valueArr[0],
-            $keyArr[1]=>$valueArr[1],
-            $keyArr[2]=>$valueArr[2],
-            $keyArr[3]=>$valueArr[3],
+            $keyArr[0] => $valueArr[0],
+            $keyArr[1] => $valueArr[1],
+            $keyArr[2] => $valueArr[2],
+            $keyArr[3] => $valueArr[3],
         ]);
         $data = $redis->unlink($keyArr[0]);
-        $this->assertEquals(1,$data);
+        $this->assertEquals(1, $data);
 
-        $data = $redis->unlink($keyArr[0].'test');
-        $this->assertEquals(0,$data);
+        $data = $redis->unlink($keyArr[0] . 'test');
+        $this->assertEquals(0, $data);
 
-        $data = $redis->unlink($keyArr[1],$keyArr[2],$keyArr[3]);
-        $this->assertEquals(3,$data);
+        $data = $redis->unlink($keyArr[1], $keyArr[2], $keyArr[3]);
+        $this->assertEquals(3, $data);
 
         $redis->mSet([
-            $keyArr[0]=>$valueArr[0],
-            $keyArr[1]=>$valueArr[1],
-            $keyArr[2]=>$valueArr[2],
-            $keyArr[3]=>$valueArr[3],
+            $keyArr[0] => $valueArr[0],
+            $keyArr[1] => $valueArr[1],
+            $keyArr[2] => $valueArr[2],
+            $keyArr[3] => $valueArr[3],
         ]);
-        $data = $redis->unlink([$keyArr[1],$keyArr[2],$keyArr[3]]);
-        $this->assertEquals(3,$data);
+        $data = $redis->unlink([$keyArr[1], $keyArr[2], $keyArr[3]]);
+        $this->assertEquals(3, $data);
 
     }
 
@@ -361,38 +362,38 @@ class RedisClusterTest extends TestCase
         $data = $redis->get($key);
         $this->assertEquals($data, $value);
         //set的其他作用测试(超时作用)
-        $keyTTL=$key.'ttl';
-        $redis->set($keyTTL,$value,20);
-        $this->assertGreaterThan(18,$redis->ttl($keyTTL));
-        $redis->set($keyTTL,$value,['EX'=>20]);
-        $this->assertGreaterThan(18,$redis->ttl($keyTTL));
-        $redis->set($keyTTL,$value,['PX'=>20000]);
-        $this->assertGreaterThan(18000,$redis->pTTL($keyTTL));
-        $this->assertGreaterThan(18,$redis->ttl($keyTTL));
+        $keyTTL = $key . 'ttl';
+        $redis->set($keyTTL, $value, 20);
+        $this->assertGreaterThan(18, $redis->ttl($keyTTL));
+        $redis->set($keyTTL, $value, ['EX' => 20]);
+        $this->assertGreaterThan(18, $redis->ttl($keyTTL));
+        $redis->set($keyTTL, $value, ['PX' => 20000]);
+        $this->assertGreaterThan(18000, $redis->pTTL($keyTTL));
+        $this->assertGreaterThan(18, $redis->ttl($keyTTL));
         //set的其他作用测试(存在以及不存在时候设置)
-        $keyExist = $key.'exist';
+        $keyExist = $key . 'exist';
         $redis->del($keyExist);
-        $data = $redis->set($keyExist,'1','XX');
+        $data = $redis->set($keyExist, '1', 'XX');
         $this->assertNull($data);
-        $data = $redis->set($keyExist,'1','NX');
+        $data = $redis->set($keyExist, '1', 'NX');
         $this->assertTrue($data);
-        $this->assertEquals('1',$redis->get($keyExist));
-        $data = $redis->set($keyExist,'1','NX');
+        $this->assertEquals('1', $redis->get($keyExist));
+        $data = $redis->set($keyExist, '1', 'NX');
         $this->assertNull($data);
-        $data = $redis->set($keyExist,'2','XX');
+        $data = $redis->set($keyExist, '2', 'XX');
         $this->assertTrue($data);
-        $this->assertEquals('2',$redis->get($keyExist));
+        $this->assertEquals('2', $redis->get($keyExist));
         //set组合测试
-        $data = $redis->set($keyExist,'3',['XX','EX'=>10]);
+        $data = $redis->set($keyExist, '3', ['XX', 'EX' => 10]);
         $this->assertTrue($data);
-        $this->assertEquals('3',$redis->get($keyExist));
-        $this->assertGreaterThan(8,$redis->ttl($keyTTL));
-        $data = $redis->set($keyExist,'3',['NX','EX'=>10]);
+        $this->assertEquals('3', $redis->get($keyExist));
+        $this->assertGreaterThan(8, $redis->ttl($keyTTL));
+        $data = $redis->set($keyExist, '3', ['NX', 'EX' => 10]);
         $this->assertNull($data);
         $redis->del($keyExist);;
-        $redis->set($keyExist,'4',['NX','EX'=>20]);
-        $this->assertEquals('4',$redis->get($keyExist));
-        $this->assertGreaterThan(18,$redis->ttl($keyTTL));
+        $redis->set($keyExist, '4', ['NX', 'EX' => 20]);
+        $this->assertEquals('4', $redis->get($keyExist));
+        $this->assertGreaterThan(18, $redis->ttl($keyTTL));
 
 
         $data = $redis->get($key);
@@ -546,38 +547,38 @@ class RedisClusterTest extends TestCase
         $this->assertEquals($data, $value);
 
         //set的其他作用测试(超时作用)
-        $keyTTL=$key.'ttl';
-        $redis->set($keyTTL,$value,20);
-        $this->assertGreaterThan(18,$redis->ttl($keyTTL));
-        $redis->set($keyTTL,$value,['EX'=>20]);
-        $this->assertGreaterThan(18,$redis->ttl($keyTTL));
-        $redis->set($keyTTL,$value,['PX'=>20000]);
-        $this->assertGreaterThan(18000,$redis->pTTL($keyTTL));
-        $this->assertGreaterThan(18,$redis->ttl($keyTTL));
+        $keyTTL = $key . 'ttl';
+        $redis->set($keyTTL, $value, 20);
+        $this->assertGreaterThan(18, $redis->ttl($keyTTL));
+        $redis->set($keyTTL, $value, ['EX' => 20]);
+        $this->assertGreaterThan(18, $redis->ttl($keyTTL));
+        $redis->set($keyTTL, $value, ['PX' => 20000]);
+        $this->assertGreaterThan(18000, $redis->pTTL($keyTTL));
+        $this->assertGreaterThan(18, $redis->ttl($keyTTL));
         //set的其他作用测试(存在以及不存在时候设置)
-        $keyExist = $key.'exist';
+        $keyExist = $key . 'exist';
         $redis->del($keyExist);
-        $data = $redis->set($keyExist,'1','XX');
+        $data = $redis->set($keyExist, '1', 'XX');
         $this->assertNull($data);
-        $data = $redis->set($keyExist,'1','NX');
+        $data = $redis->set($keyExist, '1', 'NX');
         $this->assertTrue($data);
-        $this->assertEquals('1',$redis->get($keyExist));
-        $data = $redis->set($keyExist,'1','NX');
+        $this->assertEquals('1', $redis->get($keyExist));
+        $data = $redis->set($keyExist, '1', 'NX');
         $this->assertNull($data);
-        $data = $redis->set($keyExist,'2','XX');
+        $data = $redis->set($keyExist, '2', 'XX');
         $this->assertTrue($data);
-        $this->assertEquals('2',$redis->get($keyExist));
+        $this->assertEquals('2', $redis->get($keyExist));
         //set组合测试
-        $data = $redis->set($keyExist,'3',['XX','EX'=>10]);
+        $data = $redis->set($keyExist, '3', ['XX', 'EX' => 10]);
         $this->assertTrue($data);
-        $this->assertEquals('3',$redis->get($keyExist));
-        $this->assertGreaterThan(8,$redis->ttl($keyTTL));
-        $data = $redis->set($keyExist,'3',['NX','EX'=>10]);
+        $this->assertEquals('3', $redis->get($keyExist));
+        $this->assertGreaterThan(8, $redis->ttl($keyTTL));
+        $data = $redis->set($keyExist, '3', ['NX', 'EX' => 10]);
         $this->assertNull($data);
         $redis->del($keyExist);;
-        $redis->set($keyExist,'4',['NX','EX'=>20]);
-        $this->assertEquals('4',$redis->get($keyExist));
-        $this->assertGreaterThan(18,$redis->ttl($keyTTL));
+        $redis->set($keyExist, '4', ['NX', 'EX' => 20]);
+        $this->assertEquals('4', $redis->get($keyExist));
+        $this->assertGreaterThan(18, $redis->ttl($keyTTL));
 
         $data = $redis->get($key);
         $this->assertEquals($data, $value);
@@ -1124,11 +1125,11 @@ class RedisClusterTest extends TestCase
         $data = $redis->sRandMember($key[3], 4);
         $this->assertEquals(4, count($data));
 
-        $data = $redis->sRandMember($key[3].rand(1,1111));
+        $data = $redis->sRandMember($key[3] . rand(1, 1111));
         $this->assertEquals(null, $data);
 
         $data = $redis->sRandMember($key[3]);
-        $this->assertTrue(in_array($data,$value));
+        $this->assertTrue(in_array($data, $value));
 
         $data = $redis->sRem($key[3], $value[0], $value[1], $value[2], $value[3]);
         $this->assertEquals(4, $data);
@@ -1230,11 +1231,11 @@ class RedisClusterTest extends TestCase
         $data = $redis->sRandMember($key[3], 4);
         $this->assertEquals(4, count($data));
 
-        $data = $redis->sRandMember($key[3].rand(1,1111));
+        $data = $redis->sRandMember($key[3] . rand(1, 1111));
         $this->assertEquals(null, $data);
 
         $data = $redis->sRandMember($key[3]);
-        $this->assertTrue(in_array($data,$value));
+        $this->assertTrue(in_array($data, $value));
 
         $data = $redis->sRem($key[3], $value[0], $value[1], $value[2], $value[3]);
         $this->assertEquals(4, $data);
@@ -1842,7 +1843,7 @@ class RedisClusterTest extends TestCase
         $key = 'testGeohash';
 
         $redis->del($key);
-        $redis->del($key.'new');
+        $redis->del($key . 'new');
         $data = $redis->geoAdd($key, [
             ['118.6197800000', '24.88849', 'user1',],
             ['118.6197800000', '24.88859', 'user2',],
@@ -1851,11 +1852,11 @@ class RedisClusterTest extends TestCase
         ]);
         $this->assertEquals(4, $data);
 
-        $data = $redis->geoAdd($key.'new', [
-            ['longitude'=>'118.6197800000','latitude'=> '24.88849', 'name'=>'user1',],
-            ['longitude'=>'118.6197800000','latitude'=> '24.88859', 'name'=>'user2',],
-            ['longitude'=>'114.8197800000','latitude'=> '25.88849', 'name'=>'user3'],
-            ['longitude'=>'118.8197800000','latitude'=> '22.88849', 'name'=>'user4'],
+        $data = $redis->geoAdd($key . 'new', [
+            ['longitude' => '118.6197800000', 'latitude' => '24.88849', 'name' => 'user1',],
+            ['longitude' => '118.6197800000', 'latitude' => '24.88859', 'name' => 'user2',],
+            ['longitude' => '114.8197800000', 'latitude' => '25.88849', 'name' => 'user3'],
+            ['longitude' => '118.8197800000', 'latitude' => '22.88849', 'name' => 'user4'],
         ]);
         $this->assertEquals(4, $data);
 
@@ -1868,10 +1869,10 @@ class RedisClusterTest extends TestCase
         $data = $redis->geoPos($key, 'user1', 'user2');
         $this->assertIsArray($data);
 
-        $data = $redis->geoRadius($key, '118.6197800000', '24.88849', 100, 'm', false, false, false, null,'desc');
+        $data = $redis->geoRadius($key, '118.6197800000', '24.88849', 100, 'm', false, false, false, null, 'desc');
         $this->assertEquals(['user2', 'user1'], $data);
 
-        $data = $redis->geoRadiusByMember($key, 'user1', 100, 'm', false, false, false, null,'desc');
+        $data = $redis->geoRadiusByMember($key, 'user1', 100, 'm', false, false, false, null, 'desc');
         $this->assertEquals(['user2', 'user1'], $data);
 
     }

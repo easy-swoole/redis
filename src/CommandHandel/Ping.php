@@ -12,8 +12,6 @@ class Ping extends AbstractCommandHandel
 
 	public function handelCommandData(...$data)
 	{
-
-
 		$command = [CommandConst::PING];
 		$commandData = array_merge($command,$data);
 		return $commandData;
