@@ -822,7 +822,7 @@ class RedisCluster extends Redis
             $this->clientDisconnect($client);
             $this->lastSocketErrno = $client->socketErrno();
             $this->lastSocketError = $client->socketError();
-            return false;
+            throw new RedisClusterException($client->socketError(), $client->socketErrno());
         }
 
         if ($result->getStatus() == $result::STATUS_ERR) {
