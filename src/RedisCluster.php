@@ -177,7 +177,7 @@ class RedisCluster extends Redis
                 $this->nodeList[$node['name']] = $node;
                 $clusterClient = new ClusterClient($node['host'], $node['port']);
                 //尝试连接客户端
-                $this->clientConnect($clusterClient);
+//                $this->clientConnect($clusterClient);
                 $this->nodeClientList[$node['name']] = $clusterClient;
             }
             $nodeListArr[$node['name']] = $node;
@@ -640,7 +640,6 @@ class RedisCluster extends Redis
     ###################### redis集群方法 ######################
 
     ###################### redis集群兼容方法 ######################
-
     public function del(...$keys): ?int
     {
         $handelClass = new Del($this);
