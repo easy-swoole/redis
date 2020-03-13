@@ -854,9 +854,7 @@ class RedisCluster extends Redis
         if ($result->getStatus() === $result::STATUS_TIMEOUT) {
             //节点断线处理
             $this->clientDisconnect($client);
-            $this->lastSocketErrno = $client->socketErrno();
-            $this->lastSocketError = $client->socketError();
-            throw new RedisClusterException($client->socketError(), $client->socketErrno());
+            throw new RedisClusterException($this->lastSocketError, $this->lastSocketErrno);
         }
 
         if ($result->getStatus() == $result::STATUS_ERR) {
