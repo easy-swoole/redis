@@ -2880,7 +2880,7 @@ class Redis
             //redis错误,直接报错
             $this->setErrorType($recv->getErrorType());
             $this->setErrorMsg($recv->getMsg());
-            throw new RedisException($recv->getMsg(),$recv->getErrorType());
+            throw new RedisException($recv->getMsg());
 
         } elseif ($recv->getStatus() == $recv::STATUS_OK) {
             return $recv;

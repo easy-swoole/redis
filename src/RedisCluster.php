@@ -860,7 +860,7 @@ class RedisCluster extends Redis
         if ($result->getStatus() == $result::STATUS_ERR) {
             $this->setErrorMsg($result->getMsg());
             $this->setErrorType($result->getErrorType());
-            throw new RedisClusterException($result->getMsg(), $result->getErrorType());
+            throw new RedisClusterException($result->getMsg());
         }
         return $result;
     }

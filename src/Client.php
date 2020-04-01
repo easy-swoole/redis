@@ -150,7 +150,6 @@ class Client
         $lineIndex = strpos($value, PHP_EOL);
         if ($lineIndex === false || $lineIndex > $spaceIndex) {
             $result->setErrorType(substr($value, 1, $spaceIndex - 1));
-
         } else {
             $result->setErrorType(substr($value, 1, $lineIndex - 1));
         }

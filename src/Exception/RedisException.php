@@ -23,7 +23,7 @@ class RedisException extends \Exception
     /**
      * @return int
      */
-    public function getRedisErrorCode(): int
+    public function getRedisErrorCode()
     {
         return $this->redisErrorCode;
     }
@@ -35,6 +35,4 @@ class RedisException extends \Exception
     {
         return $this->redisErrorMsg;
     }
-
-
 }
