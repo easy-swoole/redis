@@ -71,13 +71,14 @@ Abstract class AbstractCommandHandel
         if ($recv->getStatus() != $recv::STATUS_OK) {
             $this->redis->setErrorType($recv->getErrorType());
             $this->redis->setErrorMsg($recv->getMsg());
-            if ($this->redis instanceof RedisCluster){
-                throw new RedisClusterException($recv->getMsg(),$recv->getErrorType());
-            }else{
-                throw new RedisException($recv->getMsg(),$recv->getErrorType());
+            if ($this->redis instanceof RedisCluster) {
+                throw new RedisClusterException($recv->getMsg(), $recv->getErrorType());
+            } else {
+                throw new RedisException($recv->getMsg(), $recv->getErrorType());
             }
         }
-        return $this->handelRecv($recv);
+        $result = $this->handelRecv($recv);
+        return $result;
     }
 
     abstract function handelCommandData(...$data);
@@ -114,14 +115,14 @@ Abstract class AbstractCommandHandel
             case RedisConfig::SERIALIZE_PHP:
                 {
                     $res = unserialize($val);
-                    return $res!==false?$res:$val;
+                    return $res !== false ? $res : $val;
                     break;
                 }
 
             case RedisConfig::SERIALIZE_JSON:
                 {
                     $res = json_decode($val, true);
-                    return $res!==null?$res:$val;
+                    return $res !== null ? $res : $val;
                     break;
                 }
             default:

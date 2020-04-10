@@ -1858,7 +1858,8 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $handelClass->getData($recv);
+        $result = $handelClass->getData($recv);
+        return $result;
     }
 
     public function zUnionStore($destination, array $keys, array $weights = [], $aggregate = 'SUM')
@@ -2171,6 +2172,10 @@ class Redis
 
     public function startPipe(): bool
     {
+        //由于执行管道之后,connect方法也会被拦截,导致没有client执行数据,所以这边先连接一次
+        if ($this->connect()===false){
+            throw new RedisException("redis connect error");
+        }
         $handelClass = new StartPipe($this);
         //模拟命令,不实际执行
         $handelClass->getCommand();
