@@ -17,9 +17,7 @@ class ZScore extends AbstractCommandHandel
         $this->setClusterExecClientByKey($key);
         $member = array_shift($data);
 
-
         $member = $this->serialize($member);
-
 
         $command = [CommandConst::ZSCORE, $key, $member];
         $commandData = array_merge($command, $data);
