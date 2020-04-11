@@ -1782,11 +1782,11 @@ class RedisTest extends TestCase
         $data = $redis->save();
         $this->assertEquals(1, $data);
 
-//        $data = $redis->clientKill($data[0]['addr']);
-//        $this->assertTrue($data);
-//        $data = $redis->slowLog('get', 'a');
-//        var_dump($data,$redis->getErrorMsg());
-//        $this->assertTrue(!!$data);
+        $data = $redis->clientKill($data[0]['addr']);
+        $this->assertTrue($data);
+        $data = $redis->slowLog('get', 'a');
+        var_dump($data,$redis->getErrorMsg());
+        $this->assertTrue(!!$data);
 
     }
 

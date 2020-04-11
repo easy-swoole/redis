@@ -12,7 +12,7 @@ use EasySwoole\Redis\CommandHandel\BLPop;
 use EasySwoole\Redis\CommandHandel\BRPop;
 use EasySwoole\Redis\CommandHandel\BRPopLPush;
 use EasySwoole\Redis\CommandHandel\ClientGetName;
-use EasySwoole\Redis\CommandHandel\ClusterNodes;
+use EasySwoole\Redis\CommandHandel\ClientKill;
 use EasySwoole\Redis\CommandHandel\ClientList;
 use EasySwoole\Redis\CommandHandel\ClientPause;
 use EasySwoole\Redis\CommandHandel\ClientSetName;
@@ -2326,7 +2326,7 @@ class Redis
 
     public function clientKill($data): bool
     {
-        $handelClass = new ClusterNodes($this);
+        $handelClass = new ClientKill($this);
         $command = $handelClass->getCommand($data);
 
         if (!$this->sendCommand($command)) {
