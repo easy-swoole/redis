@@ -197,9 +197,15 @@ class Client
             $response->setData(null);
         } else {
             $eolLen = strlen("\r\n");
-            while ($len < $strLen+$eolLen) {
+            while ($len < $strLen + $eolLen) {
                 $strTmp = $this->client->recv($timeout);
                 $len += strlen($strTmp);
+                //超时
+                if ($len<$strLen+$eolLen&&empty($strTmp)){
+                    $response->setStatus($response::STATUS_TIMEOUT);
+                    $response->setMsg($this->client->errMsg);
+                    return $response;
+                }
                 $buff .= $strTmp;
             }
             $response->setData(substr($buff, 0, -2));
@@ -231,12 +237,17 @@ class Client
             $arr = [];
             while ($len--) {
                 $str = $this->client->recv($timeout);
+                if (empty($str)) {
+                    $result->setStatus($result::STATUS_TIMEOUT);
+                    $result->setMsg($this->client->errMsg);
+                    return $result;
+                }
                 $str = substr($str, 0, -2);
                 $op = substr($str, 0, 1);
                 $response = $this->opHandel($op, $str, $timeout);
-                if ($response->getStatus()!=$response::STATUS_OK){
+                if ($response->getStatus() != $response::STATUS_OK) {
                     $arr[] = false;
-                }else{
+                } else {
                     $arr[] = $response->getData();
                 }
             }
