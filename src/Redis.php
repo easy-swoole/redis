@@ -2886,7 +2886,6 @@ class Redis
             $this->setErrorType($recv->getErrorType());
             $this->setErrorMsg($recv->getMsg());
             throw new RedisException($recv->getMsg());
-
         } elseif ($recv->getStatus() == $recv::STATUS_OK) {
             return $recv;
         } elseif ($recv->getStatus() == $recv::STATUS_TIMEOUT) {
