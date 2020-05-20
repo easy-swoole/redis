@@ -17,6 +17,9 @@ class ExecPipe extends AbstractCommandHandel
         $this->redis->getPipe()->setIsStartPipe(false);
         $commandData = '';
         foreach ($commandLog as $command) {
+            //兼容hook event
+            $this->onBeforeEvent($command[1]);
+
             $argNum = count($command[1]);
             $str = "*{$argNum}\r\n";
             foreach ($command[1] as $value) {
@@ -37,7 +40,12 @@ class ExecPipe extends AbstractCommandHandel
         $data = [];
         foreach ($commandLog as $k => $command) {
             $commandClassName = "\\EasySwoole\\Redis\\CommandHandel\\" . $command[0];
+            /**
+             * @var $commandClass AbstractCommandHandel
+             */
             $commandClass = new $commandClassName($this->redis);
+            //兼容hook event
+            $commandClass->setCommandData($command[1]);
             //获取返回tcp数据
             $response = $this->redis->recv($this->redis->getConfig()->getTimeout());
             $data[$k] = $commandClass->getData($response);

@@ -10,7 +10,6 @@ class ClusterSlaves extends AbstractCommandHandel
 {
     public $commandName = 'ClusterSlaves';
 
-
     public function handelCommandData(...$data)
     {
         $nodeId  = array_shift($data);
