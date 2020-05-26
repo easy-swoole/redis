@@ -18,7 +18,7 @@ class BRPop extends AbstractCommandHandel
             $keys = [$keys];
         }
 
-        $command = array_merge([CommandConst::BLPOP],$keys);
+        $command = array_merge([CommandConst::BRPOP],$keys);
         $command[] = $timeout;
         $commandData = $command;
         return $commandData;
