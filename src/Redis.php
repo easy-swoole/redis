@@ -212,7 +212,7 @@ class Redis
             $timeout = $this->config->getTimeout();
         }
         if ($this->client == null) {
-            $this->client = new Client($this->config->getHost(), $this->config->getPort());
+            $this->initClient();
         }
         $this->isConnected = $this->client->connect($timeout);
 
@@ -227,6 +227,14 @@ class Redis
         }
 
         return $this->isConnected;
+    }
+
+    function initClient(){
+        if ($this->config->getUnixSocket()!==null){
+            $this->client = new UnitSocketClient($this->config->getUnixSocket());
+        }else{
+            $this->client = new Client($this->config->getHost(), $this->config->getPort());
+        }
     }
 
     function disconnect()

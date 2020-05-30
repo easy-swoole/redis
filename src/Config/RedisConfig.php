@@ -13,6 +13,7 @@ class RedisConfig extends SplBean
     public const SERIALIZE_JSON = 2;
     protected $host = '127.0.0.1';
     protected $port = 6379;
+    protected $unixSocket = null;
     protected $auth;
     protected $timeout = 3.0;
     protected $reconnectTimes = 3;
@@ -164,4 +165,22 @@ class RedisConfig extends SplBean
     {
         return $this->afterEvent;
     }
+
+    /**
+     * @return null
+     */
+    public function getUnixSocket()
+    {
+        return $this->unixSocket;
+    }
+
+    /**
+     * @param null $unixSocket
+     */
+    public function setUnixSocket($unixSocket): void
+    {
+        $this->unixSocket = $unixSocket;
+    }
+
+
 }
