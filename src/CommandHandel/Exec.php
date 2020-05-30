@@ -27,9 +27,16 @@ class Exec extends AbstractCommandHandel
         if ($data===null){
             return $data;
         }
-	    foreach ($data as $k=>$value){
-	        $commandClassName = "\\EasySwoole\\Redis\\CommandHandel\\".array_shift($commandLog);
+        foreach ($data as $k=>$value){
+            $command = array_shift($commandLog);
+	        $commandClassName = "\\EasySwoole\\Redis\\CommandHandel\\".$command[0];
+            /**
+             * @var $commandClass AbstractCommandHandel
+             */
 	        $commandClass = new $commandClassName($this->redis);
+            //兼容hook event
+            $commandClass->setCommandData($command[1]);
+
 	        $response = new Response();
             $response->setData($value);
             $response->setStatus($response::STATUS_OK);

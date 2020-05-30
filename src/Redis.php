@@ -12,7 +12,7 @@ use EasySwoole\Redis\CommandHandel\BLPop;
 use EasySwoole\Redis\CommandHandel\BRPop;
 use EasySwoole\Redis\CommandHandel\BRPopLPush;
 use EasySwoole\Redis\CommandHandel\ClientGetName;
-use EasySwoole\Redis\CommandHandel\ClusterNodes;
+use EasySwoole\Redis\CommandHandel\ClientKill;
 use EasySwoole\Redis\CommandHandel\ClientList;
 use EasySwoole\Redis\CommandHandel\ClientPause;
 use EasySwoole\Redis\CommandHandel\ClientSetName;
@@ -1858,7 +1858,8 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $handelClass->getData($recv);
+        $result = $handelClass->getData($recv);
+        return $result;
     }
 
     public function zUnionStore($destination, array $keys, array $weights = [], $aggregate = 'SUM')
@@ -2171,6 +2172,10 @@ class Redis
 
     public function startPipe(): bool
     {
+        //由于执行管道之后,connect方法也会被拦截,导致没有client执行数据,所以这边先连接一次
+        if ($this->connect()===false){
+            throw new RedisException("redis connect error");
+        }
         $handelClass = new StartPipe($this);
         //模拟命令,不实际执行
         $handelClass->getCommand();
@@ -2321,7 +2326,7 @@ class Redis
 
     public function clientKill($data): bool
     {
-        $handelClass = new ClusterNodes($this);
+        $handelClass = new ClientKill($this);
         $command = $handelClass->getCommand($data);
 
         if (!$this->sendCommand($command)) {
@@ -2880,8 +2885,7 @@ class Redis
             //redis错误,直接报错
             $this->setErrorType($recv->getErrorType());
             $this->setErrorMsg($recv->getMsg());
-            throw new RedisException($recv->getMsg(),$recv->getErrorType());
-
+            throw new RedisException($recv->getMsg());
         } elseif ($recv->getStatus() == $recv::STATUS_OK) {
             return $recv;
         } elseif ($recv->getStatus() == $recv::STATUS_TIMEOUT) {

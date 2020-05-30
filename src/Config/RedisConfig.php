@@ -11,13 +11,15 @@ class RedisConfig extends SplBean
     public const SERIALIZE_NONE = 0;
     public const SERIALIZE_PHP = 1;
     public const SERIALIZE_JSON = 2;
-    protected $host='127.0.0.1';
+    protected $host = '127.0.0.1';
     protected $port = 6379;
     protected $auth;
     protected $timeout = 3.0;
     protected $reconnectTimes = 3;
-    protected $db=null;
+    protected $db = null;
     protected $serialize = self::SERIALIZE_NONE;
+    protected $beforeEvent = null;
+    protected $afterEvent = null;
 
     /**
      * @return mixed
@@ -129,5 +131,37 @@ class RedisConfig extends SplBean
     public function setDb(?int $db): void
     {
         $this->db = $db;
+    }
+
+    /**
+     * @param callable $beforeEvent
+     */
+    public function onBeforeEvent(callable $beforeEvent): void
+    {
+        $this->beforeEvent = $beforeEvent;
+    }
+
+    /**
+     * @param callable $afterEvent
+     */
+    public function onAfterEvent(callable $afterEvent): void
+    {
+        $this->afterEvent = $afterEvent;
+    }
+
+    /**
+     * @return null
+     */
+    public function getBeforeEvent()
+    {
+        return $this->beforeEvent;
+    }
+
+    /**
+     * @return null
+     */
+    public function getAfterEvent()
+    {
+        return $this->afterEvent;
     }
 }
