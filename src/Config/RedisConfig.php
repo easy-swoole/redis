@@ -22,6 +22,9 @@ class RedisConfig extends SplBean
     protected $beforeEvent = null;
     protected $afterEvent = null;
 
+    protected $packageMaxLength = 1024 * 1024 * 2;
+
+
     /**
      * @return mixed
      */
@@ -182,5 +185,20 @@ class RedisConfig extends SplBean
         $this->unixSocket = $unixSocket;
     }
 
+    /**
+     * @return float|int
+     */
+    public function getPackageMaxLength()
+    {
+        return $this->packageMaxLength;
+    }
+
+    /**
+     * @param float|int $packageMaxLength
+     */
+    public function setPackageMaxLength($packageMaxLength): void
+    {
+        $this->packageMaxLength = $packageMaxLength;
+    }
 
 }
