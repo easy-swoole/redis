@@ -16,10 +16,12 @@ class UnitSocketClient extends Client
      */
     protected $client;
     protected $unixSocket;
+    protected $packageMaxLength;
 
-    public function __construct($unixSocket)
+    public function __construct($unixSocket,$packageMaxLength=1024*1024*2)
     {
         $this->unixSocket = $unixSocket;
+        $this->packageMaxLength = $packageMaxLength;
     }
 
     public function connect(float $timeout = 3.0): bool
@@ -29,6 +31,7 @@ class UnitSocketClient extends Client
             $this->client->set([
                 'open_eof_check' => true,
                 'package_eof'    => "\r\n",
+                'package_max_length' =>  $this->packageMaxLength
             ]);
         }
 

@@ -147,7 +147,7 @@ class RedisCluster extends Redis
         foreach ($serverList as $key => $server) {
             $host = $server[0];
             $port = $server[1];
-            $client = new ClusterClient($host, $port);
+            $client = new ClusterClient($host, $port,$this->config->getPackageMaxLength());
             $this->clientConnect($client);
             $nodeList = $this->getServerNodesList($client);
             if ($nodeList === null) {

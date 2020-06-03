@@ -12,11 +12,13 @@ class Client
     protected $client;
     protected $host;
     protected $port;
+    protected $packageMaxLength;
 
-    function __construct(string $host, int $port)
+    function __construct(string $host, int $port,$packageMaxLength=1024*1024*2)
     {
         $this->host = $host;
         $this->port = $port;
+        $this->packageMaxLength = $packageMaxLength;
     }
 
     public function connect(float $timeout = 3.0): bool
@@ -24,8 +26,9 @@ class Client
         if ($this->client == null) {
             $this->client = new \Swoole\Coroutine\Client(SWOOLE_TCP);
             $this->client->set([
-                'open_eof_check' => true,
-                'package_eof'    => "\r\n",
+                'open_eof_check'     => true,
+                'package_eof'        => "\r\n",
+                'package_max_length' =>  $this->packageMaxLength
             ]);
         }
 
@@ -201,8 +204,9 @@ class Client
                 $strTmp = $this->client->recv($timeout);
                 $len += strlen($strTmp);
                 //超时
-                if ($len<$strLen+$eolLen&&empty($strTmp)){
+                if ($len < $strLen + $eolLen && empty($strTmp)) {
                     $response->setStatus($response::STATUS_TIMEOUT);
+                    var_dump($this->client->errMsg);
                     $response->setMsg($this->client->errMsg);
                     return $response;
                 }
