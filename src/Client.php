@@ -206,7 +206,6 @@ class Client
                 //超时
                 if ($len < $strLen + $eolLen && empty($strTmp)) {
                     $response->setStatus($response::STATUS_TIMEOUT);
-                    var_dump($this->client->errMsg);
                     $response->setMsg($this->client->errMsg);
                     return $response;
                 }
