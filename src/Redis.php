@@ -2218,6 +2218,19 @@ class Redis
 
     ######################脚本操作方法(待测试)######################
 
+    public function eval($script, $args = array(), $numKeys = 0)
+    {
+        $command = array_merge([CommandConst::EVAL, $script], [$numKeys], $args);
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $recv->getData();
+    }
+
     /*public function eval($script, $keyNum, $key,...$data)
     {
         $command = array_merge([Command::EVAL,$script, $keyNum, $key,], $data);
