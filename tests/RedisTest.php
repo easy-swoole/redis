@@ -76,6 +76,7 @@ class RedisTest extends TestCase
         $redis = $this->redis;
         $key = 'test123213Key';
         $redis->select(0);
+        $redis->flushAll();
         $redis->set($key, 123);
         $data = $redis->dump($key);
         $this->assertTrue(!!$data);
@@ -90,6 +91,13 @@ class RedisTest extends TestCase
         $this->assertEquals(1, $data);
         Coroutine::sleep(2);
         $this->assertEquals(0, $this->redis->exists($key));
+
+        $redis->set($key, 123);
+        $data = $this->redis->pExpire($key, 1000);
+        $this->assertEquals(1, $data);
+        $this->assertEquals(123, $this->redis->get($key));
+        Coroutine::sleep(2);
+        $this->assertEquals(0, $this->redis->pExpire($key));
 
         $redis->expireAt($key, 1 * 100);
         Coroutine::sleep(0.1);
@@ -125,10 +133,9 @@ class RedisTest extends TestCase
         $this->assertTrue(!!$data);
         $data = $redis->rename($key, $key . 'new');
         $this->assertTrue($data);
-        $this->assertEquals(1, $redis->expire($key . 'new'));
-        $this->assertEquals(0, $redis->expire($key));
 
-        $data = $redis->renameNx($key, $key . 'new');
+        $redis->set($key.'old',1);
+        $data = $redis->renameNx($key.'old', $key . 'new');
         $this->assertEquals(0, $data);
         $redis->renameNx($key . 'new', $key);
         $data = $redis->renameNx($key, $key . 'new');
