@@ -7,7 +7,7 @@ use EasySwoole\Redis\Response;
 
 class PExpire extends AbstractCommandHandel
 {
-	public $commandName = 'pExpire';
+	public $commandName = 'PExpire';
 
 
 	public function handelCommandData(...$data)
