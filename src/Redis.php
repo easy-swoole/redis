@@ -397,6 +397,21 @@ class Redis
         return $handelClass->getData($recv);
     }
 
+    public function pExpire($key, $expireTime = 60000)
+    {
+        $handelClass = new PExpire($this);
+        $command = $handelClass->getCommand($key, $expireTime);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+    
     public function expireAt($key, $expireTime)
     {
         $handelClass = new ExpireAt($this);
