@@ -66,6 +66,7 @@ use EasySwoole\Redis\CommandHandel\MSet;
 use EasySwoole\Redis\CommandHandel\MSetNx;
 use EasySwoole\Redis\CommandHandel\Multi;
 use EasySwoole\Redis\CommandHandel\Persist;
+use EasySwoole\Redis\CommandHandel\PExpire;
 use EasySwoole\Redis\CommandHandel\PfAdd;
 use EasySwoole\Redis\CommandHandel\PfCount;
 use EasySwoole\Redis\CommandHandel\PfMerge;

@@ -236,6 +236,13 @@ class RedisClusterTest extends TestCase
         Coroutine::sleep(2);
         $this->assertEquals(0, $this->redis->exists($key));
 
+        $redis->set($key, 123);
+        $data = $this->redis->pExpire($key, 1000);
+        $this->assertEquals(1, $data);
+        $this->assertEquals(123, $this->redis->get($key));
+        Coroutine::sleep(2);
+        $this->assertEquals(0, $this->redis->pExpire($key));
+
         $redis->expireAt($key, 1 * 100);
         Coroutine::sleep(0.1);
         $this->assertEquals(0, $this->redis->exists($key));
