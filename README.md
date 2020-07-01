@@ -22,6 +22,7 @@ http://www.easyswoole.com/Components/Redis/introduction.html
 - 字符串(string)
 - 有序集合(sorted sets)
 - 集合 (sets)
+- 流（stream）
 - 事务 (transaction)
 - 管道支持 (pipe)
 
