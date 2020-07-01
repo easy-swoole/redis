@@ -137,6 +137,9 @@ class CommandConst
     const XREADGROUP = 'XREADGROUP';//读取消息进行消费
     const XACK = 'XACK'; //通知group成功处理消息
     const XINFO = 'XINFO'; //获取stream或者group信息
+    const XCLAIM = 'XCLAIM'; //改变message的所属关系
+    const XPENDING = 'XPENDING';//查看组内的pending message信息
+    const XTRIM = 'XTRIM';//将流修剪为给定数量的项目
 
     const PFADD = 'PFADD';//添加指定元素到 HyperLogLog 中。
     const PFCOUNT = 'PFCOUNT';//返回给定 HyperLogLog 的基数估算值。
