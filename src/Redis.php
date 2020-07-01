@@ -105,6 +105,19 @@ use EasySwoole\Redis\CommandHandel\SRandMember;
 use EasySwoole\Redis\CommandHandel\SRem;
 use EasySwoole\Redis\CommandHandel\SScan;
 use EasySwoole\Redis\CommandHandel\StartPipe;
+use EasySwoole\Redis\CommandHandel\XAck;
+use EasySwoole\Redis\CommandHandel\XAdd;
+use EasySwoole\Redis\CommandHandel\XClaim;
+use EasySwoole\Redis\CommandHandel\XDel;
+use EasySwoole\Redis\CommandHandel\XGroup;
+use EasySwoole\Redis\CommandHandel\XInfo;
+use EasySwoole\Redis\CommandHandel\XLen;
+use EasySwoole\Redis\CommandHandel\XPending;
+use EasySwoole\Redis\CommandHandel\XRange;
+use EasySwoole\Redis\CommandHandel\XRead;
+use EasySwoole\Redis\CommandHandel\XReadGroup;
+use EasySwoole\Redis\CommandHandel\XRevRange;
+use EasySwoole\Redis\CommandHandel\XTrim;
 use EasySwoole\Redis\CommandHandel\StrLen;
 use EasySwoole\Redis\CommandHandel\Subscribe;
 use EasySwoole\Redis\CommandHandel\SUnion;
@@ -1918,6 +1931,205 @@ class Redis
         return $data[1];
     }
     ######################有序集合操作方法######################
+
+    ######################Stream操作方法######################
+
+    public function xAdd(string $key, string $id, array $messages, $maxLen = null, bool $isApproximate = false)
+    {
+        $handelClass = new XAdd($this);
+        $command = $handelClass->getCommand($key, $id, $messages, $maxLen, $isApproximate);
+        if (!$this->sendCommand($command)){
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv == null) {
+            return false;
+        }
+        $data = $handelClass->getData($recv);
+        return $data;
+    }
+
+    public function xLen(string $key)
+    {
+        $handelClass = new XLen($this);
+        $command = $handelClass->getCommand($key);
+        if (!$this->sendCommand($command)){
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv == null) {
+            return false;
+        }
+        $data = $handelClass->getData($recv);
+        return $data;
+    }
+
+    public function xDel(string $key, array $ids)
+    {
+        $handelClass = new XDel($this);
+        $command = $handelClass->getCommand($key, $ids);
+        if (!$this->sendCommand($command)){
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv == null) {
+            return false;
+        }
+        $data = $handelClass->getData($recv);
+        return $data;
+    }
+
+    public function xRange(string $key, string $start = '-', string $end = '+', $count = null)
+    {
+        $handelClass = new XRange($this);
+        $command = $handelClass->getCommand($key, $start, $end, $count);
+        if (!$this->sendCommand($command)){
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv == null) {
+            return false;
+        }
+        $data = $handelClass->getData($recv);
+        return $data;
+    }
+
+    public function xRevRange(string $key, string $end = '+', string $start = '-', $count = null)
+    {
+        $handelClass = new XRevRange($this);
+        $command = $handelClass->getCommand($key, $end, $start, $count);
+        if (!$this->sendCommand($command)){
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv == null) {
+            return false;
+        }
+        $data = $handelClass->getData($recv);
+        return $data;
+    }
+
+    public function xTrim(string $key, $maxLen = null, bool $isApproximate = false)
+    {
+        $handelClass = new XTrim($this);
+        $command = $handelClass->getCommand($key, $maxLen, $isApproximate);
+        if (!$this->sendCommand($command)){
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv == null) {
+            return false;
+        }
+        $data = $handelClass->getData($recv);
+        return $data;
+    }
+
+    public function xRead(array $streams, $count = null, $block = null)
+    {
+        $handelClass = new XRead($this);
+        $command = $handelClass->getCommand($streams, $count, $block);
+        if (!$this->sendCommand($command)){
+            return false;
+        }
+        $recv = $this->recv(-1);
+        if ($recv == null) {
+            return false;
+        }
+        $data = $handelClass->getData($recv);
+        return $data;
+    }
+
+    public function xReadGroup(string $group, string $consumer,array $streams, $count = null, $block = null)
+    {
+        $handelClass = new XReadGroup($this);
+        $command = $handelClass->getCommand($group, $consumer, $streams, $count, $block);
+        if (!$this->sendCommand($command)){
+            return false;
+        }
+        $recv = $this->recv(-1);
+        if ($recv == null) {
+            return false;
+        }
+        $data = $handelClass->getData($recv);
+        return $data;
+    }
+
+    public function xGroup(string $operation, string $key = '', string $group = '', string $msgId = '$', bool $mkStream = false)
+    {
+        $handelClass = new XGroup($this);
+        $command = $handelClass->getCommand($operation, $key, $group, $msgId, $mkStream);
+        if (!$this->sendCommand($command)){
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv == null) {
+            return false;
+        }
+        $data = $handelClass->getData($recv);
+        return $data;
+    }
+
+    public function xInfo(string $operation, string $key = '', string $group = '')
+    {
+        $handelClass = new XInfo($this);
+        $command = $handelClass->getCommand($operation, $key, $group);
+        if (!$this->sendCommand($command)){
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv == null) {
+            return false;
+        }
+        $data = $handelClass->getData($recv);
+        return $data;
+    }
+
+    public function xPending(string $stream, string $group, string $start = null, string $end = null, $count = null, $consumer = null)
+    {
+        $handelClass = new XPending($this);
+        $command = $handelClass->getCommand($stream, $group, $start, $end, $count, $consumer);
+        if (!$this->sendCommand($command)){
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv == null) {
+            return false;
+        }
+        $data = $handelClass->getData($recv);
+        return $data;
+    }
+
+    public function xAck(string $key, string $group, array $ids = [])
+    {
+        $handelClass = new XAck($this);
+        $command = $handelClass->getCommand($key, $group, $ids);
+        if (!$this->sendCommand($command)){
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv == null) {
+            return false;
+        }
+        $data = $handelClass->getData($recv);
+        return $data;
+    }
+
+    public function xClaim(string $key, string $group, string $consumer, int $minIdleTime, array $ids, array $options = [])
+    {
+        $handelClass = new XClaim($this);
+        $command = $handelClass->getCommand($key, $group, $consumer, $minIdleTime, $ids, $options);
+        if (!$this->sendCommand($command)){
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv == null) {
+            return false;
+        }
+        $data = $handelClass->getData($recv);
+        return $data;
+    }
+
+    ######################Stream操作方法######################
 
     ######################HyperLogLog操作方法######################
 
