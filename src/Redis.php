@@ -246,7 +246,7 @@ class Redis
     function initClient()
     {
         if ($this->config->getUnixSocket() !== null) {
-            $this->client = new UnitSocketClient($this->config->getUnixSocket(),$this->config->getPackageMaxLength());
+            $this->client = new UnixSocketClient($this->config->getUnixSocket(),$this->config->getPackageMaxLength());
         } else {
             $this->client = new Client($this->config->getHost(), $this->config->getPort(),$this->config->getPackageMaxLength());
         }

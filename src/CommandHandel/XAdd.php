@@ -21,6 +21,7 @@ class XAdd extends AbstractCommandHandel
         $messages = array_shift($data);
         $maxLen = array_shift($data);
         $isApproximate = array_shift($data);
+        $this->setClusterExecClientByKey($key);
 
         $commandData = [CommandConst::XADD, $key];
 

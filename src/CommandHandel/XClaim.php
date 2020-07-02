@@ -22,6 +22,7 @@ class XClaim extends AbstractCommandHandel
         $minIdleTime = array_shift($data);
         $ids = array_shift($data);
         $options = array_shift($data);
+        $this->setClusterExecClientByKey($key);
 
         $command = [CommandConst::XCLAIM, $key, $group, $consumer, $minIdleTime];
         $commandData = array_merge($command, $ids);

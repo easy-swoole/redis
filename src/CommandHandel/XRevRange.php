@@ -20,6 +20,7 @@ class XRevRange extends AbstractCommandHandel
         $end = array_shift($data);
         $start = array_shift($data);
         $count = array_shift($data);
+        $this->setClusterExecClientByKey($key);
 
         $commandData = [CommandConst::XREVRANGE, $key, $end, $start];
         if (!is_null($count) && is_int($count)) $commandData = array_merge($commandData, ['COUNT', $count]);

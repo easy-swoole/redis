@@ -17,6 +17,7 @@ class XLen extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->setClusterExecClientByKey($key);
 
         $commandData = [CommandConst::XLEN, $key];
         return $commandData;

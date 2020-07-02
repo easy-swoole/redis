@@ -19,6 +19,7 @@ class XInfo extends AbstractCommandHandel
         $operation = array_shift($data);
         $key = array_shift($data);
         $group = array_shift($data);
+        $this->setClusterExecClientByKey($key);
 
         $command = [CommandConst::XINFO];
 

@@ -19,6 +19,7 @@ class XTrim extends AbstractCommandHandel
         $key = array_shift($data);
         $maxLen = array_shift($data);
         $isApproximate = array_shift($data);
+        $this->setClusterExecClientByKey($key);
 
         $commandData = [CommandConst::XTRIM, $key];
         if (!is_null($maxLen) && is_int($maxLen)) {

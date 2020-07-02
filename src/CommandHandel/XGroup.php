@@ -21,6 +21,7 @@ class XGroup extends AbstractCommandHandel
         $group = array_shift($data);
         $msgId = array_shift($data);
         $mkStream = array_shift($data);
+        $this->setClusterExecClientByKey($key);
 
         $command = [CommandConst::XGROUP];
         switch ($operation) {

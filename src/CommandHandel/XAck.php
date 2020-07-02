@@ -19,6 +19,7 @@ class XAck extends AbstractCommandHandel
         $key = array_shift($data);
         $group = array_shift($data);
         $ids = array_shift($data);
+        $this->setClusterExecClientByKey($key);
 
         $command = [CommandConst::XACK, $key, $group];
 
