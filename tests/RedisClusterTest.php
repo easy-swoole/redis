@@ -12,6 +12,7 @@ use EasySwoole\Redis\Client;
 use EasySwoole\Redis\ClusterClient;
 use EasySwoole\Redis\Config\RedisClusterConfig;
 use EasySwoole\Redis\Config\RedisConfig;
+use EasySwoole\Redis\Exception\RedisClusterException;
 use EasySwoole\Redis\Redis;
 use EasySwoole\Redis\RedisCluster;
 use PHPUnit\Framework\TestCase;
@@ -251,13 +252,17 @@ class RedisClusterTest extends TestCase
         $data = $redis->keys("{$key}");
         $this->assertEquals($key, $data[0]);
 
-        $redis->select(1);
+//        $redis->select(1);
         $redis->del($key);
         $redis->select(0);
-        $data = $redis->move($key, 1);
+        try {
+            $data = $redis->move($key, 1);
+            $this->assertEquals(false, $data);
+        }catch (RedisClusterException $exception){
+
+            $this->assertEquals('ERR MOVE is not allowed in cluster mode', $redis->getErrorMsg());
+        }
 //        var_dump($data,$redis->recv());
-        $this->assertEquals(false, $data);
-        $this->assertEquals('ERR MOVE is not allowed in cluster mode', $redis->getErrorMsg());
         $data = $redis->exists($key);
         $this->assertEquals(0, $data);
         $redis->select(0);
@@ -1201,7 +1206,7 @@ class RedisClusterTest extends TestCase
         $redis->sAdd($key[1], $value[0], $value[2]);
 
         $data = $redis->sMembers($key[1]);
-        $this->assertEquals([$value[2], $value[0]], $data);
+        $this->assertEquals([1,3], $data);
 
 //        $data = $redis->sDiffStore($key[2], $key[0], $key[1]);
 //        $this->assertEquals(1, $data);
@@ -1629,6 +1634,7 @@ class RedisClusterTest extends TestCase
     function testStream(){
         $redis = $this->redis;
 
+        $redis->del('test');
         $id = $redis->xAdd('test','*',['name'=>'gaobinzhan', 'sex'=>'boy']);
         $this->assertIsString($id);
 
@@ -1673,23 +1679,6 @@ class RedisClusterTest extends TestCase
         $result = $redis->xRead(['test' => '$'],1,1000);
         $this->assertFalse($result);
 
-        go(function (){
-            $result = (new Redis(new RedisConfig([
-                'host' => REDIS_HOST,
-                'port' => REDIS_PORT,
-                'auth' => REDIS_AUTH
-            ])))->xRead(['test' => '$'],1,1000);
-            $this->assertIsArray($result);
-        });
-
-        go(function (){
-            (new Redis(new RedisConfig([
-                'host' => REDIS_HOST,
-                'port' => REDIS_PORT,
-                'auth' => REDIS_AUTH
-            ])))->xAdd('test','*',['name'=>'gaobinzhan', 'sex'=>'boy']);
-        });
-
         $array = $redis->xGroup('HELP');
         $this->assertIsArray($array);
 
@@ -1732,23 +1721,6 @@ class RedisClusterTest extends TestCase
         $result = $redis->xReadGroup($groupName,'consumer-111',['mystream' => '>'],1,1000);
         $this->assertFalse($result);
 
-        go(function () use ($groupName){
-            $result = (new Redis(new RedisConfig([
-                'host' => REDIS_HOST,
-                'port' => REDIS_PORT,
-                'auth' => REDIS_AUTH
-            ])))->xReadGroup($groupName,'consumer-111',['mystream' => '>'],1,1000);
-            $this->assertIsArray($result);
-        });
-
-        go(function (){
-            (new Redis(new RedisConfig([
-                'host' => REDIS_HOST,
-                'port' => REDIS_PORT,
-                'auth' => REDIS_AUTH
-            ])))->xAdd('mystream','*',['name'=>'gaobinzhan', 'sex'=>'boy']);
-        });
-
         $redis->xAdd('mystream','*',['name' => 1]);
         $num = $redis->xAck('mystream',$groupName,[0]);
         $this->assertEquals(0,$num);
@@ -1764,6 +1736,7 @@ class RedisClusterTest extends TestCase
         $num = $redis->xAck('mystream',$groupName,array_keys($result['mystream']));
         $this->assertEquals(2,$num);
 
+        $redis->xAdd('mystream','*',['name' => 1]);
         $redis->xAdd('mystream','*',['name' => 1]);
         $redis->xReadGroup($groupName,'consumer-111',['mystream' => '>'],2,0);
         $result = $redis->xPending('mystream',$groupName,'-','+',2);
