@@ -1697,9 +1697,6 @@ class RedisClusterTest extends TestCase
         $num = $redis->xGroup('DESTROY','mystream',$groupName);
         $this->assertEquals(1,$num);
 
-        $array = $redis->xInfo('HELP');
-        $this->assertIsArray($array);
-
         $array = $redis->xInfo('STREAM','mystream');
         $this->assertIsArray($array);
 

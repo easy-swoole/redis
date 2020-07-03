@@ -35,11 +35,6 @@ class XInfo extends AbstractCommandHandel
                 $commandData = array_merge($command, [$operation, $key, $group]);
                 break;
             }
-            case 'HELP':
-            {
-                $commandData = array_merge($command, [$operation]);
-                break;
-            }
             default:
             {
                 $commandData = $command;
@@ -89,8 +84,6 @@ class XInfo extends AbstractCommandHandel
                         }, ARRAY_FILTER_USE_KEY))
                 ];
             }
-        } elseif (count($data) == 5) {
-            return $data;
         } else {
             foreach ($data as $group) {
                 $result[] = array_combine(
