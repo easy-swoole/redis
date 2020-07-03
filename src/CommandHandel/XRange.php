@@ -20,6 +20,7 @@ class XRange extends AbstractCommandHandel
         $start = array_shift($data);
         $end = array_shift($data);
         $count = array_shift($data);
+        $this->setClusterExecClientByKey($key);
 
         $commandData = [CommandConst::XRANGE, $key, $start, $end];
         if (!is_null($count) && is_int($count)) $commandData = array_merge($commandData, ['COUNT', $count]);

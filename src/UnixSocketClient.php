@@ -9,7 +9,7 @@
 namespace EasySwoole\Redis;
 
 
-class UnitSocketClient extends Client
+class UnixSocketClient extends Client
 {
     /**
      * @var \Swoole\Coroutine\Client

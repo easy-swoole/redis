@@ -19,6 +19,7 @@ class XInfo extends AbstractCommandHandel
         $operation = array_shift($data);
         $key = array_shift($data);
         $group = array_shift($data);
+        $this->setClusterExecClientByKey($key);
 
         $command = [CommandConst::XINFO];
 
@@ -32,11 +33,6 @@ class XInfo extends AbstractCommandHandel
             case 'CONSUMERS':
             {
                 $commandData = array_merge($command, [$operation, $key, $group]);
-                break;
-            }
-            case 'HELP':
-            {
-                $commandData = array_merge($command, [$operation]);
                 break;
             }
             default:
@@ -88,8 +84,6 @@ class XInfo extends AbstractCommandHandel
                         }, ARRAY_FILTER_USE_KEY))
                 ];
             }
-        } elseif (count($data) == 5) {
-            return $data;
         } else {
             foreach ($data as $group) {
                 $result[] = array_combine(

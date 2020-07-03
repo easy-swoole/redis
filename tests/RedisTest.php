@@ -10,6 +10,7 @@ namespace Test;
 
 use EasySwoole\Redis\Client;
 use EasySwoole\Redis\Config\RedisConfig;
+use EasySwoole\Redis\Exception\RedisException;
 use EasySwoole\Redis\Redis;
 use PHPUnit\Framework\TestCase;
 use Swoole\Coroutine;
@@ -1578,9 +1579,6 @@ class RedisTest extends TestCase
         $num = $redis->xGroup('DESTROY','mystream',$groupName);
         $this->assertEquals(1,$num);
 
-        $array = $redis->xInfo('HELP');
-        $this->assertIsArray($array);
-
         $array = $redis->xInfo('STREAM','mystream');
         $this->assertIsArray($array);
 
@@ -1939,13 +1937,17 @@ class RedisTest extends TestCase
         });
 
         $data = $redis->save();
-        $this->assertEquals(1, $data);
+        $this->assertTrue($data);
 
+        $data = $redis->clientList();
         $data = $redis->clientKill($data[0]['addr']);
         $this->assertTrue($data);
-        $data = $redis->slowLog('get', 'a');
-        var_dump($data,$redis->getErrorMsg());
-        $this->assertTrue(!!$data);
+
+        try {
+            $redis->slowLog('get', 'a');
+        }catch (RedisException $exception){
+            $this->assertEquals('ERR value is not an integer or out of range',$exception->getMessage());
+        }
 
     }
 

@@ -22,6 +22,7 @@ class XPending extends AbstractCommandHandel
         $end = array_shift($data);
         $count = array_shift($data);
         $consumer = array_shift($data);
+        $this->setClusterExecClientByKey($stream);
 
         $commandData = [CommandConst::XPENDING, $stream, $group, $start, $end, $count, $consumer];
         return array_filter($commandData);
