@@ -654,40 +654,10 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    public function getBit($key, $offset)
-    {
-        $handelClass = new GetBit($this);
-        $command = $handelClass->getCommand($key, $offset);
-
-        if (!$this->sendCommand($command)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $handelClass->getData($recv);
-    }
-
     public function mGet($keys)
     {
         $handelClass = new MGet($this);
         $command = $handelClass->getCommand($keys);
-
-        if (!$this->sendCommand($command)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $handelClass->getData($recv);
-    }
-
-    public function setBit($key, $offset, $value)
-    {
-        $handelClass = new SetBit($this);
-        $command = $handelClass->getCommand($key, $offset, $value);
 
         if (!$this->sendCommand($command)) {
             return false;
@@ -2130,6 +2100,50 @@ class Redis
     }
 
     ######################Stream操作方法######################
+
+
+    ######################Bitmap操作方法######################
+
+
+    public function setBit($key, $offset, $value)
+    {
+        $handelClass = new SetBit($this);
+        $command = $handelClass->getCommand($key, $offset, $value);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+
+
+    public function getBit($key, $offset)
+    {
+        $handelClass = new GetBit($this);
+        $command = $handelClass->getCommand($key, $offset);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+
+
+    ######################Bitmap操作方法######################
+
+    ######################Stream操作方法######################
+
+
 
     ######################HyperLogLog操作方法######################
 
