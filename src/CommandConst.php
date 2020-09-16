@@ -107,6 +107,7 @@ class CommandConst
     const BITCOUNT = 'BITCOUNT';//Count the number of set bits (population counting) in a string.
     const BITPOS = 'BITPOS'; // Return the position of the first bit set to 1 or 0 in a string.
     const BITOP = 'BITOP'; // Perform a bitwise operation between multiple keys (containing string values) and store the result in the destination key.
+    const BITFIELD = 'BITFIELD'; // The command treats a Redis string as a array of bits, and is capable of addressing specific integer fields of varying bit widths and arbitrary non (necessary) aligned offset.
 
 
     const ZADD = 'ZADD';//向有序集合添加一个或多个成员，或者更新已存在成员的分数

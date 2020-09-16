@@ -2034,6 +2034,29 @@ class RedisTest extends TestCase
         $this->assertEquals(6, $result);
         $result = $redis->get('dest');
         $this->assertEquals("ooonov", $result);
+
+        // bitfield
+        $redis->del('mykey');
+        $result = $redis->bitField('mykey',['INCRBY','i5',100,1,'GET','u4',0]);
+        $this->assertEquals([1,0], $result);
+        $result = $redis->bitField('mykey',[['INCRBY','i5',100,1,], ['GET','u4',0]]);
+        $this->assertEquals([2,0], $result);
+        $redis->del('mystring');
+        $result = $redis->bitField('mystring',['SET' ,'i8' ,'#0' ,100 ,'SET' ,'i8' ,'#1' ,200]);
+        $this->assertEquals([0,0],$result);
+        $result = $redis->bitField('mystring',[['SET' ,'i8' ,'#0' ,100 ] ,['SET' ,'i8' ,'#1' ,200]]);
+        $this->assertEquals([100,-56],$result);
+        $redis->del('mykey');
+        $result = $redis->bitField('mykey',['INCRBY','u2',100,1], 'SAT',['INCRBY','u2',102,1]);
+        $this->assertEquals([1,1], $result);
+        $result = $redis->bitField('mykey',['INCRBY','u2',100,1], 'SAT',[['INCRBY','u2',102,1]]);
+        $this->assertEquals([2,2], $result);
+        $result = $redis->bitField('mykey',['INCRBY','u2',100,1], 'SAT',[['INCRBY','u2',102,1]]);
+        $this->assertEquals([3,3], $result);
+        $result = $redis->bitField('mykey',['INCRBY','u2',100,1], 'SAT',[['INCRBY','u2',102,1]]);
+        $this->assertEquals([0,3], $result);
+        $result = $redis->bitField('mykey',[],'FAIL',[['incrby','u2',102,1]]);
+        $this->assertEquals([NULL], $result);
     }
 
 }
