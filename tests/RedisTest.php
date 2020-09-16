@@ -2023,6 +2023,17 @@ class RedisTest extends TestCase
         $result = $redis->bitPos('w',1,2,2);
         $this->assertEquals(17, $result);
 
+        // bitop
+        $redis->set('key1','foobar');
+        $redis->set('key2','abcdef');
+        $result = $redis->bitOp('AND','dest','key1','key2');
+        $this->assertEquals(6, $result);
+        $result = $redis->get('dest');
+        $this->assertEquals("`bc`ab", $result);
+        $result = $redis->bitOp('OR','dest','key1','key2','w');
+        $this->assertEquals(6, $result);
+        $result = $redis->get('dest');
+        $this->assertEquals("ooonov", $result);
     }
 
 }
