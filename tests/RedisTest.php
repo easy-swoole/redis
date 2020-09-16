@@ -2005,14 +2005,24 @@ class RedisTest extends TestCase
         $redis = $this->redis;
         $redis->set('w', 'hello');
 
+        // bitcount
         $result = $redis->bitCount('w');
         $this->assertEquals(21, $result);
-
         $result = $redis->bitCount('w', 0, 0);
         $this->assertEquals(3, $result);
-
         $result = $redis->bitCount('w', 0, 1);
         $this->assertEquals(7, $result);
+
+        // bitpos
+        $result = $redis->bitPos('w',0);
+        $this->assertEquals(0, $result);
+        $result = $redis->bitPos('w',1);
+        $this->assertEquals(1, $result);
+        $result = $redis->bitPos('w',1,1,1);
+        $this->assertEquals(9, $result);
+        $result = $redis->bitPos('w',1,2,2);
+        $this->assertEquals(17, $result);
+
     }
 
 }

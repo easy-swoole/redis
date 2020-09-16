@@ -9,6 +9,7 @@ use EasySwoole\Redis\CommandHandel\Auth;
 use EasySwoole\Redis\CommandHandel\BgRewriteAof;
 use EasySwoole\Redis\CommandHandel\BgSave;
 use EasySwoole\Redis\CommandHandel\BitCount;
+use EasySwoole\Redis\CommandHandel\BitPos;
 use EasySwoole\Redis\CommandHandel\BLPop;
 use EasySwoole\Redis\CommandHandel\BRPop;
 use EasySwoole\Redis\CommandHandel\BRPopLPush;
@@ -2139,6 +2140,21 @@ class Redis
     {
         $handelClass = new BitCount($this);
         $command = $handelClass->getCommand($key, $start, $end);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function bitPos(string $key, int $bit, ?int $start = null, ?int $end = null)
+    {
+        $handelClass = new BitPos($this);
+        $command = $handelClass->getCommand($key, $bit, $start, $end);
 
         if (!$this->sendCommand($command)) {
             return false;
