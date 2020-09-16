@@ -17,6 +17,7 @@ class BitCount extends AbstractCommandHandel
     public function handelCommandData(...$data)
     {
         $key = array_shift($data);
+        $this->setClusterExecClientByKey($key);
         $start = array_shift($data);
         $end = array_shift($data);
 
