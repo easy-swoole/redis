@@ -104,6 +104,7 @@ class CommandConst
 
     const GETBIT = 'GETBIT';//对 key 所储存的字符串值，获取指定偏移量上的位(bit)。
     const SETBIT = 'SETBIT';//对 key 所储存的字符串值，设置或清除指定偏移量上的位(bit)。
+    const BITCOUNT = 'BITCOUNT';//Count the number of set bits (population counting) in a string.
 
 
     const ZADD = 'ZADD';//向有序集合添加一个或多个成员，或者更新已存在成员的分数

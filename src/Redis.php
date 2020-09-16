@@ -8,6 +8,7 @@ use EasySwoole\Redis\CommandHandel\AppEnd;
 use EasySwoole\Redis\CommandHandel\Auth;
 use EasySwoole\Redis\CommandHandel\BgRewriteAof;
 use EasySwoole\Redis\CommandHandel\BgSave;
+use EasySwoole\Redis\CommandHandel\BitCount;
 use EasySwoole\Redis\CommandHandel\BLPop;
 use EasySwoole\Redis\CommandHandel\BRPop;
 use EasySwoole\Redis\CommandHandel\BRPopLPush;
@@ -2104,7 +2105,6 @@ class Redis
 
     ######################Bitmap操作方法######################
 
-
     public function setBit($key, $offset, $value)
     {
         $handelClass = new SetBit($this);
@@ -2119,8 +2119,6 @@ class Redis
         }
         return $handelClass->getData($recv);
     }
-
-
 
     public function getBit($key, $offset)
     {
@@ -2137,8 +2135,20 @@ class Redis
         return $handelClass->getData($recv);
     }
 
+    public function bitCount(string $key, ?int $start = null, ?int $end = null)
+    {
+        $handelClass = new BitCount($this);
+        $command = $handelClass->getCommand($key, $start, $end);
 
-
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
     ######################Bitmap操作方法######################
 
     ######################Stream操作方法######################

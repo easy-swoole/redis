@@ -8,7 +8,6 @@
 
 namespace Test;
 
-use EasySwoole\Redis\Client;
 use EasySwoole\Redis\Config\RedisConfig;
 use EasySwoole\Redis\Exception\RedisException;
 use EasySwoole\Redis\Redis;
@@ -1996,6 +1995,24 @@ class RedisTest extends TestCase
         //不限制并且asc
         $this->assertEquals(['user1', 'user2', 'user5'], $data);
 
+    }
+
+    /**
+     * bit map
+     */
+    public function testBitMap()
+    {
+        $redis = $this->redis;
+        $redis->set('w', 'hello');
+
+        $result = $redis->bitCount('w');
+        $this->assertEquals(21, $result);
+
+        $result = $redis->bitCount('w', 0, 0);
+        $this->assertEquals(3, $result);
+
+        $result = $redis->bitCount('w', 0, 1);
+        $this->assertEquals(7, $result);
     }
 
 }
