@@ -8,6 +8,10 @@ use EasySwoole\Redis\CommandHandel\AppEnd;
 use EasySwoole\Redis\CommandHandel\Auth;
 use EasySwoole\Redis\CommandHandel\BgRewriteAof;
 use EasySwoole\Redis\CommandHandel\BgSave;
+use EasySwoole\Redis\CommandHandel\BitCount;
+use EasySwoole\Redis\CommandHandel\BitField;
+use EasySwoole\Redis\CommandHandel\BitOp;
+use EasySwoole\Redis\CommandHandel\BitPos;
 use EasySwoole\Redis\CommandHandel\BLPop;
 use EasySwoole\Redis\CommandHandel\BRPop;
 use EasySwoole\Redis\CommandHandel\BRPopLPush;
@@ -654,40 +658,10 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    public function getBit($key, $offset)
-    {
-        $handelClass = new GetBit($this);
-        $command = $handelClass->getCommand($key, $offset);
-
-        if (!$this->sendCommand($command)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $handelClass->getData($recv);
-    }
-
     public function mGet($keys)
     {
         $handelClass = new MGet($this);
         $command = $handelClass->getCommand($keys);
-
-        if (!$this->sendCommand($command)) {
-            return false;
-        }
-        $recv = $this->recv();
-        if ($recv === null) {
-            return false;
-        }
-        return $handelClass->getData($recv);
-    }
-
-    public function setBit($key, $offset, $value)
-    {
-        $handelClass = new SetBit($this);
-        $command = $handelClass->getCommand($key, $offset, $value);
 
         if (!$this->sendCommand($command)) {
             return false;
@@ -2130,6 +2104,105 @@ class Redis
     }
 
     ######################Stream操作方法######################
+
+
+    ######################Bitmap操作方法######################
+
+    public function setBit($key, $offset, $value)
+    {
+        $handelClass = new SetBit($this);
+        $command = $handelClass->getCommand($key, $offset, $value);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function getBit($key, $offset)
+    {
+        $handelClass = new GetBit($this);
+        $command = $handelClass->getCommand($key, $offset);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function bitCount(string $key, ?int $start = null, ?int $end = null)
+    {
+        $handelClass = new BitCount($this);
+        $command = $handelClass->getCommand($key, $start, $end);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function bitPos(string $key, int $bit, ?int $start = null, ?int $end = null)
+    {
+        $handelClass = new BitPos($this);
+        $command = $handelClass->getCommand($key, $bit, $start, $end);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function bitOp(string $operation, string $destKey, string $key1, ...$otherKeys)
+    {
+        $handelClass = new BitOp($this);
+        $command = $handelClass->getCommand($operation, $destKey, $key1, $otherKeys);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function bitField(string $key, array $subcommands = [], ?string $overflow = null, array $subcommandArgs = [])
+    {
+        $handelClass = new BitField($this);
+        $command = $handelClass->getCommand($key, $subcommands, $overflow, $subcommandArgs);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    ######################Bitmap操作方法######################
+
+    ######################Stream操作方法######################
+
+
 
     ######################HyperLogLog操作方法######################
 

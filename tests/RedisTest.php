@@ -8,7 +8,6 @@
 
 namespace Test;
 
-use EasySwoole\Redis\Client;
 use EasySwoole\Redis\Config\RedisConfig;
 use EasySwoole\Redis\Exception\RedisException;
 use EasySwoole\Redis\Redis;
@@ -1996,6 +1995,68 @@ class RedisTest extends TestCase
         //不限制并且asc
         $this->assertEquals(['user1', 'user2', 'user5'], $data);
 
+    }
+
+    /**
+     * bit map
+     */
+    public function testBitMap()
+    {
+        $redis = $this->redis;
+        $redis->set('w', 'hello');
+
+        // bitcount
+        $result = $redis->bitCount('w');
+        $this->assertEquals(21, $result);
+        $result = $redis->bitCount('w', 0, 0);
+        $this->assertEquals(3, $result);
+        $result = $redis->bitCount('w', 0, 1);
+        $this->assertEquals(7, $result);
+
+        // bitpos
+        $result = $redis->bitPos('w',0);
+        $this->assertEquals(0, $result);
+        $result = $redis->bitPos('w',1);
+        $this->assertEquals(1, $result);
+        $result = $redis->bitPos('w',1,1,1);
+        $this->assertEquals(9, $result);
+        $result = $redis->bitPos('w',1,2,2);
+        $this->assertEquals(17, $result);
+
+        // bitop
+        $redis->set('key1','foobar');
+        $redis->set('key2','abcdef');
+        $result = $redis->bitOp('AND','dest','key1','key2');
+        $this->assertEquals(6, $result);
+        $result = $redis->get('dest');
+        $this->assertEquals("`bc`ab", $result);
+        $result = $redis->bitOp('OR','dest','key1','key2','w');
+        $this->assertEquals(6, $result);
+        $result = $redis->get('dest');
+        $this->assertEquals("ooonov", $result);
+
+        // bitfield
+        $redis->del('mykey');
+        $result = $redis->bitField('mykey',['INCRBY','i5',100,1,'GET','u4',0]);
+        $this->assertEquals([1,0], $result);
+        $result = $redis->bitField('mykey',[['INCRBY','i5',100,1,], ['GET','u4',0]]);
+        $this->assertEquals([2,0], $result);
+        $redis->del('mystring');
+        $result = $redis->bitField('mystring',['SET' ,'i8' ,'#0' ,100 ,'SET' ,'i8' ,'#1' ,200]);
+        $this->assertEquals([0,0],$result);
+        $result = $redis->bitField('mystring',[['SET' ,'i8' ,'#0' ,100 ] ,['SET' ,'i8' ,'#1' ,200]]);
+        $this->assertEquals([100,-56],$result);
+        $redis->del('mykey');
+        $result = $redis->bitField('mykey',['INCRBY','u2',100,1], 'SAT',['INCRBY','u2',102,1]);
+        $this->assertEquals([1,1], $result);
+        $result = $redis->bitField('mykey',['INCRBY','u2',100,1], 'SAT',[['INCRBY','u2',102,1]]);
+        $this->assertEquals([2,2], $result);
+        $result = $redis->bitField('mykey',['INCRBY','u2',100,1], 'SAT',[['INCRBY','u2',102,1]]);
+        $this->assertEquals([3,3], $result);
+        $result = $redis->bitField('mykey',['INCRBY','u2',100,1], 'SAT',[['INCRBY','u2',102,1]]);
+        $this->assertEquals([0,3], $result);
+        $result = $redis->bitField('mykey',[],'FAIL',[['incrby','u2',102,1]]);
+        $this->assertEquals([NULL], $result);
     }
 
 }

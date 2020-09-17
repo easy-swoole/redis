@@ -34,9 +34,7 @@ class CommandConst
     const GET = 'GET';//获取指定 key 的值。
     const GETRANGE = 'GETRANGE';//返回 key 中字符串值的子字符
     const GETSET = 'GETSET';//将给定 key 的值设为 value ，并返回 key 的旧值(old value)。
-    const GETBIT = 'GETBIT';//对 key 所储存的字符串值，获取指定偏移量上的位(bit)。
     const MGET = 'MGET';//获取所有(一个或多个)给定 key 的值。
-    const SETBIT = 'SETBIT';//对 key 所储存的字符串值，设置或清除指定偏移量上的位(bit)。
     const SETEX = 'SETEX';//将值 value 关联到 key ，并将 key 的过期时间设为 seconds (以秒为单位)。
     const SETNX = 'SETNX';//只有在 key 不存在时设置 key 的值。
     const SETRANGE = 'SETRANGE';//用 value 参数覆写给定 key 所储存的字符串值，从偏移量 offset 开始。
@@ -103,6 +101,13 @@ class CommandConst
     const SUNION = 'SUNION';//返回所有给定集合的并集
     const SUNIONSTORE = 'SUNIONSTORE';//所有给定集合的并集存储在 destination 集合中
     const SSCAN = 'SSCAN';//迭代集合中的元素
+
+    const GETBIT = 'GETBIT';//对 key 所储存的字符串值，获取指定偏移量上的位(bit)。
+    const SETBIT = 'SETBIT';//对 key 所储存的字符串值，设置或清除指定偏移量上的位(bit)。
+    const BITCOUNT = 'BITCOUNT';//Count the number of set bits (population counting) in a string.
+    const BITPOS = 'BITPOS'; // Return the position of the first bit set to 1 or 0 in a string.
+    const BITOP = 'BITOP'; // Perform a bitwise operation between multiple keys (containing string values) and store the result in the destination key.
+    const BITFIELD = 'BITFIELD'; // The command treats a Redis string as a array of bits, and is capable of addressing specific integer fields of varying bit widths and arbitrary non (necessary) aligned offset.
 
 
     const ZADD = 'ZADD';//向有序集合添加一个或多个成员，或者更新已存在成员的分数
