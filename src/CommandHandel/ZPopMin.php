@@ -5,11 +5,9 @@ namespace EasySwoole\Redis\CommandHandel;
 use EasySwoole\Redis\CommandConst;
 use EasySwoole\Redis\Response;
 
-class SPop extends AbstractCommandHandel
+class ZPopMin extends AbstractCommandHandel
 {
-    public $commandName = 'SPop';
-    
-    protected $count = 1;
+    public $commandName = 'ZPopMin';
     
     public function handelCommandData(...$data)
     {
@@ -17,28 +15,28 @@ class SPop extends AbstractCommandHandel
         $this->setClusterExecClientByKey($key);
         $count = array_shift($data);
         
-        $command = [CommandConst::SPOP, $key];
+        $command = [CommandConst::ZPOPMIN, $key];
         if (!is_null($count) && $count > 1) {
             $command[] = $count;
-            $this->count = $count;
         }
-        
-        return $command;
+        $commandData = array_merge($command);
+        return $commandData;
     }
     
     
     public function handelRecv(Response $recv)
     {
-        
         $data = $recv->getData();
-        if ($this->count > 1) {
-            foreach ($data as $key => $value) {
-                $data[$key] = $this->unSerialize($value);
+        
+        $result = [];
+        foreach ($data as $k => $va) {
+            if ($k % 2 == 0) {
+                $result[$this->unSerialize($va)] = 0;
+            } else {
+                $result[$this->unSerialize($data[$k - 1])] = $va;
             }
-            return $data;
-        } else {
-            return $this->unSerialize($data);
         }
+        
+        return $result;
     }
-    
 }
