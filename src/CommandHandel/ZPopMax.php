@@ -29,9 +29,10 @@ class ZPopMax extends AbstractCommandHandel
     {
         $data = $recv->getData();
         $result = [];
-        foreach ($data as $k => $va) {
-            if ($k % 2 == 1) {
-                $result[$this->unSerialize($va)] = $this->unSerialize($data[$k - 1]);
+
+        foreach ($data as $index => $val) {
+            if ($index % 2 == 1) {
+                $result[$this->unSerialize($data[$index - 1])] = $val;
             }
         }
         
