@@ -95,7 +95,7 @@ class CommandConst
     const SISMEMBER = 'SISMEMBER';//判断 member 元素是否是集合 key 的成员
     const SMEMBERS = 'SMEMBERS';//返回集合中的所有成员
     const SMOVE = 'SMOVE';//将 member 元素从 source 集合移动到 destination 集合
-    const SPOP = 'SPOP';//移除并返回集合中的一个随机元素
+    const SPOP = 'SPOP';//移除并返回集合中的一个或多个随机元素
     const SRANDMEMBER = 'SRANDMEMBER';//返回集合中一个或多个随机数
     const SREM = 'SREM';//移除集合中一个或多个成员
     const SUNION = 'SUNION';//返回所有给定集合的并集
@@ -117,6 +117,8 @@ class CommandConst
     const ZINTERSTORE = 'ZINTERSTORE';//计算给定的一个或多个有序集的交集并将结果集存储在新的有序集合 key 中
     const ZLEXCOUNT = 'ZLEXCOUNT';//在有序集合中计算指定字典区间内成员数量
     const ZRANGE = 'ZRANGE';//通过索引区间返回有序集合成指定区间内的成员
+    const ZPOPMAX = 'ZPOPMAX';//删除并返回有序集合中的一个或多个具有最高得分的成员
+    const ZPOPMIN = 'ZPOPMIN';//删除并返回有序集合中的一个或多个具有最低得分的成员
     const ZRANGEBYLEX = 'ZRANGEBYLEX';//通过字典区间返回有序集合的成员
     const ZRANGEBYSCORE = 'ZRANGEBYSCORE';//通过分数返回有序集合指定区间内的成员
     const ZRANK = 'ZRANK';//返回有序集合中指定成员的索引

@@ -138,6 +138,8 @@ use EasySwoole\Redis\CommandHandel\ZCount;
 use EasySwoole\Redis\CommandHandel\ZInCrBy;
 use EasySwoole\Redis\CommandHandel\ZInTerStore;
 use EasySwoole\Redis\CommandHandel\ZLexCount;
+use EasySwoole\Redis\CommandHandel\ZPopMax;
+use EasySwoole\Redis\CommandHandel\ZPopMin;
 use EasySwoole\Redis\CommandHandel\ZRange;
 use EasySwoole\Redis\CommandHandel\ZRangeByLex;
 use EasySwoole\Redis\CommandHandel\ZRangeByScore;
@@ -1496,10 +1498,10 @@ class Redis
         return $handelClass->getData($recv);
     }
 
-    public function sPop($key)
+    public function sPop($key, $count = 1)
     {
         $handelClass = new SPop($this);
-        $command = $handelClass->getCommand($key);
+        $command = $handelClass->getCommand($key, $count);
 
         if (!$this->sendCommand($command)) {
             return false;
@@ -1679,7 +1681,37 @@ class Redis
         }
         return $handelClass->getData($recv);
     }
-
+    
+    public function zPopMax($key, $count = 1)
+    {
+        $handelClass = new ZPopMax($this);
+        $command = $handelClass->getCommand($key, $count);
+        
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+    
+    public function zPopMin($key, $count = 1)
+    {
+        $handelClass = new ZPopMin($this);
+        $command = $handelClass->getCommand($key, $count);
+        
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv();
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+    
     public function zRange($key, $start, $stop, $withScores = false)
     {
         $handelClass = new ZRange($this);
