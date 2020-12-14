@@ -27,13 +27,11 @@ class ZPopMin extends AbstractCommandHandel
     public function handelRecv(Response $recv)
     {
         $data = $recv->getData();
-        
         $result = [];
-        foreach ($data as $k => $va) {
-            if ($k % 2 == 0) {
-                $result[$this->unSerialize($va)] = 0;
-            } else {
-                $result[$this->unSerialize($data[$k - 1])] = $va;
+
+        foreach ($data as $index => $val) {
+            if ($index % 2 == 1) {
+                $result[$this->unSerialize($data[$index - 1])] = $val;
             }
         }
         
