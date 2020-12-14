@@ -1340,6 +1340,14 @@ class RedisTest extends TestCase
         $this->assertEquals(['three' => 3], $this->redisPHPSerialize->zPopMin('myzset',2));
         $this->assertEquals([], $this->redisPHPSerialize->zPopMin('myzset',2));
         $redis->del('myzset');
+
+        $this->redisPHPSerialize->zAdd('myzset',3,'three');
+        $this->redisPHPSerialize->zAdd('myzset',2,'two');
+        $this->redisPHPSerialize->zAdd('myzset',1,'one');
+        $this->assertEquals(['myzset','three',3], $this->redisPHPSerialize->bZPopMax('myzset',1));
+        $this->assertEquals(['myzset','one',1], $this->redisPHPSerialize->bZPopMin('myzset',1));
+        $redis->del('myzset');
+
     }
 
     /**

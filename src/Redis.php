@@ -15,6 +15,8 @@ use EasySwoole\Redis\CommandHandel\BitPos;
 use EasySwoole\Redis\CommandHandel\BLPop;
 use EasySwoole\Redis\CommandHandel\BRPop;
 use EasySwoole\Redis\CommandHandel\BRPopLPush;
+use EasySwoole\Redis\CommandHandel\BZPopMax;
+use EasySwoole\Redis\CommandHandel\BZPopMin;
 use EasySwoole\Redis\CommandHandel\ClientGetName;
 use EasySwoole\Redis\CommandHandel\ClientKill;
 use EasySwoole\Redis\CommandHandel\ClientList;
@@ -1936,6 +1938,37 @@ class Redis
         $cursor = $data[0];
         return $data[1];
     }
+
+    public function bZPopMax($key, $timeout)
+    {
+        $handelClass = new BZPopMax($this);
+        $command = $handelClass->getCommand($key, $timeout);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv(($timeout == 0) ? -1 : $timeout + 1);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
+    public function bZPopMin($key, $timeout)
+    {
+        $handelClass = new BZPopMin($this);
+        $command = $handelClass->getCommand($key, $timeout);
+
+        if (!$this->sendCommand($command)) {
+            return false;
+        }
+        $recv = $this->recv(($timeout == 0) ? -1 : $timeout + 1);
+        if ($recv === null) {
+            return false;
+        }
+        return $handelClass->getData($recv);
+    }
+
     ######################有序集合操作方法######################
 
     ######################Stream操作方法######################

@@ -132,6 +132,8 @@ class CommandConst
     const ZSCORE = 'ZSCORE';//返回有序集中，成员的分数值
     const ZUNIONSTORE = 'ZUNIONSTORE';//计算给定的一个或多个有序集的并集，并存储在新的 key 中
     const ZSCAN = 'ZSCAN';//迭代有序集合中的元素（包括元素成员和元素分值）
+    const BZPOPMAX = 'BZPOPMAX';
+    const BZPOPMIN = 'BZPOPMIN';
 
 
     const XADD = 'XADD'; //向指定stream添加数据

@@ -14,12 +14,12 @@ class ZPopMin extends AbstractCommandHandel
         $key = array_shift($data);
         $this->setClusterExecClientByKey($key);
         $count = array_shift($data);
-        
-        $command = [CommandConst::ZPOPMIN, $key];
+
+        $commandData = [CommandConst::ZPOPMIN, $key];
         if (!is_null($count) && $count > 1) {
-            $command[] = $count;
+            $commandData[] = $count;
         }
-        $commandData = array_merge($command);
+
         return $commandData;
     }
     

@@ -15,12 +15,11 @@ class ZPopMax extends AbstractCommandHandel
         $this->setClusterExecClientByKey($key);
         $count = array_shift($data);
         
-        $this->count = $count;
-        $command = [CommandConst::ZPOPMAX, $key];
+        $commandData = [CommandConst::ZPOPMAX, $key];
         if (!is_null($count) && $count > 1) {
-            $command[] = $count;
+            $commandData[] = $count;
         }
-        $commandData = array_merge($command);
+
         return $commandData;
     }
     
