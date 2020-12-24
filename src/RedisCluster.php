@@ -285,16 +285,17 @@ class RedisCluster extends Redis
     public function getSlotNodeId($slotId)
     {
         foreach ($this->nodeList as $key => $node) {
-            if (empty($node['slot'])) {
+            if (empty($node['slotList'])) {
                 continue;
             }
 
             if (strpos($node['flags'], 'master') === false) {
                 continue;
             }
-
-            if ($node['slot'][0] <= $slotId && $node['slot'][1] >= $slotId) {
-                return $key;
+            foreach ($node['slotList'] as $slot){
+                if ($slot[0] <= $slotId && $slot[1] >= $slotId) {
+                    return $key;
+                }
             }
         }
         return null;
