@@ -35,10 +35,21 @@ class ClusterNodes extends AbstractCommandHandel
                 'port'      => $port,
                 'flags'     => $data[2],
                 'connected' => $data[7],
-                'slot'      => isset($data[8]) ? explode('-', $data[8]) : [],
+                'slotList'  => $this->getSlotList($data),
             ];
             $nodeList[$node['name']] = $node;
         }
         return $nodeList;
+    }
+
+    protected function getSlotList($data)
+    {
+        $slotList = [];
+        //获取8后面的数据
+        $slotOriginalData = array_slice($data, 8);
+        foreach ($slotOriginalData as $slotString) {
+            $slotList[] = explode('-', $slotString);
+        }
+        return $slotList;
     }
 }
