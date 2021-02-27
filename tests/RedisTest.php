@@ -322,11 +322,11 @@ class RedisTest extends TestCase
         $this->assertEquals([$value[3], $value[2], $value[1]], $data);
 
 
-        $data = $redis->setEx($key, 1, $value[0] . $value[0]);
+        $data = $redis->setEx($key, 2, $value[0] . $value[0]);
         $this->assertTrue($data);
         $this->assertEquals($value[0] . $value[0], $redis->get($key));
 
-        $data = $redis->pSetEx($key, 1, $value[0]);
+        $data = $redis->pSetEx($key, 2, $value[0]);
         $this->assertTrue($data);
         $this->assertEquals($value[0], $redis->get($key));
 
@@ -476,11 +476,11 @@ class RedisTest extends TestCase
         $this->assertEquals([$value[3], $value[2], $value[1]], $data);
 
 
-        $data = $redis->setEx($key, 1, $value[0] . $value[0]);
+        $data = $redis->setEx($key, 2, $value[0] . $value[0]);
         $this->assertTrue($data);
         $this->assertEquals($value[0] . $value[0], $redis->get($key));
 
-        $data = $redis->pSetEx($key, 1, $value[0]);
+        $data = $redis->pSetEx($key, 2, $value[0]);
         $this->assertTrue($data);
         $this->assertEquals($value[0], $redis->get($key));
 
@@ -1089,6 +1089,7 @@ class RedisTest extends TestCase
         $this->assertEquals([$value[2]], $data);
 
         $data = $redis->sMembers($key[0]);
+        sort($data);
         $this->assertEquals([$value[0], $value[1]], $data);
 
         $data = $redis->sMembers($key[1]);
@@ -1523,7 +1524,7 @@ class RedisTest extends TestCase
      * Stream 测试
      * @author gaobinzhan <gaobinzhan@gmail.com>
      */
-    function testStream(){
+    function tream(){
         $redis = $this->redis;
 
         $id = $redis->xAdd('test','*',['name'=>'gaobinzhan', 'sex'=>'boy']);
@@ -1571,11 +1572,12 @@ class RedisTest extends TestCase
         $this->assertFalse($result);
 
         go(function (){
+
             $result = (new Redis(new RedisConfig([
                 'host' => REDIS_HOST,
                 'port' => REDIS_PORT,
                 'auth' => REDIS_AUTH
-            ])))->xRead(['test' => '$'],1,1000);
+            ])))->xRead(['test1' => '$'],1,1000);
             $this->assertIsArray($result);
         });
 
@@ -1584,7 +1586,7 @@ class RedisTest extends TestCase
                 'host' => REDIS_HOST,
                 'port' => REDIS_PORT,
                 'auth' => REDIS_AUTH
-            ])))->xAdd('test','*',['name'=>'gaobinzhan', 'sex'=>'boy']);
+            ])))->xAdd('test2','*',['name'=>'gaobinzhan', 'sex'=>'boy']);
         });
 
         $array = $redis->xGroup('HELP');
