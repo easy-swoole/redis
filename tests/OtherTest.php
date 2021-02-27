@@ -8,12 +8,8 @@
 
 namespace Test;
 
-use EasySwoole\Redis\Client;
-use EasySwoole\Redis\CommandConst;
-use EasySwoole\Redis\CommandHandel\AbstractCommandHandel;
 use EasySwoole\Redis\Config\RedisConfig;
 use EasySwoole\Redis\Redis;
-use PhpParser\Builder\Class_;
 use PHPUnit\Framework\TestCase;
 
 class OtherTest extends TestCase

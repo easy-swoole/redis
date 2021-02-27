@@ -25,7 +25,7 @@ class EventTest extends TestCase
      * @var $redis RedisCluster
      */
     protected $redisCluster;
-    protected function setUp()
+    protected function setUp():void
     {
         parent::setUp();
         $redisConfig = new RedisConfig([
