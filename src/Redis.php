@@ -84,6 +84,7 @@ use EasySwoole\Redis\CommandHandle\Publish;
 use EasySwoole\Redis\CommandHandle\PubSub;
 use EasySwoole\Redis\CommandHandle\PUnSubscribe;
 use EasySwoole\Redis\CommandHandle\RandomKey;
+use EasySwoole\Redis\CommandHandle\RawCommand;
 use EasySwoole\Redis\CommandHandle\Rename;
 use EasySwoole\Redis\CommandHandle\RenameNx;
 use EasySwoole\Redis\CommandHandle\RPop;
@@ -3274,6 +3275,8 @@ class Redis
 
     public function rawCommand(array $command)
     {
+        $handelClass = new RawCommand($this);
+        $command = $handelClass->getCommand($command);
         if (!$this->sendCommand($command)) {
             return false;
         }
@@ -3281,7 +3284,7 @@ class Redis
         if ($recv === null) {
             return false;
         }
-        return $recv;
+        return $handelClass->getData($recv);
     }
     ###################### 发送接收tcp流数据 ######################
 
