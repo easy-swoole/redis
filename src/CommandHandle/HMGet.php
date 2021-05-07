@@ -25,11 +25,13 @@ class HMGet extends AbstractCommandHandle
 
     public function handelRecv(Response $recv)
     {
+        $fieldData = array_slice($this->commandData,2);
         $data = $recv->getData();
+        $array = [];
         foreach ($data as $key => $value) {
-            $data[$key] = $this->unSerialize($value);
+            $array[$fieldData[$key]] = $this->unSerialize($value);
         }
 
-        return $data;
+        return $array;
     }
 }
