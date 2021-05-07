@@ -42,10 +42,11 @@ class RedisClusterTest extends TestCase
         ]));
 
         $redis = $this->redis;
+        $redis->flushAll();
         $data = $redis->rawCommand(['set', 'a', '1']);
-        $this->assertEquals('OK', $data->getData());
+        $this->assertEquals('OK', $data);
         $data = $redis->rawCommand(['get', 'a']);
-        $this->assertEquals('1', $data->getData());
+        $this->assertEquals('1', $data);
         $redis->del('a');
     }
 
@@ -196,7 +197,7 @@ class RedisClusterTest extends TestCase
         $client = $redis->getDefaultClient();
         $client->sendCommand(['get', $defaultKey]);
         $response = $client->recv();
-        $this->assertEquals($response->getData(), 1);
+        $this->assertEquals($response, 1);
 
 
 //        $data = $redis->getSlotNodeId(3300);
@@ -755,7 +756,7 @@ class RedisClusterTest extends TestCase
         $this->assertEquals(count($field), $data);
 
         $data = $redis->hMGet($key, [$field[0], $field[1], $field[2]]);
-        $this->assertEquals([1, 2, 3], $data);
+        $this->assertEquals([$field[0]=>1, $field[1]=>2, $field[2]=>3], $data);
 
         $data = $redis->hIncrBy($key, $field[4], 1);
         $this->assertEquals($value[4] + 1, $data);
@@ -867,7 +868,7 @@ class RedisClusterTest extends TestCase
         $this->assertEquals(count($field), $data);
 
         $data = $redis->hMGet($key, [$field[0], $field[1], $field[2]]);
-        $this->assertEquals([1, 2, 3], $data);
+        $this->assertEquals([$field[0]=>1, $field[1]=>2, $field[2]=>3], $data);
 
         $data = $redis->hSetNx($key, $field[0], 1);
         $this->assertEquals(0, $data);
