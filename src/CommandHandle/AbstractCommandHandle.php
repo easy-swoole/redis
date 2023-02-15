@@ -9,7 +9,7 @@
 namespace EasySwoole\Redis\CommandHandle;
 
 
-use EasySwoole\Redis\Config\RedisConfig;
+use EasySwoole\Redis\Config;
 use EasySwoole\Redis\CrcHash;
 use EasySwoole\Redis\Exception\RedisClusterException;
 use EasySwoole\Redis\Exception\RedisException;
@@ -106,14 +106,14 @@ Abstract class AbstractCommandHandle
     protected function serialize($val)
     {
         switch ($this->redis->getConfig()->getSerialize()) {
-            case RedisConfig::SERIALIZE_PHP:
+            case Config::SERIALIZE_PHP:
                 return serialize($val);
                 break;
-            case RedisConfig::SERIALIZE_JSON:
+            case Config::SERIALIZE_JSON:
                 return json_encode($val, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                 break;
             default:
-            case RedisConfig::SERIALIZE_NONE:
+            case Config::SERIALIZE_NONE:
                 return $val;
                 break;
         }
@@ -122,21 +122,21 @@ Abstract class AbstractCommandHandle
     protected function unSerialize($val)
     {
         switch ($this->redis->getConfig()->getSerialize()) {
-            case RedisConfig::SERIALIZE_PHP:
+            case Config::SERIALIZE_PHP:
                 {
                     $res = unserialize($val);
                     return $res !== false ? $res : $val;
                     break;
                 }
 
-            case RedisConfig::SERIALIZE_JSON:
+            case Config::SERIALIZE_JSON:
                 {
                     $res = json_decode($val, true);
                     return $res !== null ? $res : $val;
                     break;
                 }
             default:
-            case RedisConfig::SERIALIZE_NONE:
+            case Config::SERIALIZE_NONE:
                 {
                     return $val;
                     break;

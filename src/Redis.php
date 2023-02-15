@@ -4,6 +4,7 @@
 namespace EasySwoole\Redis;
 
 
+use EasySwoole\Redis\CommandConst as Command;
 use EasySwoole\Redis\CommandHandle\AppEnd;
 use EasySwoole\Redis\CommandHandle\Auth;
 use EasySwoole\Redis\CommandHandle\BgRewriteAof;
@@ -23,6 +24,15 @@ use EasySwoole\Redis\CommandHandle\ClientList;
 use EasySwoole\Redis\CommandHandle\ClientPause;
 use EasySwoole\Redis\CommandHandle\ClientSetName;
 use EasySwoole\Redis\CommandHandle\CommandCount;
+use EasySwoole\Redis\CommandHandle\CommandGetKeys;
+use EasySwoole\Redis\CommandHandle\CommandInfo;
+use EasySwoole\Redis\CommandHandle\ConfigGet;
+use EasySwoole\Redis\CommandHandle\ConfigResetStat;
+use EasySwoole\Redis\CommandHandle\ConfigRewrite;
+use EasySwoole\Redis\CommandHandle\ConfigSet;
+use EasySwoole\Redis\CommandHandle\DBSize;
+use EasySwoole\Redis\CommandHandle\DebugObject;
+use EasySwoole\Redis\CommandHandle\DebugSegfault;
 use EasySwoole\Redis\CommandHandle\Decr;
 use EasySwoole\Redis\CommandHandle\DecrBy;
 use EasySwoole\Redis\CommandHandle\Del;
@@ -34,6 +44,14 @@ use EasySwoole\Redis\CommandHandle\ExecPipe;
 use EasySwoole\Redis\CommandHandle\Exists;
 use EasySwoole\Redis\CommandHandle\Expire;
 use EasySwoole\Redis\CommandHandle\ExpireAt;
+use EasySwoole\Redis\CommandHandle\FlushAll;
+use EasySwoole\Redis\CommandHandle\FlushDb;
+use EasySwoole\Redis\CommandHandle\GeoAdd;
+use EasySwoole\Redis\CommandHandle\GeoDist;
+use EasySwoole\Redis\CommandHandle\GeoHash;
+use EasySwoole\Redis\CommandHandle\GeoPos;
+use EasySwoole\Redis\CommandHandle\GeoRadius;
+use EasySwoole\Redis\CommandHandle\GeoRadiusByMember;
 use EasySwoole\Redis\CommandHandle\Get;
 use EasySwoole\Redis\CommandHandle\GetBit;
 use EasySwoole\Redis\CommandHandle\GetRange;
@@ -55,7 +73,9 @@ use EasySwoole\Redis\CommandHandle\HValS;
 use EasySwoole\Redis\CommandHandle\Incr;
 use EasySwoole\Redis\CommandHandle\IncrBy;
 use EasySwoole\Redis\CommandHandle\IncrByFloat;
+use EasySwoole\Redis\CommandHandle\Info;
 use EasySwoole\Redis\CommandHandle\Keys;
+use EasySwoole\Redis\CommandHandle\LastSave;
 use EasySwoole\Redis\CommandHandle\LIndex;
 use EasySwoole\Redis\CommandHandle\LInsert;
 use EasySwoole\Redis\CommandHandle\LLen;
@@ -67,6 +87,7 @@ use EasySwoole\Redis\CommandHandle\LRem;
 use EasySwoole\Redis\CommandHandle\LSet;
 use EasySwoole\Redis\CommandHandle\LTrim;
 use EasySwoole\Redis\CommandHandle\MGet;
+use EasySwoole\Redis\CommandHandle\Monitor;
 use EasySwoole\Redis\CommandHandle\Move;
 use EasySwoole\Redis\CommandHandle\MSet;
 use EasySwoole\Redis\CommandHandle\MSetNx;
@@ -87,11 +108,13 @@ use EasySwoole\Redis\CommandHandle\RandomKey;
 use EasySwoole\Redis\CommandHandle\RawCommand;
 use EasySwoole\Redis\CommandHandle\Rename;
 use EasySwoole\Redis\CommandHandle\RenameNx;
+use EasySwoole\Redis\CommandHandle\Role;
 use EasySwoole\Redis\CommandHandle\RPop;
 use EasySwoole\Redis\CommandHandle\RPopLPush;
 use EasySwoole\Redis\CommandHandle\RPush;
 use EasySwoole\Redis\CommandHandle\RPuShx;
 use EasySwoole\Redis\CommandHandle\SAdd;
+use EasySwoole\Redis\CommandHandle\Save;
 use EasySwoole\Redis\CommandHandle\Scan;
 use EasySwoole\Redis\CommandHandle\SCard;
 use EasySwoole\Redis\CommandHandle\SDiff;
@@ -102,9 +125,11 @@ use EasySwoole\Redis\CommandHandle\SetBit;
 use EasySwoole\Redis\CommandHandle\SetEx;
 use EasySwoole\Redis\CommandHandle\SetNx;
 use EasySwoole\Redis\CommandHandle\SetRange;
+use EasySwoole\Redis\CommandHandle\Shutdown;
 use EasySwoole\Redis\CommandHandle\SInter;
 use EasySwoole\Redis\CommandHandle\SInterStore;
 use EasySwoole\Redis\CommandHandle\SIsMember;
+use EasySwoole\Redis\CommandHandle\SlowLog;
 use EasySwoole\Redis\CommandHandle\SMembers;
 use EasySwoole\Redis\CommandHandle\SMove;
 use EasySwoole\Redis\CommandHandle\SPop;
@@ -112,6 +137,18 @@ use EasySwoole\Redis\CommandHandle\SRandMember;
 use EasySwoole\Redis\CommandHandle\SRem;
 use EasySwoole\Redis\CommandHandle\SScan;
 use EasySwoole\Redis\CommandHandle\StartPipe;
+use EasySwoole\Redis\CommandHandle\StrLen;
+use EasySwoole\Redis\CommandHandle\Subscribe;
+use EasySwoole\Redis\CommandHandle\SUnion;
+use EasySwoole\Redis\CommandHandle\SUnIonStore;
+use EasySwoole\Redis\CommandHandle\SYNC;
+use EasySwoole\Redis\CommandHandle\Time;
+use EasySwoole\Redis\CommandHandle\Ttl;
+use EasySwoole\Redis\CommandHandle\Type;
+use EasySwoole\Redis\CommandHandle\Unlink;
+use EasySwoole\Redis\CommandHandle\Unsubscribe;
+use EasySwoole\Redis\CommandHandle\UnWatch;
+use EasySwoole\Redis\CommandHandle\Watch;
 use EasySwoole\Redis\CommandHandle\XAck;
 use EasySwoole\Redis\CommandHandle\XAdd;
 use EasySwoole\Redis\CommandHandle\XClaim;
@@ -125,16 +162,6 @@ use EasySwoole\Redis\CommandHandle\XRead;
 use EasySwoole\Redis\CommandHandle\XReadGroup;
 use EasySwoole\Redis\CommandHandle\XRevRange;
 use EasySwoole\Redis\CommandHandle\XTrim;
-use EasySwoole\Redis\CommandHandle\StrLen;
-use EasySwoole\Redis\CommandHandle\Subscribe;
-use EasySwoole\Redis\CommandHandle\SUnion;
-use EasySwoole\Redis\CommandHandle\SUnIonStore;
-use EasySwoole\Redis\CommandHandle\Ttl;
-use EasySwoole\Redis\CommandHandle\Type;
-use EasySwoole\Redis\CommandHandle\Unlink;
-use EasySwoole\Redis\CommandHandle\Unsubscribe;
-use EasySwoole\Redis\CommandHandle\UnWatch;
-use EasySwoole\Redis\CommandHandle\Watch;
 use EasySwoole\Redis\CommandHandle\ZAdd;
 use EasySwoole\Redis\CommandHandle\ZCard;
 use EasySwoole\Redis\CommandHandle\ZCount;
@@ -157,35 +184,7 @@ use EasySwoole\Redis\CommandHandle\ZRevRank;
 use EasySwoole\Redis\CommandHandle\ZScan;
 use EasySwoole\Redis\CommandHandle\ZScore;
 use EasySwoole\Redis\CommandHandle\ZUnionStore;
-use EasySwoole\Redis\CommandHandle\CommandGetKeys;
-use EasySwoole\Redis\CommandHandle\Time;
-use EasySwoole\Redis\CommandHandle\CommandInfo;
-use EasySwoole\Redis\CommandHandle\ConfigGet;
-use EasySwoole\Redis\CommandHandle\ConfigRewrite;
-use EasySwoole\Redis\CommandHandle\ConfigSet;
-use EasySwoole\Redis\CommandHandle\ConfigResetStat;
-use EasySwoole\Redis\CommandHandle\DBSize;
-use EasySwoole\Redis\CommandHandle\DebugObject;
-use EasySwoole\Redis\CommandHandle\DebugSegfault;
-use EasySwoole\Redis\CommandHandle\FlushAll;
-use EasySwoole\Redis\CommandHandle\FlushDb;
-use EasySwoole\Redis\CommandHandle\Info;
-use EasySwoole\Redis\CommandHandle\LastSave;
-use EasySwoole\Redis\CommandHandle\Monitor;
-use EasySwoole\Redis\CommandHandle\Role;
-use EasySwoole\Redis\CommandHandle\Save;
-use EasySwoole\Redis\CommandHandle\Shutdown;
-use EasySwoole\Redis\CommandHandle\SlowLog;
-use EasySwoole\Redis\CommandHandle\SYNC;
-use EasySwoole\Redis\CommandHandle\GeoAdd;
-use EasySwoole\Redis\CommandHandle\GeoDist;
-use EasySwoole\Redis\CommandHandle\GeoHash;
-use EasySwoole\Redis\CommandHandle\GeoPos;
-use EasySwoole\Redis\CommandHandle\GeoRadius;
-use EasySwoole\Redis\CommandHandle\GeoRadiusByMember;
-use EasySwoole\Redis\Config\RedisConfig;
 use EasySwoole\Redis\Exception\RedisException;
-use EasySwoole\Redis\CommandConst as Command;
 
 class Redis
 {
@@ -219,7 +218,7 @@ class Redis
      */
     protected $pipe = null;
 
-    public function __construct(RedisConfig $config)
+    public function __construct(Config $config)
     {
         $this->config = $config;
     }
@@ -3353,9 +3352,9 @@ class Redis
     }
 
     /**
-     * @return RedisConfig
+     * @return Config
      */
-    public function getConfig(): RedisConfig
+    public function getConfig(): Config
     {
         return $this->config;
     }

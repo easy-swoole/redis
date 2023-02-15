@@ -1,9 +1,9 @@
 <?php
 
 
-namespace EasySwoole\Redis\Config;
+namespace EasySwoole\Redis;
 
-class RedisClusterConfig extends RedisConfig
+class ClusterConfig extends Config
 {
     public const SERIALIZE_NONE = 0;
     public const SERIALIZE_PHP = 1;

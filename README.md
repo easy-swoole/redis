@@ -30,15 +30,16 @@ http://www.easyswoole.com/Components/Redis/introduction.html
 
 
 ## redis使用示例
+
 ```php
 <?php
 include "../vendor/autoload.php";
 go(function (){
-    $redis = new \EasySwoole\Redis\Redis(new \EasySwoole\Redis\Config\RedisConfig([
+    $redis = new \EasySwoole\Redis\Redis(new \EasySwoole\Redis\Config([
         'host' => '127.0.0.1',
         'port' => '6379',
         'auth' => 'easyswoole',
-        'serialize' => \EasySwoole\Redis\Config\RedisConfig::SERIALIZE_NONE
+        'serialize' => \EasySwoole\Redis\Config::SERIALIZE_NONE
     ]));
     var_dump($redis->set('a',1));
     var_dump($redis->get('a'));
@@ -46,18 +47,19 @@ go(function (){
 ```
 
 ## redis集群使用示例
+
 ```php
 <?php
 include "../vendor/autoload.php";
 go(function () {
-    $redis = new \EasySwoole\Redis\RedisCluster(new \EasySwoole\Redis\Config\RedisClusterConfig([
+    $redis = new \EasySwoole\Redis\RedisCluster(new \EasySwoole\Redis\ClusterConfig([
         ['172.16.253.156', 9001],
         ['172.16.253.156', 9002],
         ['172.16.253.156', 9003],
         ['172.16.253.156', 9004],
     ], [
         'auth' => '',
-        'serialize' => \EasySwoole\Redis\Config\RedisConfig::SERIALIZE_PHP
+        'serialize' => \EasySwoole\Redis\Config::SERIALIZE_PHP
     ]));
     var_dump($redis->set('a',1));
     var_dump($redis->get('a'));

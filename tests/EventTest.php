@@ -8,9 +8,9 @@
 
 namespace Test;
 
+use EasySwoole\Redis\ClusterConfig;
 use EasySwoole\Redis\CommandConst;
-use EasySwoole\Redis\Config\RedisClusterConfig;
-use EasySwoole\Redis\Config\RedisConfig;
+use EasySwoole\Redis\Config;
 use EasySwoole\Redis\Redis;
 use EasySwoole\Redis\RedisCluster;
 use PHPUnit\Framework\TestCase;
@@ -28,14 +28,14 @@ class EventTest extends TestCase
     protected function setUp():void
     {
         parent::setUp();
-        $redisConfig = new RedisConfig([
+        $redisConfig = new Config([
             'host' => REDIS_HOST,
             'port' => REDIS_PORT,
             'auth' => REDIS_AUTH,
         ]);
         $this->redis = new Redis($redisConfig);
 
-        $this->redisCluster = new RedisCluster(new RedisClusterConfig(REDIS_CLUSTER_SERVER_LIST, [
+        $this->redisCluster = new RedisCluster(new ClusterConfig(REDIS_CLUSTER_SERVER_LIST, [
             'auth' => REDIS_CLUSTER_AUTH,
         ]));
 

@@ -32,13 +32,12 @@ use EasySwoole\Redis\CommandHandle\MSet;
 use EasySwoole\Redis\CommandHandle\MSetNx;
 use EasySwoole\Redis\CommandHandle\Ping;
 use EasySwoole\Redis\CommandHandle\Unlink;
-use EasySwoole\Redis\Config\RedisClusterConfig;
 use EasySwoole\Redis\Exception\RedisClusterException;
 
 class RedisCluster extends Redis
 {
     /**
-     * @var RedisClusterConfig $config
+     * @var ClusterConfig $config
      */
     protected $config;
     /**
@@ -60,7 +59,7 @@ class RedisCluster extends Redis
      */
     protected $defaultClient = null;
 
-    public function __construct(RedisClusterConfig $config)
+    public function __construct(ClusterConfig $config)
     {
         $this->config = $config;
         $this->nodeInit();

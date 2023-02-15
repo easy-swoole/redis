@@ -1,12 +1,12 @@
 <?php
 
 
-namespace EasySwoole\Redis\Config;
+namespace EasySwoole\Redis;
 
 
 use EasySwoole\Spl\SplBean;
 
-class RedisConfig extends SplBean
+class Config extends SplBean
 {
     public const SERIALIZE_NONE = 0;
     public const SERIALIZE_PHP = 1;
